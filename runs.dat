@@ -1,0 +1,777 @@
+
+# runs list for scope DUT analysis
+# format:
+# tag val (rest of the line is ignored)
+# known tags up to the run under study are parsed
+# (entries below therun under study are ignored)
+
+weib 3 # gain file format for 2015
+
+chip 504
+tilt 20
+geo geo_2015_02a.dat
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim30tb-gaincal.dat
+
+run 14614
+run 14615
+run 14616
+run 14617
+run 14618
+run 14619
+run 14620
+run 14621
+run 14622
+run 14623
+run 14624
+run 14625
+run 14626
+run 14627
+run 14628
+run 14629
+run 14630
+run 14631
+run 14632
+run 14633
+run 14634
+run 14635
+run 14636
+run 14637
+run 14638
+run 14639
+run 14640
+run 14641
+run 14642
+run 14643
+
+#-------------------------------------------------------------------------------
+# Wed 8.4.2015 chip 504 low threshold scan
+GeV 5.6
+chip 504
+geo geo_2015_04a.dat
+tilt 20.7
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim32-gaincal.dat
+
+run 15384  Trim 32 + 100  62  68  eff 99.86  sy 8.54
+run 15385  Trim 32 + 807  62  68  eff 99.82  sy 8.43
+run 15386  Trim 32   132  62  68  
+     	   
+run 15387  Trim 31 + 813  62  63  eff 99.94  sy 8.43
+run 15388  Trim 31   130  62  63  
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim30-gaincal.dat
+run 15389  Trim 30 + 712  62  69  eff 99.80  sy 8.47
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim29-gaincal.dat
+run 15390  Trim 29 + 507  62  68  eff 99.81  sy 8.52
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim28-gaincal.dat
+run 15393  Trim 28 + 504  62  63  eff 99.86  sy 8.54
+run 15394  Trim 27 + 575  62  68  eff 99.725 sy 8.46
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim34-gaincal.dat
+run 15395  Trim 34 + 502  62  68  eff 99.84  sy 8.42
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim38-gaincal.dat
+run 15398  Trim 38 + 500  62  68  eff 99.835 sy 8.41
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim36-gaincal.dat
+
+# over night:
+
+run 15400  Trim 36  785  62  68  eff 99.859 sy 8.45
+run 15401  Trim 36  788  62  68  
+run 15402  Trim 36  782  62  68  
+run 15403  Trim 36  782  62  68  
+run 15404  Trim 36  771  62  68  
+run 15405  Trim 36  769  62  68  
+run 15406  Trim 36  765  62  68  
+run 15407  Trim 36  767  62  68  
+run 15408  Trim 36  771  62  68  
+run 15409  Trim 36  768  62  68  
+run 15410  Trim 36  769  62  68  
+run 15411  Trim 36  765  62  68  
+run 15412  Trim 36  767  62  68  
+run 15413  Trim 36  771  62  68  
+run 15414  Trim 36  779  62  68  
+run 15415  Trim 36  770  62  68  
+run 15416  Trim 36  768  62  68  
+run 15417  Trim 36  773  62  68  
+run 15418  Trim 36  776  62  68  
+run 15419  Trim 36  775  62  68  
+run 15420  Trim 36  776  62  68  
+run 15421  Trim 36  775  62  68  
+run 15422  Trim 36  768  62  68  
+run 15423  Trim 36  768  62  68  
+run 15424  Trim 36  772  62  68  
+run 15425  Trim 36  772  62  68  
+run 15426  Trim 36  772  62  68  
+run 15427  Trim 36  786  62  68  
+run 15428  Trim 36  788  62  68  
+run 15429  Trim 36  766  62  68  
+run 15430  Trim 36  719  62  68  
+
+# Thu 9.4.2015
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim40-gaincal.dat
+run 15436  Trim 40 + 502  61  68  eff 99.854 sy 8.41
+
+# trim 36, gate delay scan with stable conditions:
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim36-gaincal.dat
+
+run 15440  delay  6   51  61  68  eff 99.82
+run 15441  delay  4   52  61  67  eff 99.93
+run 15442  delay  2   51  62  68  eff 99.93
+run 15443  delay  0   53  61  68  eff 98.50
+run 15444  delay  8   69  61  66  eff 99.61
+run 15445  delay 10   70  61  61  eff 99.37
+run 15446  delay 12   52  61  50  eff 99.05
+run 15447  delay 14   54  61  35  eff 98.26
+run 15448  delay 16   52  53  31  eff 70.69
+run 15449  delay 18   52  37  45  eff 60.16
+run 15450  delay 20   54  33  67  eff 53.47
+run 15451  delay 22   51  46  68  eff 74.87
+run 15452  delay 24   58  58  67  eff 95.00
+
+tilt 19.4
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim27-gaincal.dat
+# trim 27
+# vary ROC WBC and DTB trigger latency
+# so far we had latency 86 BC and WBC 141
+#   5 and WBC  60
+run 15463  767  62  60  eff 99.656  sy 7.06
+run 15464  713  62  62  one event remaining
+# 185 and WBC 240
+run 15467  779  62  68  eff 99.806  sy 7.12
+
+#-------------------------------------------------------------------------------
+# Mon 27.4.2015 chip 504 tilt 19
+# REF 404
+# chip 504, trim 27  tilt 19.6  ia 24 mA  bias 200  chiller 15  no box
+# minimal gate length: 4.2 ns
+# gear_desy2015_04x: 764  612  458  305  153  0
+# distance 49 mm, 5.6 GeV, 150 mm telescope spacing: ex151-49 = 4.83 um
+# Mimosa threshold 5
+# DUT clock: extra delay 6 ns (in hall) to  sync with REF
+
+chip 504
+GeV 5.6
+geo geo_2015_04x.dat
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim27-gaincal.dat
+
+run 19037  delay 20   100  59  66  eff 99.5   sy 7.04
+run 19038             312  59  66  eff 99.4   sy      7.35
+run 19042  delay 16   101  59  67  eff 99.7   sy 7.15 7.33
+run 19043  delay 16   262  59  67  eff 99.74  sy      7.40 7.23
+run 19044  delay 17   101  59  67  eff 99.8   sy 7.20 7.31
+run 19045  delay 17   251  59  67  eff 99.75  sy 7.10 7.26      q0 23.8 22.0
+run 19052  delay 14   100  59  68  eff 99.4   sy      7.27
+run 19053  delay 14   447  59  67  eff 99.4   sy      7.33
+run 19054  delay 18   101  59  67  eff 99.8   sy 7.06 7.23
+run 19055  delay 18   337  59  67  eff 99.75  sy      7.30
+run 19056  delay 19   100  59  67  eff 99.76  sy 7.10 7.27
+run 19057  delay 19  +387  59  67  eff 99.71  sy      7.34
+run 19058  delay 18   790          eff 99.77  sy      7.29
+run 19059            -788  59  68  eff 99.86  sy      7.11 loose sync after 200 s
+run 19060             794  60  68  eff 99.77  sy      7.33
+run 19061             795  59  68  eff 99.78  sy 7.14 7.31
+run 19062            -800  60  68  eff 99.78  sy      7.06 loose sync after 300 s
+run 19063             796  59  68  eff 99.75  sy      7.30
+run 19064             802  60  68  eff 99.74  sy      7.33
+run 19065             806  60  68  eff 99.78  sy      7.30
+run 19066             805  60  68  eff 99.75  sy      7.34
+run 19067             798  60  68  eff 99.75  sy      7.29
+run 19068             795  60  68  eff 99.79  sy      7.32
+run 19069             804  60  68  eff 99.75  sy      7.30
+run 19070             13000      RunControl crashed just after midnight
+
+# Tue 28.4.2015, contimue 504
+# trim 31
+# gate delay 18 ns
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim31-gaincal.dat
+
+run 19075  delay 18  -100  59  67  eff 99.7  loose  sync 85s
+run 19076             771  59  67  eff 99.86  sy 7.17 7.31
+run 19077             773  59  67  eff 99.85  sy      7.30
+run 19078             774  59  67  eff 99.85  sy      7.32
+run 19079            -775  59  67  eff 99.78  sy      7.34 drop 800s
+run 19080             773  59  67  eff 99.84  sy      7.33
+run 19081             776  59  67  eff 99.84  sy      7.30
+run 19082             781  59  67  eff 99.84  sy      7.37 7.17
+run 19083             784  59  67  eff 99.85  sy      7.39 7.21 DUT,REF, TLU 1 event remains
+run 19084             785  59  67  eff 99.88  sy      7.32
+run 19085            -786  59  67  eff 99.65  sy      drop 500s Mimosa 3 events remaining
+run 19086             784  59  67  eff 99.86  sy      7.30
+run 19087             782  59  67  eff 99.88  sy      7.35
+run 19088             785  59  67  eff 99.84  sy      7.31
+run 19089             786  59  67  eff 99.85  sy      7.35
+run 19090             786  59  68  eff 99.86  sy      7.33 7.15 Weibull 7.49 lin
+run 19091             784  59  67  eff 99.87  sy      7.31
+run 19092             785  59  67  
+run 19093             793  59  67  
+run 19094             791  59  67  Mimosa: 1 event remaining
+run 19095             791  59  67  Mimosa: 2 events remaining
+run 19096             789  59  67  1 ev remains
+run 19097             788  59  67  1 ev remains
+run 19098             787  59  67  2 ev remain
+run 19099             666  59  68  
+
+run 19100  delay 18  -100  59  68  103 ev remain
+run 19101  delay 16  +100  59  67  eff 99.89
+run 19102  delay 18  +101  59  67  eff 99.90
+run 19103  delay 14  +101  59  67  eff 99.88
+run 19104  delay 12  =104  59  67  eff 99.17
+run 19105  delay 17  +101  59  68  
+run 19106  delay 15   101  59  68  1 ev remains
+run 19107  delay 13   101  59  67  
+run 19108  delay 12   101  59  68  
+run 19109  delay 11   100  56  67  
+run 19110  delay 15   101  59  68  
+run 19111  delay 13   283  59  68  
+run 19112  delay 20   101  59  67  2 ev remain
+run 19113  delay 19  +101  60  68  eff 99.79
+run 19114  delay 20   101  59  67  eff 99.69
+       	   
+run 19115  delay 19   486  59  67  eff 99.81  sy      7.40
+run 19116  delay 17   401  59  68  eff 99.89  sy eps006 7.245 eps0 7.88
+       	   
+run 19117  delay 16   785          eff 99.92  sy 7.08  q0 24.4
+run 19118             783          eff 99.91  sy 7.10
+run 19119             784          eff 99.90  sy 7.09
+run 19120             780          eff 99.90  sy 7.18
+run 19121             785          eff 99.91  sy 7.15
+run 19122             778          eff 99.89  sy 7.13
+run 19123             781          eff 99.92  sy 7.11
+run 19124             779          eff 99.90  sy 7.14
+run 19125             774          eff 99.92  sy 7.14
+run 19126             778          eff 99.91  sy 7.14
+run 19127            -773          loose sync
+run 19128             772          eff 99.91  sy 7.11
+run 19129             774          eff 99.90  sy 7.16
+run 19130             778          eff 99.90  sy 7.15
+run 19131             780          eff 99.92  sy 7.18
+run 19132             781          eff 99.90  sy 7.10
+run 19133           -7780          loose sync, run control crash
+
+#-------------------------------------------------------------------------------
+#Mon 25.5.2015
+#chip 504, trim 32, chiller 15 deg, bias -200
+#no box
+
+chip 504
+GeV 5.6
+geo geo_2015_05c.dat
+
+gain /home/pitzl/psi/dtb/tst400/c504-vd6-ia24-trim32-chiller15-gaincal.dat
+
+tilt 18.6
+run 19626  gate delay 16, trig delay 16  18.6   160  63.6  69  eff 99.77, only 25 % links
+run 19628  gate delay 16, trig delay 12  18.6   416  63.5  69  
+tilt 19.2
+run 19629                                19.2   165  63.2  69  eff 99.77, only 25 % links
+run 19631  gate delay 18, trig delay 12  19.2    57  63.4  71  eff 99.84, only 25 % links
+run 19632  gate delay 14, trig delay 12  19.2    80  63.2  48  
+run 19633  gate delay 20, trig delay 12  19.2    64  62.8  70  
+run 19634  gate delay 17, trig delay 12  19.2    62  63.3  70  
+run 19635  gate delay 18, trig delay 12  19.2   145  63.5  71  
+#restart DAQ
+run 19636  gate delay 18, trig delay 12  19.2   159  63.2  70  eff 99.79, 63% links
+run 19637  gate delay 18, trig delay 12  19.2   527  63.4  70  eff 99.78, 63% links
+run 19638  gate delay 18, trig delay 12  19.2   440  63.4  70  eff 99.80, 63% links
+tilt 20.3
+run 19639  gate delay 18, trig delay 12  20.3   531  63.4  71  eff 99.79, drop 1060s
+run 19640                                20.3   525  63.3  70  drop 200s
+run 19641                                20.3   173  63.2  70  eff 99.79
+#run control crash
+tilt 21
+run 19642                                21     374  63.1  70  eff 99.83  bias dot?
+
+# give 4 mm more space for tilt:
+geo geo_2015_05d.dat
+
+tilt 22.2
+run 19643  22.2     169  62.5  70  25% lks, drop at 100s
+run 19644  22.2     480  62.3  70  
+#restart DAQ
+run 19645  22.2     164  62.5  70  loose sync at ev 3000
+      	 
+run 19647  21.1     163  62.8  70  60% lks, eff 99.78, dip in mid pix: timewalk?
+run 19648  21.1     168  63.1  71  
+#power cycle TLU box
+run 19649  21.1     159  63.1  71  
+run 19650  21.1     241  62.8  70  
+#more narrow gate: 100k/410k = 6 ns, 320 Hz
+run 19654  21.1     162  62.0  70  
+#longer gate: 200k/390k = 13 ns, 500 Hz
+run 19656  21.1      41  58.0  71  
+#longer gate: 200k/530k = 9.4 ns, 425 Hz
+run 19657  21.1     159  63.2  70  eff 99.73
+#over night, shown in Visegrad
+run 19658           500  eff 99.87  step up at 410s,
+run 19659           511  eff 99.91  effvsym flat
+run 19660           511  eff 99.90
+run 19661           511  eff 99.90
+run 19662          -511  eff 99.87  step down 800s
+run 19663           511  eff 99.90
+run 19664           511  eff 99.93
+run 19665           511  eff 99.82  step down 500s
+run 19666           511  eff 99.94
+run 19667          -511  eff 99.66  step down 300s
+run 19668          -511  eff 99.84  step down 400s
+run 19669           511  eff 99.91
+run 19670           511  eff 99.92
+run 19671          -511  eff 99.82  step up 150, step down 650s
+run 19672           511  eff 99.92  sy 8.33  q0 23.1
+run 19673          -511  eff 99.64  step down 250s
+run 19674           511  eff 99.93
+run 19675           511  eff 99.92
+run 19676           511  eff 99.94
+run 19677           511  eff 99.89  step up 120s
+run 19678           511  eff 99.89  step down 920s
+run 19679           511  eff 99.93
+run 19680           511  eff 99.93  regular eff drops: Petra fills? t1800
+run 19681           511  eff 99.93
+run 19682           511  eff 99.92
+run 19683           511  eff 99.92
+run 19684           511  eff 99.94
+run 19685           511  eff 99.90
+run 19686           511  eff 99.90
+run 19687           511  eff 99.92
+run 19688          -511  eff 99.87  drop 700s
+run 19689          -511  eff 99.
+run 19690           511  eff 99.92
+run 19691           511  eff 99.92  step down 1050s
+run 19692           511  eff 99.91  step up 100s
+run 19693           511  eff 99.89
+run 19694           400  eff 99.92
+
+#-------------------------------------------------------------------------------
+#Thu 25.6.2015
+#chip 504 tilt scan
+
+chip 504
+GeV 5.2
+geo geo_2015_06c.dat
+
+gain /home/pitzl/psi/dtb/tst305/c504-ia24-trim28-gaincal.dat
+tilt 19
+run 20182  19.0  227  61  69  eff 99.83  sy 7.42  row 1.923  col 1.108  Lan 21.67  edg 1.36  ry 7.63
+run 20183  19.0  368  61  69  eff 99.82  sy 7.60  row 1.924  col 1.108  Lan 21.63  edg 1.39
+tilt 20
+run 20184  20.0  165  61  70  eff 99.82  sy 7.81  row 1.973  col 1.110  Lan 21.67  edg 1.36  ry 7.72
+run 20185  20.0  164  61  69  eff 99.82  sy 7.87  row 1.970  col 1.107  Lan 21.73  edg 1.37
+tilt 21
+run 20186  21.0  171  61  69  eff 99.83  sy 8.56  row 2.023  col 1.107  Lan 21.74  edg 1.37  ry 8.18
+run 20187  21.0  164  61  69  eff 99.80  sy 8.53  row 2.022  col 1.109  Lan 21.69  edg 1.37
+tilt 22
+run 20188  22.0  165  60  69  eff 99.84  sy 9.36  row 2.071  col 1.109  Lan 21.78  edg 1.39  ry 8.53
+run 20189  22.0  159  60  69  eff 99.83  sy 9.28  row 2.070  col 1.109  Lan 21.76  edg 1.38
+tilt 23
+run 20190  23.0  170  60  69  eff 99.82  sy 9.91  row 2.123  col 1.107  Lan 21.83  edg 1.41  ry 8.59
+run 20191  23.0  167  60  69  eff 99.84  sy 9.95  row 2.121  col 1.110  Lan 21.83  edg 1.40
+tilt 24
+run 20192  24.0  168  60  69  eff 99.83  sy 10.6  row 2.179  col 1.110  Lan 21.92  edg 1.35  ry 9.11
+run 20193  24.0  177  60  69  eff 99.79  sy 10.2  row 2.177  col 1.109  Lan 21.92  edg 1.37
+tilt 19.5
+run 20194  19.5  444  61  69  eff 99.83  sy 7.78  row 1.949  col 1.109  Lan 21.61  edg 1.33  ry 7.85
+run 20195  19.5  444  61  69  eff 99.81  sy 7.57  row 1.950  col 1.111  Lan 21.62  edg 1.31
+run 20196  19.5  444  61  69  eff 99.81  sy 7.66  row 1.950  col 1.109  Lan 21.55  edg 1.28
+run 20197  19.5  444  61  69  eff 99.82  sy 7.70  row 1.951  col 1.110  Lan 21.53  edg 1.29
+run 20198  19.5  loose sync ?
+tilt 26                   22% lks:
+run 20202  26.0  204  59  69  eff 99.74  sy 10.8  row 2.293  col 1.111  Lan 21.64  edg 1.32  ry 9.41
+run 20203  26.0  201  59  69  eff 99.74  sy 11.1  row 2.289  col 1.112  Lan 21.65  edg 1.29
+tilt 28
+run 20204  28.0  201  58  69  eff 99.73  sy 11.1  row 2.399  col 1.113  Lan 21.74  edg 1.22  ry 10.23
+run 20205  28.0  201  58  69  eff 99.67  sy 10.8  row 2.404  col 1.107  Lan 21.72  edg 1.28
+tilt 30
+run 20206  30.0  202  56  69  eff 99.67  sy 10.9  row 2.524  col 1.115  Lan 21.75  edg 1.30  ry 10.77
+run 20207  30.0  201  57  69  eff 99.70  sy 11.2  row 2.522  col 1.112  Lan 21.76  edg 1.26
+tilt 32
+run 20208  32.0  202  55  69  eff 99.71  sy 10.3  row 2.649  col 1.111  Lan 21.85  edg 1.26  ry 10.29
+run 20209  32.0  201  55  69  eff 99.66  sy 10.8  row 2.650  col 1.114  Lan 21.77  edg 1.29
+tilt 34
+run 20210  34.0  201  54  69  eff 99.73  sy 10.5  row 2.778  col 1.114  Lan 21.89  edg 1.27  ry 9.98
+run 20211  34.0  202  54  69  eff 99.68  sy 11.0  row 2.777  col 1.111  Lan 21.82  edg 1.22
+tilt 36
+run 20212  36.0  201  53  68  eff 99.68  sy 11.1  row 2.918  col 1.115  Lan 21.89  edg 1.20  ry 10.45
+run 20213  36.0  201  53  68  eff 99.70  sy 11.3  row 2.924  col 1.114  Lan 21.91  edg 1.20
+tilt 38
+run 20214  38.0  202  51  68  eff 99.68  sy 11.9  row 3.069  col 1.114  Lan 22.00  edg 1.24  ry 10.96
+run 20215  38.0  201  51  68  eff 99.69  sy 12.3  row 3.072  col 1.114  Lan 21.95  edg 1.28
+tilt 40
+run 20216  40.0  203  49  68  eff 99.65  sy 12.5  row 3.222  col 1.112  Lan 22.05  edg 1.30  ry 11.82
+run 20217  40.0  203  49  68  eff 99.64  sy 12.8  row 3.226  col 1.118  Lan 22.02  edg 1.22
+tilt 18
+run 20219  18.0  203  61  69  eff 99.68  sy 8.03  row 1.877  col 1.111  Lan 21.01  edg 1.15  ry 7.78
+run 20220  18.0  202  61  69  eff 99.65  sy 8.08  row 1.879  col 1.114  Lan 21.00  edg 1.11
+tilt 17
+run 20221  17.0  202  61  69  eff 99.66  sy 8.61  row 1.827  col 1.115  Lan 20.86  edg 1.08  ry 8.05
+run 20222  17.0  201  61  69  eff 99.63  sy 8.62  row 1.832  col 1.115  Lan 20.79  edg 1.09
+tilt 16
+run 20223  16.0  202  62  69  eff 99.71  sy 9.75  row 1.776  col 1.118  Lan 20.79  edg 1.12  ry 8.21
+run 20224  16.0  202  61  69  eff 99.72  sy 9.40  row 1.784  col 1.118  Lan 20.78  edg 1.05
+tilt 15
+run 20225  15.0  202  62  69  eff 99.68  sy 11.2  row 1.731  col 1.115  Lan 20.68  edg 1.07  ry 8.77
+
+#restart DAQ: 63% lks
+tilt 14
+run 20230  14.0  202  62  69  eff 99.77  sy 12.9  row 1.687  col 1.114  Lan 20.69  edg 1.04  ry 9.49
+
+#Fri 26.6.2015
+#finish tilt scan with 504
+#5.2 GeV, 10E9 in DESY, up to 660 Hz, gate 140k/406k, delay 4 ns
+#trim 28, VIColOr 255, VIBias_Bus 90
+#same gear 06c
+
+tilt 15
+run 20233  15.0  162  62  69  eff 99.77  sy 11.0  row 1.726  col 1.112  Lan 21.03  edg 1.21  ry 8.84
+run 20234  15.0  152  62  69  eff 99.77  sy 11.0  row 1.728  col 1.112  Lan 20.97  edg 1.19
+tilt 13
+run 20235  13.0  167  62  69  eff 99.77  sy 14.3  row 1.636  col 1.113  Lan 20.88  edg 1.10  ry 10.43
+run 20236  13.0  163  62  69  eff 99.78  sy 14.2  row 1.641  col 1.116  Lan 20.87  edg 1.16
+tilt 11
+run 20237  11.0  193  62  69  eff 99.79  sy 17.6  row 1.550  col 1.115  Lan 20.73  edg 1.11  ry 12.2
+run 20238  11.0  160  62  69  eff 99.80  sy 17.7  row 1.544  col 1.115  Lan 20.67  edg 1.08
+tilt  9
+run 20239   9.0  176  62  69  eff 99.80  sy 21.0  row 1.460  col 1.117  Lan 20.61  edg 1.07  ry 15.4
+run 20240   9.0  161  62  69  eff 99.75  sy 21.0  row 1.466  col 1.116  Lan 20.61  edg 1.12
+
+# DUT y:adjust 0.5 mm up (remote)     
+tilt  7
+run 20241   7.0  158  64  69  eff 99.81  sy 24.4  row 1.381  col 1.116  Lan 20.52  edg 1.08  ry 20.2
+run 20242   7.0  161  64  69  eff 99.80  sy 24.3  row 1.375  col 1.116  Lan 20.52  edg 1.09
+tilt  5
+run 20243   4.9  154  64  69  eff 99.82  sy 27.4  row 1.303  col 1.115  Lan 20.41  edg 1.07  ry 23.3
+run 20244   4.9  170  65  69  eff 99.79  sy 27.3  row 1.301  col 1.114  Lan 20.43  edg 1.02
+tilt  3
+run 20245   3.0  156  64  69  eff 99.77  sy 30.3  row 1.229  col 1.120  Lan 20.37  edg 1.03  ry 27.8
+run 20246   3.0  155  64  69  eff 99.76  sy 30.2  row 1.229  col 1.116  Lan 20.37  edg 1.07
+tilt  1
+run 20247   1.0  155  64  69  eff 99.78  sy 30.5  row 1.231  col 1.119  Lan 20.31  edg 0.987
+run 20248   1.0  170  65  69  eff 99.79  sy 34.9  row 1.182  col 1.118  Lan 20.20  edg 0.943
+
+#close the telescope, gear 06e: 753  603  451  304  151  0
+geo geo_2015_06e.dat
+tilt  0
+run 20249   0
+run 20250   0
+run 20251   0
+run 20251   0
+#all night
+
+#-------------------------------------------------------------------------------
+#Sat 27.6.2015
+#threshold scan with 504 at tilt 19.3
+#chiller +17 deg (humidity, avoid condensation)
+#prepare trim 26..80
+#tdr: noisy below trim 36
+#same gear 06e
+#5.2 GeV, 10E9 in DESY, 650 Hz
+
+chip 504
+GeV 5.2
+geo geo_2015_06e.dat
+tilt 19.3
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim36tb-chiller17-gaincal.dat
+
+run 20362         65  62  70  eff 99.71
+run 20363        411  62  69  
+run 20364        129  62  70  eff 99.79  
+run 20365       +475  61  69  eff 99.79  sy 7.17  row 1.923  col 1.095  Lan 21.53  edg 1.36
+run 20366       +process
+run 20367       +
+run 20368       +
+run 20369       +
+run 20370       +
+run 20371       +
+run 20372       +
+run 20373       +
+run 20374       +
+run 20375       +
+run 20376       +
+run 20377       +
+run 20378       +
+run 20379       +
+run 20380       +
+run 20381       +
+run 20382       +
+run 20383       +
+#21:53  RC disconnected
+run 20384        29175 61  69  all night
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#Sun 28.6.2015 chip 504
+#repeat threshold scan
+# 5.2 GeV, 10E9 in DESY, 660 Hz, medium gate 400k/980k, delay 3 ns
+# chiller +17deg
+
+tilt 19.5
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim32tb-chiller17-gaincal.dat
+run 20385  thr 32   54  61  69  DUT, REF, TLU: 45 ev remain, eff 98.98, trend in x
+run 20386  thr 32  326  61  69  eff 98.90  sy 7.07  row 1.949  col 1.105  Lan 21.43  edg 0.89
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim36tb-chiller17-gaincal.dat
+run 20387  thr 36  405  61  69  eff 99.78  sy 7.09  row 1.932  col 1.096  Lan 21.69  edg 1.09
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim40tb-chiller17-gaincal.dat
+run 20388  thr 40  405  61  69  eff 99.86  sy 7.16  row 1.917  col 1.088  Lan 21.98  edg 1.70
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim44tb-chiller17-gaincal.dat
+run 20389  thr 44  407  61  69  eff 99.88  sy 7.23  row 1.903  col 1.085  Lan 21.91  edg 1.84
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim48tb-chiller17-gaincal.dat
+run 20390  thr 48  408  61  69  eff 99.90  sy 7.27  row 1.877  col 1.078  Lan 21.84  edg 2.05
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim52tb-chiller17-gaincal.dat
+run 20391  thr 52  404  61  69  eff 99.89  sy 7.34  row 1.860  col 1.077  Lan 21.84  edg 2.20
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim56tb-chiller17-gaincal.dat
+run 20392  thr 56  405  61  69  eff 99.91  sy 7.53  row 1.853  col 1.073  Lan 21.73  edg 2.27
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim60tb-chiller17-gaincal.dat
+run 20393  thr 60  409  61  69  eff 99.89  sy 7.56  row 1.844  col 1.070  Lan 21.72  edg 2.40
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim64tb-chiller17-gaincal.dat
+run 20394  thr 64  406  61  69  eff 99.89  sy 7.68  row 1.827  col 1.066  Lan 21.68  edg 2.56
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim68tb-chiller17-gaincal.dat
+run 20395  thr 68  407  61  69  eff 99.90  sy 7.91  row 1.813  col 1.063  Lan 21.61  edg 2.71
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim72tb-chiller17-gaincal.dat
+run 20396  thr 72  406  61  69  eff 99.90  sy 7.91  row 1.802  col 1.062  Lan 21.55  edg 2.80
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim76tb-chiller17-gaincal.dat
+run 20397  thr 76  420  61  69  eff 99.90  sy 8.09  row 1.791  col 1.059  Lan 21.50  edg 2.92
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim80tb-chiller17-gaincal.dat
+run 20398  thr 80  406  61  69  eff 99.89  sy 8.29  row 1.774  col 1.058  Lan 21.38  edg 3.10
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# disconnect chiller, same gear 06e
+# tilt scan at thr 80
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim80tb-nochiller-gaincal.dat
+tilt 39.5
+run 20399  39.5  404  50  68  eff 99.88  sy 12.7  row 2.842  col 1.046  Lan 24.51  edg 3.40
+tilt 37.5
+run 20400  37.5  401  52  68  eff 99.90  sy 12.6  row 2.691  col 1.048  Lan 24.23  edg 3.37
+tilt 35.5
+run 20401  35.5  401  53  68  eff 99.90  sy 13.7  row 2.553  col 1.049  Lan 24.10  edg 3.38
+tilt 33.5
+run 20402  33.5  401  54  68  eff 99.90  sy 15.1  row 2.437  col 1.048  Lan 23.95  edg 3.37
+tilt 31.5
+run 20403  31.5  401  56  69  eff 99.88  sy 15.5  row 2.326  col 1.049  Lan 23.84  edg 3.35
+tilt 29.5
+yun 20404  29.5  408  57  69  eff 99.88  sy 16.3  row 2.225  col 1.049  Lan 23.74  edg 3.37
+tilt 27.5
+run 20405  27.5  401  58  69  eff 99.89  sy 15.6  row 2.126  col 1.050  Lan 23.61  edg 3.35
+tilt 25.5
+run 20406  25.5  401  59  69  eff 99.89  sy 14.0  row 2.039  col 1.049  Lan 23.52  edg 3.37
+tilt 23.5
+run 20407  23.5  401  60  69  eff 99.91  sy 9.98  row 1.950  col 1.049  Lan 23.60  edg 3.33
+tilt 21.5
+run 20408  21.5  464  61  69  eff 99.91  sy 8.17  row 1.846  col 1.049  Lan 23.42  edg 3.28
+tilt 20.5
+run 20409  20.5  401  61  69  eff 99.91  sy 8.40  row 1.796  col 1.051  Lan 23.30  edg 3.28
+tilt 19.5
+run 20410  19.5  403  61  69  eff 99.91  sy 8.55  row 1.746  col 1.052  Lan 23.15  edg 3.27
+tilt 18.5
+run 20411  18.5  470  62  69  eff 99.90  sy 9.46  row 1.702  col 1.050  Lan 23.05  edg 3.24
+tilt 17.5
+run 20413  17.5  402  62  69  eff 99.89  sy 10.7  row 1.660  col 1.051  Lan 22.96  edg 3.25
+tilt 16.5
+run 20414  16.5  400  62  69  eff 99.90  sy 12.0  row 1.618  col 1.051  Lan 22.91  edg 3.24
+tilt 15.5
+run 20415  15.5  401  62  69  eff 99.90  sy 13.3  row 1.576  col 1.051  Lan 22.86  edg 3.23
+tilt 14.5
+run 20416  14.5  401  62  69  eff 99.89  sy 15.4  row 1.534  col 1.052  Lan 22.75  edg 3.19
+
+#-------------------------------------------------------------------------------
+#Sun 12.7.2015 chip 504 tilt scan
+#gear 07b: 754  603  452  305  152  0
+#5.2 GeV, 7E9 in DESY
+#trim 28 from April, no chiller
+#bias -200
+#gate 13 ns, up to 700 Hz
+
+chip 504
+GeV 5.2
+geo geo_2015_07b.dat
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim28tb-nochiller-Jul-gaincal.dat
+
+tilt 26.6
+run 20785  26.6  250  61  71  eff 99.96  sy 8.84  row 2.296  col 1.089  Lan 22.39  edg 1.82  sy0 10.47
+tilt 28.6
+run 20786  28.6  260  60  71  eff 99.96  sy 9.12  row 2.406  col 1.088  Lan 22.57  edg 1.84  sy0 10.15
+tilt 30.6
+run 20787  30.6  249  59  71  eff 99.96  sy 10.01 row 2.529  col 1.091  Lan 22.62  edg 1.81  sy0 9.77
+tilt 32.6
+run 20788  32.6  258  58  72  eff 99.95  sy 9.87  row 2.660  col 1.094  Lan 22.74  edg 1.78  sy0 9.20
+tilt 34.6
+run 20789  34.6  262  57  72  eff 99.95  sy 9.39  row 2.794  col 1.092  Lan 22.86  edg 1.78  sy0 9.32
+tilt 36.6
+run 20790  36.6  258  55  72  eff 99.95  sy 10.01 row 2.941  col 1.093  Lan 22.99  edg 1.76  sy0 10.12
+tilt 38.6
+run 20791  38.6 +249  53  72  eff 99.94  sy 10.62 row 3.088  col 1.094  Lan 23.16  edg 1.86  sy0 11.18
+tilt 40.6
+run 20792  40.6  273  51  72  eff 99.95  sy 11.48 row 3.244  col 1.095  Lan 23.28  edg 1.87  sy0 11.74
+tilt 39.6
+run 20793  39.6  353  52  71  eff 99.95  sy 10.95 row 3.166  col 1.093  Lan 23.22  edg 1.87  sy0 11.31
+tilt 37.6
+run 20794  37.6               eff 99.91  sy 10.41 row 3.015  col 1.091  Lan 23.16  edg 1.85  sy0 10.92
+tilt 35.6
+run 20795  35.6  250  56  72  eff 99.95  sy 9.63  row 2.868  col 1.094  Lan 23.04  edg 1.82  sy0 9.67
+tilt 33.6
+run 20796  33.6  253  58  73  eff 99.96  sy 9.50  row 2.732  col 1.094  Lan 22.90  edg 1.80  sy0 9.18
+tilt 31.6
+run 20797  31.6  256  59  73  eff 99.95  sy 10.18 row 2.598  col 1.096  Lan 22.71  edg 1.78  sy0 9.67
+tilt 29.6
+run 20798  29.6  253  60  72  eff 99.92  sy 9.72  row 2.474  col 1.093  Lan 22.59  edg 1.77  sy0 10.00
+tilt 27.6
+run 20799  27.6  255  61  73  eff 99.96  sy 9.29  row 2.356  col 1.093  Lan 22.46  edg 1.77  sy0 10.42
+tilt 25.6
+run 20800  25.6  249  62  73  eff 99.96  sy 8.62  row 2.247  col 1.095  Lan 22.31  edg 1.74  sy0 10.29
+tilt 24.6
+run 20801  24.6  249  62  73  eff 99.96  sy 8.62  row 2.192  col 1.095  Lan 22.27  edg 1.72  sy0 10.27
+tilt 23.6
+run 20802  23.6  257  63  73  eff 99.95  sy 8.41  row 2.142  col 1.095  Lan 22.18  edg 1.73  sy0 10.09
+tilt 22.6
+run 20803  22.6  253  63  73  eff 99.96  sy 7.92  row 2.087  col 1.094  Lan 22.13  edg 1.78  sy0 9.44
+tilt 21.6
+run 20804  21.6  249  64  73  eff 99.96  sy 7.62  row 2.038  col 1.092  Lan 22.05  edg 1.77  sy0 8.79
+tilt 20.6
+run 20805  20.6  261  64  73  eff 99.95  sy 7.25  row 1.990  col 1.095  Lan 22.00  edg 1.69  sy0 7.71
+tilt 19.6
+run 20806  19.6  330  64  73  eff 99.95  sy 7.01  row 1.941  col 1.095  Lan 21.95  edg 1.70  sy0 7.02
+tilt 18.6
+run 20807  18.6 *258  64  73  eff 99.98  sy 6.95  row 1.890  col 1.094  Lan 21.85  edg 1.71  sy0 6.95
+tilt 17.6
+run 20808  17.6  251  65  73  eff 99.95  sy 7.06  row 1.839  col 1.096  Lan 21.75  edg 1.66  sy0 7.23
+tilt 16.6
+run 20809  16.6  250  65  73  eff 99.96  sy 7.52  row 1.790  col 1.098  Lan 21.69  edg 1.70  sy0 8.17
+tilt 15.6
+run 20810  15.6  250  65  73  eff 99.98  sy 7.99  row 1.742  col 1.098  Lan 21.65  edg 1.72  sy0 9.39
+tilt 14.6
+run 20811  14.6  248  66  74  eff 99.96  sy 8.49  row 1.696  col 1.099  Lan 21.50  edg 1.67  sy0 10.89
+tilt 13.6
+run 20812  13.6  248  66  73  eff 99.95  sy 9.19  row 1.649  col 1.098  Lan 21.44  edg 1.70  sy0 12.4
+tilt 12.6
+run 20813  12.6  264  66  73  eff 99.95  sy 10.22 row 1.602  col 1.099  Lan 21.36  edg 1.71  sy0 14.1
+tilt 11.6
+run 20814  11.6  254  66  73  eff 99.98  sy 11.30 row 1.559  col 1.098  Lan 21.38  edg 1.73  sy0 15.9
+tilt 10.6
+run 20815  10.6  250  66  73  eff 99.95  sy 12.7  row 1.512  col 1.099  Lan 21.28  edg 1.73  sy0 17.7
+tilt  9.6
+run 20816   9.55 248  66  73  eff 99.95  sy 14.2  row 1.471  col 1.100  Lan 21.20  edg 1.71  sy0 19.5
+tilt  6.6
+run 20817   8.55 252  66  73  eff 99.96  sy 16.0  row 1.426  col 1.098  Lan 21.15  edg 1.71  sy0 21.2
+tilt  7.5
+run 20818   7.5  249  66  73  eff 99.95  sy 19.3  row 1.381  col 1.100  Lan 21.10  edg 1.71  sy0 23.1
+tilt  6.5
+run 20819   6.6  252  66  73  eff 99.95  sy 21.7  row 1.345  col 1.098  Lan 21.06  edg 1.68  sy0 24.7
+tilt  5.5
+run 20820   5.5  247  66  73  eff 99.94  sy 22.9  row 1.307  col 1.100  Lan 21.01  edg 1.67  sy0 26.1
+tilt  4.5
+run 20821   4.5  271  66  73  eff 99.94  sy 25.1  row 1.269  col 1.101  Lan 20.97  edg 1.66  sy0 27.7 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#connect chiller, +17 deg
+#ex151-45: 4.7 um
+#trim 36, tilt 18.8
+
+tilt 18.8
+
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim36tb-chiller17-Jul-gaincal.dat
+
+run 20823                58  63  72  DUT eff 99.95
+	gate 8 ns    
+run 20824  delay 16      61  64  73  DUT eff 99.93
+run 20825  delay 18          64  71  DUT eff 99.88
+run 20827  delay 14      70  64  73  DUT eff 99.94
+run 20828  delay 15      73  64  73  DUT eff 99.91
+run 20829  delay 17      89  64  72  
+
+tilt 19.2
+run 20830  delay 16    ++521  64  72  
+run 20831              ++522  64  72  
+run 20832                126  64  72  
+
+#gate 11 ns, delay 16
+run 20833                 66  64  73  DUT eff 99.97
+run 20834              ++344  64  73  
+
+#trim 32
+run 20835                 66  64  73  
+run 20836                353  64  73  eff 99.95  sy 7.07  row 1.942  col 1.107  Lan 21.56  edg 1.38
+
+#trim 28       run 20837    noisy    
+
+#trim 32
+run 20838  delay 17      126  64  73  DUT eff 99.95
+run 20839                409  64  72  eff 99.96  sy 7.09  row 1.94  col 1.104  Lan 21.51  edg 1.39
+
+run 20840  delay 15       65  64  73  
+run 20841                102  64  73  
+
+#trim 36
+run 20842  delay 16      521          eff 99.97  sy 7.09  row 1.921  col 1.096  Lan 21.71  edg 1.62
+run 20843                             eff 99.97  sy 7.09  row 1.920  col 1.096  Lan 21.71  edg 1.62
+run 20844                             eff 99.96  sy 7.01  row 1.921  col 1.096  Lan 21.69  edg 1.61
+run 20845                             eff 99.98  sy 7.03  row 1.919  col 1.095  Lan 21.68  edg 1.61
+run 20846                             eff 99.97  sy 7.07  row 1.921  col 1.095  Lan 21.69  edg 1.60
+run 20847                             eff 99.96  sy 7.02  row 1.920  col 1.096  Lan 21.68  edg 1.62
+run 20848                             eff 99.97  sy 7.13  row 1.921  col 1.096  Lan 21.69  edg 1.59
+run 20849                             eff 99.97  sy 7.07  row 1.921  col 1.097  Lan 21.66  edg 1.59
+run 20850                             eff 99.96  sy 6.99  row 1.921  col 1.097  Lan 21.68  edg 1.60
+run 20851                             eff 99.96  sy 7.03  row 1.921  col 1.097  Lan 21.68  edg 1.62
+run 20852                             eff 99.96  sy 6.95  row 1.917  col 1.094  Lan 21.96  edg 1.64
+run 20853                             eff 99.96  sy 7.03  row 1.922  col 1.096  Lan 21.70  edg 1.61
+run 20854                             eff 99.96  sy 7.08  row 1.919  col 1.097  Lan 21.71  edg 1.62
+run 20855                             eff 99.97  sy 7.00  row 1.922  col 1.095  Lan 21.74  edg 1.63
+run 20856                             eff 99.97  sy 7.08  row 1.920  col 1.096  Lan 21.73  edg 1.63
+run 20857                             eff 99.96  sy 6.97  row 1.918  col 1.095  Lan 21.73  edg 1.63
+run 20858                             eff 99.96  sy 7.06  row 1.919  col 1.095  Lan 21.76  edg 1.66
+run 20859                             eff 99.97  sy 7.04  row 1.919  col 1.095  Lan 21.75  edg 1.65
+run 20860                             eff 99.96  sy 7.03  row 1.920  col 1.095  Lan 21.75  edg 1.66
+run 20861                             eff 99.97  sy 7.03  row 1.919  col 1.097  Lan 21.73  edg 1.65
+run 20862                             eff 99.96  sy 6.96  row 1.919  col 1.095  Lan 21.76  edg 1.63
+run 20863                             eff 99.97  sy 7.05  row 1.919  col 1.097  Lan 21.76  edg 1.65
+run 20864                             eff 99.97  sy 7.05  row 1.920  col 1.095  Lan 21.72  edg 1.64
+run 20865                             eff 99.96  sy 7.03  row 1.919  col 1.096  Lan 21.74  edg 1.63
+run 20866                             eff 99.96  sy 7.03  row 1.918  col 1.096  Lan 21.70  edg 1.62
+run 20867                             eff 99.97  sy 7.01  row 1.918  col 1.094  Lan 21.75  edg 1.65
+run 20868                             eff 99.97  sy 7.04  row 1.919  col 1.095  Lan 21.71  edg 1.64
+run 20869                             eff 99.96  sy 7.08  row 1.920  col 1.095  Lan 21.75  edg 1.64
+run 20870                             eff 99.97  sy 7.02  row 1.919  col 1.096  Lan 21.74  edg 1.65
+run 20871                             eff 99.96  sy 7.11  row 1.920  col 1.096  Lan 21.73  edg 1.64
+run 20872                             eff 99.97  sy 7.05  row 1.919  col 1.095  Lan 21.77  edg 1.66
+run 20873                             eff 99.97  sy 7.08  row 1.919  col 1.096  Lan 21.78  edg 1.67
+run 20874                             
+run 20875                             
+run 20876                             
+run 20877                             
+run 20878                             
+run 20879                             
+run 20880                             
+run 20881                             
+run 20882                             
+run 20883                             
+run 20884                             
+run 20885                             
+run 20886                             
+run 20887                             
+run 20888                             
+run 20889                             
+run 20890                             
+run 20891                             
+run 20892                             
+run 20893                             
+run 20894                401  64  73  
+#running all night

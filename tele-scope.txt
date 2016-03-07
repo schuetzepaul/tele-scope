@@ -1,0 +1,22 @@
+
+read eudaq raw data files
+     libeudaq has decoder for Mimosa telescope planes by default
+     build eudaq with support for your DUT:
+       cd eudaq/build
+       cmake -DBUILD_cmspixel=ON ..
+
+step 0:
+     prepare a geo.dat file with the telescope and DUT/REF planes
+
+step 1: teles triplet alignment
+     > tele -g geo.dat 20833
+     (writes align_20833.dat and hot_20833.dat)
+     iterate at least once
+
+step 2: telescope with DUT and REF
+     prepare a runs.dat file with any needed constants
+     > scope 20833
+     (reads runs.dat, which contains a link to geo.dat)
+     (reads align.dat and hot.dat)
+     (write alignDUT.dat)
+     iterate 3 times
