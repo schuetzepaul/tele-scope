@@ -11,7 +11,7 @@ test beam pixel telescope analysis based on eudaq only
 * you need to have git installed:  
   sudo apt-get install git
   
-* you need to have cmake installed:
+* you need to have cmake installed:  
   sudo apt-get install cmake
 
 * (you may need to have svn installed)
@@ -21,7 +21,7 @@ test beam pixel telescope analysis based on eudaq only
   (for Linux: x64 (64 bit))  
   gunzip libftd2xx-x86_64-1.3.6.tgz  
   tar -xf libftd2xx-x86_64-1.3.6.tar  
-  (you get a directory called release)
+  (you get a directory called release)  
   cd release  
   sudo cp -p WinTypes.h /usr/local/include  
   sudo cp -p ftd2xx.h /usr/local/include  
@@ -58,13 +58,13 @@ test beam pixel telescope analysis based on eudaq only
 
 * step 0:  
   prepare a geo.dat file with the telescope and DUT/REF planes  
-  (see one of the examples)
+  (see one of the examples)  
   set a symbolic link to the directory with the eudaq raw data  
   ln -s /data/eudaq/data data  
   (raw data files are called run020833.raw)  
 
 * step 1: telescope triplet alignment  
-  tele -g geo.dat 20833
+  tele -g geo.dat 20833  
   (reads data/run020833.raw  
   (writes align_20833.dat and hot_20833.dat)  
   iterate at least once (re-run)  
