@@ -1,2 +1,82 @@
 # tele-scope
 test beam pixel telescope analysis based on eudaq only
+
+## prerequisites:
+
+* you need to have sudo priviliges for your system to install some software
+
+* you need ROOT (5 or 6)  
+  export ROOTSYS=/home/YOU/root (or wherever your root-config sits)
+
+* you need to have git installed:  
+  sudo apt-get install git
+  
+* you need to have cmake installed:
+  sudo apt-get install cmake
+
+* (you may need to have svn installed)
+
+* for pXar you need the USB driver from FTDI:  
+  download from http://www.ftdichip.com/Drivers/D2XX.htm  
+  (for Linux: x64 (64 bit))  
+  gunzip libftd2xx-x86_64-1.3.6.tgz  
+  tar -xf libftd2xx-x86_64-1.3.6.tar  
+  (you get a directory called release)
+  cd release  
+  sudo cp -p WinTypes.h /usr/local/include  
+  sudo cp -p ftd2xx.h /usr/local/include  
+  (release/build contains libftd2xx.so.1.3.6)  
+  cd /usr/local/lib  
+  sudo ln -s /home/YOU/release/build/libftd2xx.so.1.3.6  libftd2xx.so  
+
+* for pXar you need to install the libusb-1.0-0-dev package for your system
+
+* if you want to analyse CMS pixel data you need pXar:  
+  see https://twiki.cern.ch/twiki/bin/viewauth/CMS/Pxar  
+  or like this:  
+  git clone https://github.com/psi46/pxar.git  
+  cd pxar  
+  mkdir build  
+  cd build  
+  cmake -DBUILD_pxarui=OFF ..  
+  make VERBOSE=1 -j4 install  
+
+* install eudaq as described in  
+  https://github.com/eudaq/eudaq/blob/v1.5-dev/README.md  
+  or like this:  
+  git clone https://github.com/eudaq/eudaq.git  
+  cd eudaq  
+  mkdir build  
+  cd build  
+  export PXARPATH=/home/YOU/pxar  
+  cmake -DBUILD_cmspixel=ON ..  
+  make install  
+
+## tele-scope
+
+* cd tele-scope
+
+* step 0:  
+  prepare a geo.dat file with the telescope and DUT/REF planes  
+  (see one of the examples)
+  set a symbolic link to the directory with the eudaq raw data  
+  ln -s /data/eudaq/data data  
+  (raw data files are called run020833.raw)  
+
+* step 1: telescope triplet alignment  
+  tele -g geo.dat 20833
+  (reads data/run020833.raw  
+  (writes align_20833.dat and hot_20833.dat)  
+  iterate at least once (re-run)  
+  creates tele_20833.root  
+  
+* step 2: telescope with DUT and REF  
+  prepare a runs.dat file with any needed constants (see example)  
+  scope 20833  
+  (reads runs.dat, which must a link to geo.dat)  
+  (reads align_20833.dat and hot_20833.dat)  
+  (write alignDUT_20833.dat)  
+  iterate 3 times  
+  creates scope_20833.root  
+
+* present and publish!
