@@ -28,7 +28,7 @@ struct pixel {
   int row;
   int adc;
   double q;
-  bool big;
+  int ord;
 };
 
 struct cluster {
@@ -37,7 +37,6 @@ struct cluster {
   int ncol, nrow;
   double col, row;
   double charge;
-  bool big;
 };
 
 struct triplet {
@@ -111,7 +110,6 @@ vector<cluster> getClus()
     c.col = 0;
     c.row = 0;
     double sumQ = 0;
-    c.big = 0;
     int minx = 999;
     int maxx = 0;
     int miny = 999;
@@ -124,7 +122,6 @@ vector<cluster> getClus()
       sumQ += Qpix;
       c.col += (*p).col*Qpix;
       c.row += (*p).row*Qpix;
-      if( p->big ) c.big = 1;
       if( p->col > maxx ) maxx = p->col;
       if( p->col < minx ) minx = p->col;
       if( p->row > maxy ) maxy = p->row;
@@ -759,7 +756,7 @@ int main( int argc, char* argv[] )
 			  100, -0.5, 0.5 );
   TH1I ttdminHisto = TH1I( "ttdmin",
 			   "telescope triplets isolation;triplets #Delta [mm];triplet pairs",
-			   100, 0, 1000 );
+			   100, 0, 1 );
 
   TH1I z3Histo = TH1I( "z3",
 		       "z3 should be zero;z3 [mm];triplets",
@@ -1160,6 +1157,7 @@ int main( int argc, char* argv[] )
     double evdt = (evTLU - prevTLU) / fTLU;
     hdtus.Fill( evdt * 1E6 ); // [us]
     hdtms.Fill( evdt * 1E3 ); // [ms]
+    prevTLU = evTLU;
 
     if( event_nr < 10 )
       cout<<"Processing event " << event_nr << " time " << evsec << endl;
@@ -1235,7 +1233,7 @@ int main( int argc, char* argv[] )
 	pb[npx].row = ym;
 	pb[npx].adc = adc;
 	pb[npx].q = q;
-	pb[npx].big = 0;
+	pb[npx].ord = npx; // readout order
 	++npx;
 
 	if( npx == 999 ) {
@@ -1424,7 +1422,7 @@ int main( int argc, char* argv[] )
 
       } // jj
 
-      ttdminHisto.Fill( dmin*1E3 );
+      ttdminHisto.Fill( dmin );
 
       bool liso = 0;
       if( dmin > 0.3 ) liso = 1;
@@ -1475,37 +1473,37 @@ int main( int argc, char* argv[] )
 
       // reduce to 2x2 pixel region:
 
-      double xmod = fmod( 9.075 + xAt, 0.3 ) * 1E3; // [0,300] um, 2 pixel wide
-      double ymod = fmod( 9.050 + yAt, 0.2 ) * 1E3; // [0,200] um
+      double xmod = fmod( 9.075 + xAt, 0.3 ); // [0,0.3] mm, 2 pixel wide
+      double ymod = fmod( 9.050 + yAt, 0.2 ); // [0,0.2] mm
       if( rot90 ) { // x = col = yt, y = row = xt
-	xmod = fmod( 9.075 + yAt, 0.3 ) * 1E3; // [0,300] um, 2 pixel wide
-	ymod = fmod( 9.050 + xAt, 0.2 ) * 1E3; // [0,200] um
+	xmod = fmod( 9.075 + yAt, 0.3 ); // [0,0.3] mm, 2 pixel wide
+	ymod = fmod( 9.050 + xAt, 0.2 ); // [0,0.2] mm
       }
 
       // bias dot, from cmsqvsxmym:
 
       bool ldot = 1;
-      if( xmod < 105 ) ldot = 0; // dot at x = 125
-      if( xmod > 195 ) ldot = 0; // and at x = 175
+      if( xmod < 0.105 ) ldot = 0; // dot at x = 125
+      if( xmod > 0.195 ) ldot = 0; // and at x = 175
       if( DUTtilt < 6 ) {
-	if( ymod <  55 ) ldot = 0; // dot at y =  75
-	if( ymod > 195 ) ldot = 0; // dot at y = 175
-	if( ymod >  95 && ymod < 155 ) ldot = 0; // band between dots
+	if( ymod < 0.055 ) ldot = 0; // dot at y =  75
+	if( ymod > 0.195 ) ldot = 0; // dot at y = 175
+	if( ymod > 0.095 && ymod < 0.155 ) ldot = 0; // band between dots
       }
 
       bool ymid = 0;
-      if( ymod >  40 && ymod <  60 ) ymid = 1;
-      if( ymod > 140 && ymod < 160 ) ymid = 1;
+      if( ymod > 0.040 && ymod < 0.060 ) ymid = 1;
+      if( ymod > 0.140 && ymod < 0.160 ) ymid = 1;
 
       // pixel core, 2x2 pixel region:
 
       bool lcore = 1;
-      if( xmod <  20 ) lcore = 0; // outer edge, see cmsncolvsxm
-      if( xmod > 280 ) lcore = 0; // outer edge
-      if( ymod <  20 ) lcore = 0; // outer edge, see cmsnrowvsym
-      if( ymod > 180 ) lcore = 0; // outer edge
-      if( xmod > 130 && xmod < 170 ) lcore = 0; // inner edge
-      if( ymod >  80 && ymod < 120 ) lcore = 0; // inner edge
+      if( xmod < 0.020 ) lcore = 0; // outer edge, see cmsncolvsxm
+      if( xmod > 0.280 ) lcore = 0; // outer edge
+      if( ymod < 0.020 ) lcore = 0; // outer edge, see cmsnrowvsym
+      if( ymod > 0.180 ) lcore = 0; // outer edge
+      if( xmod > 0.130 && xmod < 0.170 ) lcore = 0; // inner edge
+      if( ymod > 0.080 && ymod < 0.120 ) lcore = 0; // inner edge
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // triplets vs CMS pixel clusters:
@@ -1968,8 +1966,8 @@ int main( int argc, char* argv[] )
 	      cmsrmsxvsxm.Fill( xmod, fabs(cmsdx) ); //resolution within pixel
 	      cmsrmsyvsxm.Fill( xmod, fabs(cmsdy) ); //resolution within pixel
 	      if( !ldot ) {
-		cmsrmsxvsym.Fill( ymod, fabs(cmsdx)*1E3 ); //resolution within pixel
-		cmsrmsyvsym.Fill( ymod, fabs(cmsdy)*1E3 ); //resolution within pixel
+		cmsrmsxvsym.Fill( ymod, fabs(cmsdx) ); //resolution within pixel
+		cmsrmsyvsym.Fill( ymod, fabs(cmsdy) ); //resolution within pixel
 	      }
 	      cmsrmsyvsxmym.Fill( xmod, ymod, fabs(cmsdy) ); //resolution within pixel
 	      cmsrmsxvsxmym.Fill( xmod, ymod, fabs(cmsdx) ); //resolution within pixel
@@ -1979,8 +1977,8 @@ int main( int argc, char* argv[] )
 
 	      cmsncolvsxm.Fill( xmod, ncol );
 	      cmsnrowvsxm.Fill( xmod, nrow );
-	      if( ( xmod >  20 && xmod < 130 ) ||
-		  ( xmod > 170 && xmod < 280 ) ) {
+	      if( ( xmod > 0.020 && xmod < 0.130 ) ||
+		  ( xmod > 0.170 && xmod < 0.280 ) ) {
 		cmsncolvsym.Fill( ymod, ncol ); // within pixel
 		cmsnrowvsym.Fill( ymod, nrow ); // within pixel
 	      }
