@@ -63,7 +63,8 @@ test beam pixel telescope analysis based on eudaq only
   ln -s /data/eudaq/data data  
   (raw data files are called run020833.raw)  
 
-* step 1: telescope triplet alignment  
+* step 1: telescope triplet alignment
+  make tele  
   tele -g geo.dat 20833  
   (reads data/run020833.raw  
   (writes align_20833.dat and hot_20833.dat)  
@@ -72,6 +73,7 @@ test beam pixel telescope analysis based on eudaq only
   
 * step 2: telescope with DUT and REF  
   prepare a runs.dat file with any needed constants (see example)  
+  make scope  
   scope 20833  
   (reads runs.dat, which must a link to geo.dat)  
   (reads align_20833.dat and hot_20833.dat)  
