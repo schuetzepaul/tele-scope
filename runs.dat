@@ -351,6 +351,9 @@ run 19694           400  eff 99.92
 #-------------------------------------------------------------------------------
 #Thu 25.6.2015
 #chip 504 tilt scan
+# ref 501 trim 30
+
+refgain /home/pitzl/psi/dtb/tst400/c501-ia24-trim30tb-gaincal.dat
 
 chip 504
 GeV 5.2
@@ -775,3 +778,14 @@ run 20892
 run 20893                             
 run 20894                401  64  73  
 #running all night
+
+# 11.3.2016
+GeV 5.2
+chip 504
+refchip 500
+tilt 2
+geo geo_2016_03a.dat
+gain /home/pitzl/psi/dtb/tst400/c504-ia24-trim30tb-gaincal.dat
+refgain /home/pitzl/psi/dtb/tst400/c500-ia24-trim30-chiller15-gaincal.dat
+
+run 23133
