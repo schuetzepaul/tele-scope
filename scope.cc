@@ -859,11 +859,11 @@ int main( int argc, char* argv[] )
   TH1I hdx35 = TH1I( "dx35", "3-5 dx;3-5 dx [mm];cluster pairs", 100, -1, 1 );
   TH1I hdy35 = TH1I( "dy35", "3-5 dy;3-5 dy [mm];cluster pairs", 100, -1, 1 );
 
-  TH1I hdxdri = TH1I( "dxdri", "driplet dx;driplet dx [mm];driplets", 100, -0.1, 0.1 );
-  TH1I hdydri = TH1I( "dydri", "driplet dy;driplet dy [mm];driplets", 100, -0.1, 0.1 );
+  TH1I hdridx = TH1I( "dridx", "driplet dx;driplet dx [mm];driplets", 100, -0.1, 0.1 );
+  TH1I hdridy = TH1I( "dridy", "driplet dy;driplet dy [mm];driplets", 100, -0.1, 0.1 );
 
-  TH1I hdxdric = TH1I( "dxdric", "driplet dx;driplet dx [mm];driplets", 100, -0.05, 0.05 );
-  TH1I hdydric = TH1I( "dydric", "driplet dy;driplet dy [mm];driplets", 100, -0.05, 0.05 );
+  TH1I hdridxc = TH1I( "dridxc", "driplet dx;driplet dx [mm];driplets", 100, -0.05, 0.05 );
+  TH1I hdridyc = TH1I( "dridyc", "driplet dy;driplet dy [mm];driplets", 100, -0.05, 0.05 );
 
   TH1I ndriHisto = TH1I( "ndri", "driplets;driplets;events", 51, -0.5, 50.5 );
 
@@ -891,14 +891,14 @@ int main( int argc, char* argv[] )
 			   200, -1, 1 );
 
   TProfile refdyvsx = TProfile( "refdyvsx",
-			   "REF #Deltay vs x;x track [mm];<cluster - triplet #Deltay> [mm]",
+			   "REF #Deltay vs x;x track [mm];<cluster - driplet #Deltay> [mm]",
 				76, -3.8, 3.8, -0.5, 0.5 );
   TProfile refdyvsy = TProfile( "refdyvsy",
-			   "REF #Deltay vs y;y track [mm];<cluster - triplet #Deltay> [mm]",
+			   "REF #Deltay vs y;y track [mm];<cluster - driplet #Deltay> [mm]",
 				76, -3.8, 3.8, -0.5, 0.5 );
   TProfile refdyvsty =
     TProfile( "refdyvsty",
-	      "REF #Deltay vs #theta_{y};y track slope [rad];<cluster - triplet #Deltay> [mm]",
+	      "REF #Deltay vs #theta_{y};y track slope [rad];<cluster - driplet #Deltay> [mm]",
 	      80, -0.002, 0.002, -0.5, 0.5 );
 
   TH1I refnpxHisto = TH1I( "refnpx",
@@ -1061,32 +1061,32 @@ int main( int argc, char* argv[] )
   TH1I hdx02 = TH1I( "dx02", "0-2 dx;0-2 dx [mm];cluster pairs", 100, -1, 1 );
   TH1I hdy02 = TH1I( "dy02", "0-2 dy;0-2 dy [mm];cluster pairs", 100, -1, 1 );
 
-  TH1I hdxtri = TH1I( "dxtri", "triplet dx;triplet dx [mm];triplets", 100, -0.1, 0.1 );
-  TH1I hdytri = TH1I( "dytri", "triplet dy;triplet dy [mm];triplets", 100, -0.1, 0.1 );
+  TH1I htridx = TH1I( "tridx", "triplet dx;triplet dx [mm];triplets", 100, -0.1, 0.1 );
+  TH1I htridy = TH1I( "tridy", "triplet dy;triplet dy [mm];triplets", 100, -0.1, 0.1 );
 
-  TH1I hdxtric = TH1I( "dxtric", "triplet dx;triplet dx [mm];triplets", 100, -0.05, 0.05 );
-  TH1I hdytric = TH1I( "dytric", "triplet dy;triplet dy [mm];triplets", 100, -0.05, 0.05 );
+  TH1I htridxc = TH1I( "tridxc", "triplet dx;triplet dx [mm];triplets", 100, -0.05, 0.05 );
+  TH1I htridyc = TH1I( "tridyc", "triplet dy;triplet dy [mm];triplets", 100, -0.05, 0.05 );
 
-  TH1I hdxtric1 = TH1I( "dxtric1", "triplet dx 1-col;1-col triplet dx [mm];1-col triplets",
+  TH1I htridxc1 = TH1I( "tridxc1", "triplet dx 1-col;1-col triplet dx [mm];1-col triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtric2 = TH1I( "dxtric2", "triplet dx 2-col;2-col triplet dx [mm];2-col triplets",
+  TH1I htridxc2 = TH1I( "tridxc2", "triplet dx 2-col;2-col triplet dx [mm];2-col triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtric3 = TH1I( "dxtric3", "triplet dx 3-col;3-col triplet dx [mm];3-col triplets",
+  TH1I htridxc3 = TH1I( "tridxc3", "triplet dx 3-col;3-col triplet dx [mm];3-col triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtric4 = TH1I( "dxtric4", "triplet dx 4-col;4-col triplet dx [mm];4-col triplets",
+  TH1I htridxc4 = TH1I( "tridxc4", "triplet dx 4-col;4-col triplet dx [mm];4-col triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtric5 = TH1I( "dxtric5", "triplet dx 5-col;5-col triplet dx [mm];5-col triplets",
+  TH1I htridxc5 = TH1I( "tridxc5", "triplet dx 5-col;5-col triplet dx [mm];5-col triplets",
 			100, -0.05, 0.05 );
 
-  TH1I hdxtris1 = TH1I( "dxtris1", "triplet dx 1-px;1-px triplet dx [mm];1-px triplets",
+  TH1I htridxs1 = TH1I( "tridxs1", "triplet dx 1-px;1-px triplet dx [mm];1-px triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtris2 = TH1I( "dxtris2", "triplet dx 2-px;2-px triplet dx [mm];2-px triplets",
+  TH1I htridxs2 = TH1I( "tridxs2", "triplet dx 2-px;2-px triplet dx [mm];2-px triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtris3 = TH1I( "dxtris3", "triplet dx 3-px;3-px triplet dx [mm];3-px triplets",
+  TH1I htridxs3 = TH1I( "tridxs3", "triplet dx 3-px;3-px triplet dx [mm];3-px triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtris4 = TH1I( "dxtris4", "triplet dx 4-px;4-px triplet dx [mm];4-px triplets",
+  TH1I htridxs4 = TH1I( "tridxs4", "triplet dx 4-px;4-px triplet dx [mm];4-px triplets",
 			100, -0.05, 0.05 );
-  TH1I hdxtris5 = TH1I( "dxtris5", "triplet dx 5-px;5-px triplet dx [mm];5-px triplets",
+  TH1I htridxs5 = TH1I( "tridxs5", "triplet dx 5-px;5-px triplet dx [mm];5-px triplets",
 			100, -0.05, 0.05 );
 
   TH1I ntriHisto = TH1I( "ntri", "triplets;triplets;events", 51, -0.5, 50.5 );
@@ -1750,14 +1750,14 @@ int main( int argc, char* argv[] )
 
 	  double dx3 = xB - xk;
 	  double dy3 = yB - yk;
-	  hdxdri.Fill( dx3 );
-	  hdydri.Fill( dy3 );
+	  hdridx.Fill( dx3 );
+	  hdridy.Fill( dy3 );
 
 	  if( abs( dy3 ) < 0.02 ) {
-	    hdxdric.Fill( dx3 );
+	    hdridxc.Fill( dx3 );
 	  }
 	  if( abs( dx3 ) < 0.02 )
-	    hdydric.Fill( dy3 );
+	    hdridyc.Fill( dy3 );
 
 	  // telescope driplet cuts:
 
@@ -2078,37 +2078,37 @@ int main( int argc, char* argv[] )
 
 	  double dx3 = xB - xk;
 	  double dy3 = yB - yk;
-	  hdxtri.Fill( dx3 );
-	  hdytri.Fill( dy3 );
+	  htridx.Fill( dx3 );
+	  htridy.Fill( dy3 );
 
 	  if( abs( dy3 ) < 0.02 ) {
 
-	    hdxtric.Fill( dx3 );
+	    htridxc.Fill( dx3 );
 
 	    if(      cB->size == 1 )
-	      hdxtris1.Fill( dx3 ); // 4.2 um
+	      htridxs1.Fill( dx3 ); // 4.2 um
 	    else if( cB->size == 2 )
-	      hdxtris2.Fill( dx3 ); // 4.0 um
+	      htridxs2.Fill( dx3 ); // 4.0 um
 	    else if( cB->size == 3 )
-	      hdxtris3.Fill( dx3 ); // 3.8 um
+	      htridxs3.Fill( dx3 ); // 3.8 um
 	    else if( cB->size == 4 )
-	      hdxtris4.Fill( dx3 ); // 4.3 um
+	      htridxs4.Fill( dx3 ); // 4.3 um
 	    else
-	      hdxtris5.Fill( dx3 ); // 3.6 um
+	      htridxs5.Fill( dx3 ); // 3.6 um
 
 	    if(      cB->ncol == 1 )
-	      hdxtric1.Fill( dx3 ); // 4.0 um
+	      htridxc1.Fill( dx3 ); // 4.0 um
 	    else if( cB->ncol == 2 )
-	      hdxtric2.Fill( dx3 ); // 4.1 um
+	      htridxc2.Fill( dx3 ); // 4.1 um
 	    else if( cB->ncol == 3 )
-	      hdxtric3.Fill( dx3 ); // 3.6 um
+	      htridxc3.Fill( dx3 ); // 3.6 um
 	    else if( cB->ncol == 4 )
-	      hdxtric4.Fill( dx3 ); // 3.5 um
+	      htridxc4.Fill( dx3 ); // 3.5 um
 	    else
-	      hdxtric5.Fill( dx3 ); // 4.1 um
+	      htridxc5.Fill( dx3 ); // 4.1 um
 	  }
 	  if( abs( dx3 ) < 0.02 )
-	    hdytric.Fill( dy3 );
+	    htridyc.Fill( dy3 );
 
 	  // telescope triplet cuts:
 
