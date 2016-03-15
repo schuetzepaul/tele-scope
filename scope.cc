@@ -131,7 +131,7 @@ vector<cluster> getClus()
 
     //cout << "(cluster with " << c.vpix.size() << " pixels)" << endl;
 
-    if( ! c.charge == 0 ) {
+    if( ! (c.charge == 0) ) {
       c.col /= sumQ;
       c.row /= sumQ;
     }
