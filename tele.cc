@@ -745,26 +745,32 @@ int main( int argc, char* argv[] )
   TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 100, -1, 1 );
   TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 100, -1, 1 );
 
-  TProfile sixdxvsy = TProfile( "sixdxvsy",
-				"six #Deltax vs y;yB [mm];<driplet - triplet #Deltax> [mm]",
-				100, -5, 5, -0.5, 0.5 );
-  TProfile sixdyvsx = TProfile( "sixdyvsx",
-				"six #Deltay vs x;xB [mm];<driplet - triplet #Deltay> [mm]",
-				200, -10, 10, -0.5, 0.5 );
+  TProfile sixdxvsy =
+    TProfile( "sixdxvsy",
+	      "six #Deltax vs y;yB [mm];<driplet - triplet #Deltax> [mm]",
+	      100, -5, 5, -0.5, 0.5 );
+  TProfile sixdyvsx =
+    TProfile( "sixdyvsx",
+	      "six #Deltay vs x;xB [mm];<driplet - triplet #Deltay> [mm]",
+	      200, -10, 10, -0.5, 0.5 );
 
-  TProfile sixdxvstx = TProfile( "sixdxvstx",
-				"six #Deltax vs slope x;slope x [rad];<driplet - triplet #Deltax> [mm]",
-				100, -0.002, 0.002, -0.5, 0.5 );
-  TProfile sixdyvsty = TProfile( "sixdyvsty",
-				"six #Deltay vs slope y;slope y [rad];<driplet - triplet #Deltay> [mm]",
-				100, -0.002, 0.002, -0.5, 0.5 );
+  TProfile sixdxvstx =
+    TProfile( "sixdxvstx",
+	      "six #Deltax vs slope x;slope x [rad];<driplet - triplet #Deltax> [mm]",
+	      100, -0.002, 0.002, -0.5, 0.5 );
+  TProfile sixdyvsty =
+    TProfile( "sixdyvsty",
+	      "six #Deltay vs slope y;slope y [rad];<driplet - triplet #Deltay> [mm]",
+	      100, -0.002, 0.002, -0.5, 0.5 );
 
-  TH1I hsixdslpx = TH1I( "sixdslpx",
-			 "driplet slope x - triplet slope x;driplet slope x - triplet slope x;driplet-triplet pairs",
-			 100, -0.005, 0.005 );     
-  TH1I hsixdslpy = TH1I( "sixdslpy",
-			 "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
-			 100, -0.005, 0.005 );     
+  TH1I hsixdslpx =
+    TH1I( "sixdslpx",
+	  "driplet slope x - triplet slope x;driplet slope x - triplet slope x;driplet-triplet pairs",
+	  100, -0.0025, 0.0025 );     
+  TH1I hsixdslpy =
+    TH1I( "sixdslpy",
+	  "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
+	  100, -0.0025, 0.0025 );     
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:

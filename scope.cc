@@ -743,6 +743,10 @@ int main( int argc, char* argv[] )
       ke = 0.235;
     if( run >= 20823 ) // 12.7.2015 chiller 17
       ke = 0.238; // to get q0f peak at 22 ke
+    if( run >= 23000 ) // Mar 2016 chiller 17
+      ke = 0.246; // to get q0fc peak at 22 ke
+    if( run >= 23518 ) // Mar 2016 chiller 17
+      ke = 0.242; // to get q0fc peak at 22 ke
   }
 
   if( chip0 == 506 ) {
@@ -756,6 +760,1011 @@ int main( int argc, char* argv[] )
     if( run >= 20744 ) // chiller off
       ke = 0.268;
   }
+
+  // skew correction, depends on tilt:
+
+  double skwmid = 0.0;
+  double skwwid = 0.05;
+  double skwrng = 0.0; // [um]
+  double skwoff = 0.0; // [um]
+  double skwslp = 0.0; // [um]
+
+  if( rot90 ) {
+
+    if(      DUTtilt <  4.0 ) { // 14705 (1.3)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 0.1; // [um]
+      skwslp =-429; // [um]
+    }
+    else if( DUTtilt <  8.0 ) { // 14703 (5.9)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 1.5; // [um]
+      skwslp =-335; // [um]
+    }
+    else if( DUTtilt < 12.0 ) { // 14701 (10.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 0.1; // [um]
+      skwslp =-291; // [um]
+    }
+    else if( DUTtilt < 14.5 ) { // 14699 (14.1)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.1; // [um]
+      skwslp =-233.4; // [um]
+    }
+    else if( DUTtilt < 15.5 ) { // 20178 (15.1)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.7; // [um]
+      skwslp =-182.2; // [um]
+    }
+    else if( DUTtilt < 16.5 ) { // 14697 (16.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.4; // [um]
+      skwslp =-199.6; // [um]
+    }
+    else if( DUTtilt < 17.5 ) { // 20176 (17.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.6; // [um]
+      skwslp =-157.6; // [um]
+    }
+    else if( DUTtilt < 18.5 ) { // 20174 (18.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.6; // [um]
+      skwslp =-139.7; // [um]
+    }
+    else if( DUTtilt < 19.5 ) { // 20171 (19.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.4; // [um]
+      skwslp =-122.6; // [um]
+    }
+    else if( DUTtilt < 20.5 ) { // 20169 (20.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.7; // [um]
+      skwslp =-100.8; // [um]
+    }
+    else if( DUTtilt < 21.5 ) { // 20167 (21.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.8; // [um]
+      skwslp =-86.0; // [um]
+    }
+    else if( DUTtilt < 22.5 ) { // 20165 (22.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.7; // [um]
+      skwslp =-70.8; // [um]
+    }
+    else if( DUTtilt < 23.8 ) { // 19942 (23.4) nskw
+      skwmid = 0.054;
+      skwwid = 0.042;
+      skwrng = 0.4; // [um]
+      skwoff =-1.7; // [um]
+      skwslp =-38.6; // [um/skw]
+    }
+    else if( DUTtilt < 24.8 ) { // 19733 (24.4)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.4; // [um]
+      skwslp =-39.5; // [um/skw]
+    }
+    else if( DUTtilt < 25.8 ) { // 19938 (25.2) nskw
+      skwmid = 0.092;
+      skwwid = 0.043;
+      skwrng = 0.4; // [um]
+      skwoff =-0.1; // [um]
+      skwslp =-6.2; // [um/skw]
+    }
+    else if( DUTtilt < 26.0 ) { // 20028 (25.95) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // [um]
+      skwoff = 0.5; // [um]
+      skwslp = 8.4; // [um/skw]
+    }
+    else if( DUTtilt < 26.3 ) { // 19731 (26.05)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.4; // [um]
+      skwslp =-9.7; // [um/skw]
+    }
+    else if( DUTtilt < 26.8 ) { // 19947 (26.5) nskw
+      skwmid = 0.078;
+      skwwid = 0.2285;
+      skwrng = 8.2; // [um]
+      skwoff = 1.6; // [um]
+      skwslp =-18.3; // [um/skw]
+    }
+    else if( DUTtilt < 27.3 ) { // 19975 (27.0), 19805 (27.2)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.6; // [um]
+      skwslp = 21; // [um/skw]
+    }
+    else if( DUTtilt < 27.6 ) { // 19951 (27.4) nskw
+      skwmid = 0.0985;
+      skwwid = 0.0363;
+      skwrng = 0.5; // [um]
+      skwoff = 3.7; // [um]
+      skwslp = 33.1; // [um/skw]
+    }
+    else if( DUTtilt < 28.1 ) { // 19729 (27.8), 19737 (28.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.8; // [um]
+      skwslp = 24; // [um/skw]
+    }
+    else if( DUTtilt < 28.8 ) { // 19953 (28.3) nskw
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.9; // [um]
+      skwslp = 39.3; // [um/skw]
+    }
+    else if( DUTtilt < 29.4 ) { // 19955 (29.2) nskw
+      skwmid = 0.006;
+      skwwid = 0.022;
+      skwrng =-0.6; // [um]
+      skwoff = 0.9; // [um]
+      skwslp = 59.2; // [um/skw]
+    }
+    else if( DUTtilt < 29.9 ) { // 19726 (29.5)
+      // .x fitskwlin.C("cmsdy0vsskwcol", -0.15, 0.15 )
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.8; // [um]
+      skwslp = 57; // [um/skw]
+    }
+    else if( DUTtilt < 30.4 ) { // 19957 (30.1) nskw
+      skwmid =-0.062;
+      skwwid = 0.087;
+      skwrng =-0.7; // [um]
+      skwoff =-4.3; // [um]
+      skwslp = 81.9; // [um/skw]
+    }
+    else if( DUTtilt < 31.4 ) { // 19724 (31.3)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-0.8; // [um]
+      skwslp = 86; // [um/skw]
+    }
+    else if( DUTtilt < 32.1 ) { // 19867 (31.5)
+      skwmid = 0.0;
+      skwwid = 0.0117;
+      skwrng = 0.8; // [um]
+      skwoff =-1.3; // [um]
+      skwslp = 83; // [um/skw]
+    }
+    else if( DUTtilt < 33.9 ) { // 19722 (33.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-0.8; // [um]
+      skwslp = 107; // [um/skw]
+    }
+    else if( DUTtilt < 35.0 ) { // 19720 (34.8)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-0.6; // [um]
+      skwslp = 128; // [um/skw]
+    }
+    else if( DUTtilt < 35.7 ) { // 19859 (35.1)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-1.0; // [um]
+      skwslp = 142; // [um/skw]
+    }
+    else if( DUTtilt < 37.4 ) { // 19718 (36.5)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-0.8; // [um]
+      skwslp = 134; // [um/skw]
+    }
+    else if( DUTtilt < 39.2 ) { // 19716 (38.3)
+      skwmid = 0.0;
+      skwwid = 0.0117;
+      skwrng =-3.3; // [um]
+      skwoff =-0.9; // [um]
+      skwslp = 105; // [um/skw]
+    }
+    else if( DUTtilt < 40.05 ) { // 19714 (40.0)
+      skwmid = 0.0026;
+      skwwid =-0.0123;
+      skwrng = 3.6; // [um]
+      skwoff =-1.3; // [um]
+      skwslp = 72.7; // [um/skw]
+    }
+    else if( DUTtilt < 40.3 ) { // 19442 (40.1) nskw
+      skwmid =-0.0356;
+      skwwid = 0.0116;
+      skwrng = 3.2; // [um]
+      skwoff =-3.0; // [um]
+      skwslp = 104.3; // [um/skw]
+    }
+    else if( DUTtilt < 40.7 ) { // 20750 (40.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0130;
+      skwrng =-3.5; // [um]
+      skwoff = 1.6; // [um]
+      skwslp = 65.3; // [um/skw]
+    }
+    else if( DUTtilt < 42.3 ) { // 19443 (42.1) skw/ncol
+      skwmid =-0.0551;
+      skwwid = 0.0256;
+      skwrng = 2.6; // [um]
+      skwoff =-3.1; // [um]
+      skwslp = 50.5; // [um/skw]
+    }
+    else if( DUTtilt < 43.5 ) { // 20751 (42.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.05;
+      skwrng = 0.0; // [um]
+      skwoff = 0.0; // [um]
+      skwslp = 0.0; // [um/skw]
+    }
+    else if( DUTtilt < 44.3 ) { // 19444 (44.1) skw/ncol
+      skwmid =-0.054;
+      skwwid = 0.041;
+      skwrng = 4.9; // [um]
+      skwoff =-0.2; // [um]
+      skwslp =-60.3; // [um/skw]
+    }
+    else if( DUTtilt < 45.5 ) { // 20752 (44.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0085;
+      skwrng = 1.4; // [um]
+      skwoff = 0.2; // [um]
+      skwslp =-104; // [um/skw]
+    }
+    else if( DUTtilt < 46.3 ) { // 19445 (46.1) skw/ncol
+      skwmid =-0.0012;
+      skwwid = 0.014;
+      skwrng = 3.7; // [um]
+      skwoff = 0.4; // [um]
+      skwslp =-86.9; // [um/skw]
+    }
+    else if( DUTtilt < 47.5 ) { // 20753 (46.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0150;
+      skwrng = 4.2; // [um]
+      skwoff = 0.5; // [um]
+      skwslp =-133; // [um/skw]
+    }
+    else if( DUTtilt < 48.3 ) { // 19446 (48.1) skw/ncol
+      skwmid =-0.0008;
+      skwwid = 0.018;
+      skwrng = 6.4; // [um]
+      skwoff = 0.5; // [um]
+      skwslp =-71.2; // [um/skw]
+    }
+    else if( DUTtilt < 49.5 ) { // 20754 (48.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0180;
+      skwrng = 6.4; // [um]
+      skwoff = 0.7; // [um]
+      skwslp =-75; // [um/skw]
+    }
+    else if( DUTtilt < 50.3 ) { // 19447 (50.1) nskw
+      skwmid =-0.0019;
+      skwwid = 0.0211;
+      skwrng = 8.2; // [um]
+      skwoff = 0.7; // [um]
+      skwslp =-27.5; // [um/skw]
+    }
+    else if( DUTtilt < 51.5 ) { // 20755 (50.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0213;
+      skwrng = 7.8; // [um]
+      skwoff = 1.0; // [um]
+      skwslp =-62.6; // [um/skw]
+    }
+    else if( DUTtilt < 52.3 ) { // 19448 (52.1) nskw
+      skwmid =-0.005;
+      skwwid = 0.025;
+      skwrng = 8.7; // [um]
+      skwoff = 0.3; // [um]
+      skwslp =-62.4; // [um/skw]
+    }
+    else if( DUTtilt < 52.9 ) { // 20756 (52.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.043;
+      skwrng = 20.6; // [um]
+      skwoff = 0.9; // [um]
+      skwslp =-332; // [um/skw]
+    }
+    else if( DUTtilt < 53.6 ) { // 19809 (53.1)
+      skwmid = 0.0;
+      skwwid = 0.112;
+      skwrng = 453; // [um]
+      skwoff =-1.3; // [um]
+      skwslp =-3878; // [um/skw]
+    }
+    else if( DUTtilt < 54.05 ) { // 19845 (54.0)
+      skwmid = 0.0;
+      skwwid = 0.138;
+      skwrng = 478; // [um]
+      skwoff =-1.9; // [um]
+      skwslp =-3426; // [um/skw]
+    }
+    else if( DUTtilt < 54.3 ) { // 19449 (54.1) nskw
+      skwmid =-0.0148;
+      skwwid = 0.0229;
+      skwrng = 5.2; // [um]
+      skwoff = 0.3; // [um]
+      skwslp =-70.1; // [um/skw]
+    }
+    else if( DUTtilt < 54.7 ) { // 20757 (54.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.602;
+      skwrng = 9910; // [um]
+      skwoff = 0.2; // [um]
+      skwslp =-16544; // [um/skw]
+    }
+    else if( DUTtilt < 55.2 ) { // 19811 (54.8) nskw
+      skwmid = 0.0;
+      skwwid = 0.163;
+      skwrng = 329; // [um]
+      skwoff =-1.9; // [um]
+      skwslp =-2095; // [um/skw]
+    }
+    else if( DUTtilt < 56.3 ) { // 19847 (55.8)
+      skwmid = 0.0;
+      skwwid = 0.00985;
+      skwrng =-1.1; // [um]
+      skwoff =-1.8; // [um]
+      skwslp =-197; // [um/skw]
+    }
+    else if( DUTtilt < 56.6 ) { // 20758 (56.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.01965;
+      skwrng =-1.85; // [um]
+      skwoff =-0.35; // [um]
+      skwslp =-239.7; // [um/skw]
+    }
+    else if( DUTtilt < 57.2 ) { // 19813 (56.7) nskw
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 1.9; // [um]
+      skwslp =-297; // [um/skw]
+    }
+    else if( DUTtilt < 58.1 ) { // 19850 (57.6)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // lin
+      skwoff =-1.9; // [um]
+      skwslp =-334; // [um/skw]
+    }
+    else if( DUTtilt < 59.0 ) { // 19815 (58.5)
+      skwmid = 0.0;
+      skwwid = 0.0131;
+      skwrng = 3.8; // [um]
+      skwoff =-1.9; // [um]
+      skwslp =-334; // [um/skw]
+    }
+    else if( DUTtilt < 59.45 ) { // 19852 (59.4)
+      skwmid = 0.0;
+      skwwid = 0.0145;
+      skwrng = 5.1; // [um]
+      skwoff = 16.6; // [um]
+      skwslp =-278; // [um/skw]
+    }
+    else if( DUTtilt < 59.9 ) { // 20779 (59.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0147;
+      skwrng = 4.1; // [um]
+      skwoff = 19.1; // [um]
+      skwslp =-288; // [um/skw]
+    }
+    else if( DUTtilt < 60.4 ) { // 19817 (60.3)
+      skwmid = 0.0;
+      skwwid = 0.0154;
+      skwrng = 5.7; // [um]
+      skwoff =-1.8; // [um]
+      skwslp =-228; // [um/skw]
+    }
+    else if( DUTtilt < 60.9 ) { // 20760 (60.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0173;
+      skwrng = 4.8; // [um]
+      skwoff = 0.4; // [um]
+      skwslp =-271; // [um/skw]
+    }
+    else if( DUTtilt < 61.3 ) { // 19854 (61.2)
+      skwmid = 0.0;
+      skwwid = 0.0254;
+      skwrng = 9.2; // [um]
+      skwoff =-0.5; // [um]
+      skwslp =-399; // [um/skw]
+    }
+    else if( DUTtilt < 61.7 ) { // 20778 (61.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.027;
+      skwrng = 4.0; // [um]
+      skwoff = 0.6; // [um]
+      skwslp =-320; // [um/skw]
+    }
+    else if( DUTtilt < 62.2 ) { // 19819 (62.0)
+      skwmid = 0.0;
+      skwwid = 0.0324;
+      skwrng = 8.1; // [um]
+      skwoff =-1.8; // [um]
+      skwslp =-412; // [um/skw]
+    }
+    else if( DUTtilt < 62.8 ) { // 20761 (62.5) nskw lin
+      skwmid = 0.0; // fix
+      skwwid = 0.02;
+      skwrng = 0.0; // [um]
+      skwoff = 0.1; // [um]
+      skwslp =-310; // [um/skw]
+    }
+    else if( DUTtilt < 63.2 ) { // 19856 (63.0)
+      skwmid = 0.0;
+      skwwid =-0.0076;
+      skwrng = 1.0; // [um]
+      skwoff =-1.1; // [um]
+      skwslp =-371; // [um/skw]
+    }
+    else if( DUTtilt < 63.7 ) { // 20777 (63.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.028;
+      skwrng =-2.9; // [um]
+      skwoff = 1.0; // [um]
+      skwslp =-385; // [um/skw]
+    }
+    else if( DUTtilt < 64.2 ) { // 19821 (63.9)
+      skwmid = 0.0;
+      skwwid = 0.038;
+      skwrng =-7.9; // [um]
+      skwoff =-1.4; // [um]
+      skwslp =-321; // [um/skw]
+    }
+    else if( DUTtilt < 64.8 ) { // 20762 (64.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.047;
+      skwrng =-7.5; // [um]
+      skwoff = 0.4; // [um]
+      skwslp =-374; // [um/skw]
+    }
+    else if( DUTtilt < 65.55 ) { // 20776 (65.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.153;
+      skwrng = 95.8; // [um]
+      skwoff = 0.5; // [um]
+      skwslp =-1074; // [um/skw]
+    }
+    else if( DUTtilt < 66.1 ) { // 19823 (65.6)
+      skwmid = 0.0;
+      skwwid = 0.218;
+      skwrng = 3382; // [um]
+      skwoff =-1.5; // [um]
+      skwslp =-15887; // [um/skw]
+    }
+    else if( DUTtilt < 66.9 ) { // 20763 (66.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.019;
+      skwrng = 1.7; // [um]
+      skwoff = 0.2; // [um]
+      skwslp =-464; // [um/skw]
+    }
+    else if( DUTtilt < 68.0 ) { // 19826 (67.5)
+      skwmid = 0.0;
+      skwwid = 0.213;
+      skwrng = 755; // [um]
+      skwoff =-1.7; // [um]
+      skwslp =-4005; // [um/skw]
+    }
+    else if( DUTtilt < 68.9 ) { // 20764 (68.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0266;
+      skwrng =-2.6; // [um]
+      skwoff =-0.5; // [um]
+      skwslp =-532; // [um/skw]
+    }
+    else if( DUTtilt < 69.7 ) { // 19828 (69.2)
+      skwmid = 0.0;
+      skwwid = 0.129;
+      skwrng =-310; // [um]
+      skwoff =-1.3; // [um]
+      skwslp = 1622; // [um/skw]
+    }
+    else if( DUTtilt < 70.9 ) { // 20765 (70.5) nskw
+      skwmid = 0.0; // fix
+      skwwid =-0.0104;
+      skwrng =-1.2; // [um]
+      skwoff = 0.6; // [um]
+      skwslp =-610; // [um/skw]
+    }
+    else if( DUTtilt < 71.6 ) { // 19830 (71.1)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-1.2; // [um]
+      skwslp =-679; // [um/skw]
+    }
+    else if( DUTtilt < 72.7 ) { // 20766 (72.5) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0325;
+      skwrng =-6.1; // [um]
+      skwoff = 0.4; // [um]
+      skwslp =-658; // [um/skw]
+    }
+    else if( DUTtilt < 73.3 ) { // 19832 (72.8)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-1.2; // [um]
+      skwslp =-888; // [um/skw]
+    }
+    else if( DUTtilt < 74.6 ) { // 20767 (74.4) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0285;
+      skwrng =-5.9; // [um]
+      skwoff = 0.6; // [um]
+      skwslp =-720; // [um/skw]
+    }
+    else if( DUTtilt < 75.2 ) { // 19834 (74.7)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.9; // [um]
+      skwslp =-1007; // [um/skw]
+    }
+    else if( DUTtilt < 76.7 ) { // 19836 (76.4), 20768 (76.4)
+      skwmid = 0.0; // fix
+      skwwid = 0.06;
+      skwrng = 0.0; // lin
+      skwoff = 0.2; // [um]
+      skwslp =-1156; // [um/skw]
+    }
+    else if( DUTtilt < 77.1 ) { // 20160 (76.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.163;
+      skwrng =-253.5; // [um]
+      skwoff =-6.8; // [um]
+      skwslp = 735; // [um/skw]
+    }
+    else if( DUTtilt < 78.0 ) { // 20150 (77.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0143;
+      skwrng =-2.7; // [um]
+      skwoff =-2.9; // [um]
+      skwslp =-874; // [um/skw]
+    }
+    else if( DUTtilt < 78.3 ) { // 19838 (78.2)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 0.4; // [um]
+      skwslp =-1370; // [um/skw]
+    }
+    else if( DUTtilt < 78.7 ) { // 20769 (78.4) nskw
+      skwmid = 0.0; // fix
+      skwwid =-0.0804;
+      skwrng = 61.1; // [um]
+      skwoff = 2.2; // [um]
+      skwslp =-347; // [um/skw]
+    }
+    else if( DUTtilt < 79.2 ) { // 20158 (78.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0179;
+      skwrng =-2.2; // [um]
+      skwoff =-6.2; // [um] misaligned
+      skwslp =-877; // [um/skw]
+    }
+    else if( DUTtilt < 79.7 ) { // 20770 (79.4) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0059;
+      skwrng =-0.5; // [um]
+      skwoff = 0.0; // [um]
+      skwslp =-1069; // [um/skw]
+    }
+    else if( DUTtilt < 79.94 ) { // 20151 (79.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0162;
+      skwrng =-2.5; // [um]
+      skwoff =-0.7; // [um]
+      skwslp =-993; // [um/skw]
+    }
+    else if( DUTtilt < 80.2 ) { // 19840 (80.0)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff = 0.6; // [um]
+      skwslp =-1607; // [um/skw]
+    }
+    else if( DUTtilt < 80.7 ) { // 20771 (80.3) nskw
+      skwmid = 0.0; // fix
+      skwwid =-0.0278;
+      skwrng =-3.9; // [um]
+      skwoff = 2.8; // [um]
+      skwslp =-1130; // [um/skw]
+    }
+    else if( DUTtilt < 81.4 ) { // 20157 (80.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1204;
+      skwrng =-400; // [um]
+      skwoff =-0.4; // [um]
+      skwslp = 2241; // [um/skw]
+    }
+    else if( DUTtilt < 81.6 ) { // 20772 (81.3) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0194;
+      skwrng =-6.2; // [um]
+      skwoff = 0.9; // [um]
+      skwslp =-1195; // [um/skw]
+    }
+    else if( DUTtilt < 81.825 ) { // 19843 (81.81)
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // lin
+      skwoff =-0.8; // [um]
+      skwslp =-1903; // [um/skw]
+    }
+    else if( DUTtilt < 82.1 ) { // 20152 (81.84) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1075;
+      skwrng =-433; // [um]
+      skwoff = 1.0; // [um]
+      skwslp = 2704; // [um/skw]
+    }
+    else if( DUTtilt < 82.6 ) { // 20773 (82.2) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0520;
+      skwrng =-39; // [um]
+      skwoff = 3.1; // [um]
+      skwslp =-818; // [um/skw]
+    }
+    else if( DUTtilt < 83.3 ) { // 20155 (82.9) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.024;
+      skwrng =-15.0; // [um]
+      skwoff = 1.0; // [um]
+      skwslp =-977; // [um/skw]
+    }
+    else if( DUTtilt < 83.6 ) { // 20774 (83.2) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0197;
+      skwrng =-16; // [um]
+      skwoff = 1.6; // [um]
+      skwslp =-1260; // [um/skw]
+    }
+    else if( DUTtilt < 84.3 ) { // 20154 (83.8) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.016;
+      skwrng =-5.2; // [um]
+      skwoff =-0.6; // [um]
+      skwslp =-1312; // [um/skw]
+    }
+    else if( DUTtilt < 84.6 ) { // 20775 (84.2) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.076;
+      skwrng =-180; // [um]
+      skwoff = 2.8; // [um]
+      skwslp = 417; // [um/skw]
+    }
+    else
+      skwrng =   0.0;
+  } // rot90
+  else {
+    if( DUTtilt <  3.5 ) { // 20245 (3.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1088;
+      skwrng =-296; // [um]
+      skwoff =-1.9; // [um]
+      skwslp = 2249; // [um]
+    }
+    else if( DUTtilt <  5.5 ) { // 20243 (5.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.136;
+      skwrng =-267; // [um]
+      skwoff =-1.5; // [um]
+      skwslp = 1613; // [um]
+    }
+    else if( DUTtilt <  7.5 ) { // 20241 (7.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1346;
+      skwrng =-238; // [um]
+      skwoff =-0.9; // [um]
+      skwslp = 1467; // [um]
+    }
+    else if( DUTtilt <  9.5 ) { // 20239 (9.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1408;
+      skwrng =-170; // [um]
+      skwoff =-0.7; // [um]
+      skwslp = 967.5; // [um]
+    }
+    else if( DUTtilt < 11.5 ) { // 20237 (11.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1524;
+      skwrng =-131; // [um]
+      skwoff =-0.3; // [um]
+      skwslp = 669; // [um]
+    }
+    else if( DUTtilt < 13.5 ) { // 20235 (13.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1509;
+      skwrng =-97.1; // [um]
+      skwoff =-0.3; // [um]
+      skwslp = 498; // [um]
+    }
+    else if( DUTtilt < 14.5 ) { // 20230 (14.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.1432;
+      skwrng =-103; // [um]
+      skwoff =-0.1; // [um]
+      skwslp = 584; // [um]
+    }
+    else if( DUTtilt < 15.5 ) { // 20225 (15.0) nskw
+      skwmid = 0.0; //
+      skwwid = 0.1576;
+      skwrng =-114; // linear
+      skwoff =-0.2; // [um]
+      skwslp = 615; // [um]
+    }
+    else if( DUTtilt < 16.5 ) { // 20223 (16.0) nskw
+      skwmid = 0.0; //
+      skwwid = 0.2195;
+      skwrng =-194; // [um]
+      skwoff =-0.1; // [um]
+      skwslp = 800; // [um]
+    }
+    else if( DUTtilt < 17.5 ) { // 20221 (17.0) nskw
+      skwmid = 0.0; //
+      skwwid = 0.2551;
+      skwrng =-328; // [um]
+      skwoff =-0.1; // [um]
+      skwslp = 1219; // [um]
+    }
+    else if( DUTtilt < 18.5 ) { // 20219 (18.0) nskw
+      skwmid = 0.0; //
+      skwwid = 0.384;
+      skwrng =-870; // [um]
+      skwoff =-0.1; // [um]
+      skwslp = 2225; // [um]
+    }
+    else if( DUTtilt < 19.2 ) { // 20182 (19.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.0; // [um]
+      skwslp =-5.5; // [um]
+    }
+    else if( DUTtilt < 19.7 ) { // 20194 (19.5) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.0; // [um]
+      skwslp = 1.6; // [um]
+    }
+    else if( DUTtilt < 20.5 ) { // 20184 (20.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.1; // [um]
+      skwslp = 10.9; // [um]
+    }
+    else if( DUTtilt < 21.5 ) { // 20186 (21.0) nskw
+      skwmid = 0.0;
+      skwwid = 0.1701;
+      skwrng = 32.7; // [um]
+      skwoff = 0.1; // [um]
+      skwslp =-157; // [um]
+    }
+    else if( DUTtilt < 22.5 ) { // 20188 (22.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.0; // [um]
+      skwslp = 38.3; // [um]
+    }
+    else if( DUTtilt < 23.5 ) { // 20190 (23.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.1; // [um]
+      skwslp = 47.4; // [um]
+    }
+    else if( DUTtilt < 24.5 ) { // 20192 (24.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 1.6; // [um]
+      skwslp = 53.7; // [um]
+    }
+    else if( DUTtilt < 26.6 ) { // 20202 (26.0) nskw
+      skwmid = 0.0;
+      skwwid = 0.1463;
+      skwrng = 60.6; // [um]
+      skwoff =-0.5; // [um]
+      skwslp =-334; // [um]
+    }
+    else if( DUTtilt < 27.0 ) { // 20785 (26.6) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // [um]
+      skwoff =-1.0; // [um]
+      skwslp = 76.5; // [um]
+    }
+    else if( DUTtilt < 28.0 ) { // 20799 (27.6) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.056;
+      skwrng = 0; // [um]
+      skwoff =-0.3; // [um]
+      skwslp = 62; // [um]
+    }
+    else if( DUTtilt < 28.3 ) { // 20204 (28.0) nskw
+      skwmid = 0.0;
+      skwwid = 0.2044;
+      skwrng = 196; // 
+      skwoff =-0.4; // [um]
+      skwslp =-898; // [um]
+    }
+    else if( DUTtilt < 29.0 ) { // 20786 (28.6) nskw
+      skwmid = 0.0;
+      skwwid =-0.01176;
+      skwrng = 2.7; // [um]
+      skwoff =-0.2; // [um]
+      skwslp = 46.1; // [um]
+    }
+    else if( DUTtilt < 30.0 ) { // 20799 (29.6) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.056;
+      skwrng = 0; // [um]
+      skwoff =-0.2; // [um]
+      skwslp = 21; // [um]
+    }
+    else if( DUTtilt < 30.3 ) { // 20206 (30.0) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff =-0.4; // [um]
+      skwslp =-5.4; // [um]
+    }
+    else if( DUTtilt < 31.0 ) { // 20787 (30.6) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0.0; // linear
+      skwoff = 0.4; // [um]
+      skwslp =-12.8; // [um]
+    }
+    else if( DUTtilt < 32.0 ) { // 20797 (31.6) nskw lin
+      skwmid = 0.0;
+      skwwid = 0.05;
+      skwrng = 0; // [um]
+      skwoff =-0.3; // [um]
+      skwslp =-59; // [um]
+    }
+    else if( DUTtilt < 32.3 ) { // 20208 (32.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.01908;
+      skwrng =-1.9; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-79.6; // [um]
+    }
+    else if( DUTtilt < 33.0 ) { // 20788 (32.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.195;
+      skwrng =-188.5; // [um]
+      skwoff =-0.3; // [um]
+      skwslp = 865; // [um]
+    }
+    else if( DUTtilt < 34.0 ) { // 20796 (33.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.011;
+      skwrng = 1.9; // [um]
+      skwoff =-0.2; // [um]
+      skwslp =-120; // [um]
+    }
+    else if( DUTtilt < 34.3 ) { // 20210 (34.0) nskw
+      skwmid = 0.0;
+      skwwid = 0.0110;
+      skwrng = 1.5; // [um]
+      skwoff =-0.3; // [um]
+      skwslp =-150; // [um]
+    }
+    else if( DUTtilt < 35.0 ) { // 20789 (34.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.013;
+      skwrng = 2.7; // [um]
+      skwoff =-0.2; // [um]
+      skwslp =-124; // [um]
+    }
+    else if( DUTtilt < 36.0 ) { // 20795 (35.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.015;
+      skwrng = 3.6; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-99; // [um]
+    }
+    else if( DUTtilt < 36.3 ) { // 20212 (36.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0148;
+      skwrng = 3.3; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-120; // [um]
+    }
+    else if( DUTtilt < 37.0 ) { // 20790 (36.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.0159;
+      skwrng = 4.1; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-67.2; // [um]
+    }
+    else if( DUTtilt < 38.0 ) { // 20794 (37.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.018;
+      skwrng = 5.1; // [um]
+      skwoff =-0.3; // [um]
+      skwslp =-50; // [um]
+    }
+    else if( DUTtilt < 38.3 ) { // 20214 (38.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0182;
+      skwrng = 4.6; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-77.3; // [um]
+    }
+    else if( DUTtilt < 39.0 ) { // 20791 (38.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.0194;
+      skwrng = 5.2; // [um]
+      skwoff =-0.4; // [um]
+      skwslp =-45.3; // [um]
+    }
+    else if( DUTtilt < 40.0 ) { // 20793 (39.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.025;
+      skwrng = 6.3; // [um]
+      skwoff =-0.6; // [um]
+      skwslp =-96; // [um]
+    }
+    else if( DUTtilt < 40.3 ) { // 20216 (40.0) nskw
+      skwmid = 0.0; // fix
+      skwwid = 0.0246;
+      skwrng = 5.4; // [um]
+      skwoff =-0.6; // [um]
+      skwslp =-116; // [um]
+    }
+    else if( DUTtilt < 41.0 ) { // 20792 (40.6) nskw
+      skwmid = 0.0;
+      skwwid = 0.053;
+      skwrng = 31; // [um]
+      skwoff =-0.5; // [um]
+      skwslp =-493; // [um]
+    }
+
+  } // not rot90
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // REF gain:
@@ -816,6 +1825,14 @@ int main( int argc, char* argv[] )
  
   TH1I hdtus = TH1I( "dtus", "time between events;time between events [us];events", 100, 0, 1000 );
   TH1I hdtms = TH1I( "dtms", "time between events;time between events [ms];events", 100, 0, 1000 );
+
+  TH1I t1Histo = TH1I( "t1", "event time;event time [s];events", 100, 0, 1 );
+  TH1I t100Histo = TH1I( "t100", "event time;event time [s];events", 100, 0, 100 );
+  TH1I t300Histo = TH1I( "t300", "event time;event time [s];events", 300, 0, 300 );
+  TH1I t1000Histo = TH1I( "t1000", "event time;event time [s];events", 100, 0, 1000 );
+  TH1I t3000Histo = TH1I( "t3000", "event time;event time [s];events", 300, 0, 3000 );
+  TH1I t10000Histo = TH1I( "t10000", "event time;event time [s];events", 100, 0, 10000 );
+  TH1I t30000Histo = TH1I( "t30000", "event time;event time [s];events", 300, 0, 30000 );
 
   TH1I hcol[9];
   TH1I hrow[9];
@@ -890,20 +1907,23 @@ int main( int argc, char* argv[] )
 			   "REF - driplet y;REF cluster - driplet #Deltay [mm];REF clusters",
 			   200, -1, 1 );
 
-  TProfile refdyvsx = TProfile( "refdyvsx",
-			   "REF #Deltay vs x;x track [mm];<cluster - driplet #Deltay> [mm]",
-				76, -3.8, 3.8, -0.5, 0.5 );
-  TProfile refdyvsy = TProfile( "refdyvsy",
-			   "REF #Deltay vs y;y track [mm];<cluster - driplet #Deltay> [mm]",
-				76, -3.8, 3.8, -0.5, 0.5 );
+  TProfile refdyvsx =
+    TProfile( "refdyvsx",
+	      "REF #Deltay vs x;x track [mm];<cluster - driplet #Deltay> [mm]",
+	      50, -3.75, 3.75, -0.5, 0.5 );
+  TProfile refdyvsy =
+    TProfile( "refdyvsy",
+	      "REF #Deltay vs y;y track [mm];<cluster - driplet #Deltay> [mm]",
+	      76, -3.8, 3.8, -0.5, 0.5 );
   TProfile refdyvsty =
     TProfile( "refdyvsty",
 	      "REF #Deltay vs #theta_{y};y track slope [rad];<cluster - driplet #Deltay> [mm]",
 	      80, -0.002, 0.002, -0.5, 0.5 );
 
-  TH1I refnpxHisto = TH1I( "refnpx",
-			   "REF linked clusters;REF cluster size [pixels];linked REF cluster",
-			   20, 0.5, 20.5 );
+  TH1I refnpxHisto =
+    TH1I( "refnpx",
+	  "REF linked clusters;REF cluster size [pixels];linked REF cluster",
+	  20, 0.5, 20.5 );
 
   TH1I refqHisto = TH1I( "refq",
 			 "REF linked clusters;REF cluster charge [ke];linked REF cluster",
@@ -1097,6 +2117,10 @@ int main( int argc, char* argv[] )
 			  120, -6, 6 );
   TH2I trixyHisto = TH2I( "trixy", "triplets at z DUT;x [mm];y [mm];triplets",
 			  240, -12, 12, 120, -6, 6 );
+  TH1I trislpxHisto = TH1I( "trislpx", "triplet slope x;slope x [rad];triplets",
+			    100, -0.005, 0.005 );
+  TH1I trislpyHisto = TH1I( "trislpy", "triplet slope y;slope y [rad];triplets",
+			    100, -0.005, 0.005 );
 
   TH1I ttdxHisto = TH1I( "ttdx", "telescope triplets;triplets #Deltax [mm];triplet pairs",
 			 100, -5, 5 );
@@ -1108,34 +2132,41 @@ int main( int argc, char* argv[] )
 
   // dripets - triplets:
 
-  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -5, 5 );
-  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -5, 5 );
-  TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 100, -1, 1 );
-  TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 100, -1, 1 );
+  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -2.5, 2.5 );
+  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -2.5, 2.5 );
+  TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 100, -0.5, 0.5 );
+  TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 100, -0.5, 0.5 );
 
-  TProfile sixdxvsy = TProfile( "sixdxvsy",
-				"six #Deltax vs y;yB [mm];<driplet - triplet #Deltax> [mm]",
-				100, -5, 5, -0.5, 0.5 );
-  TProfile sixdyvsx = TProfile( "sixdyvsx",
-				"six #Deltay vs x;xB [mm];<driplet - triplet #Deltay> [mm]",
-				200, -10, 10, -0.5, 0.5 );
+  TProfile sixdxvsy =
+    TProfile( "sixdxvsy",
+	      "six #Deltax vs y;yB [mm];<driplet - triplet #Deltax> [mm]",
+	      100, -5, 5, -0.5, 0.5 );
+  TProfile sixdyvsx =
+    TProfile( "sixdyvsx",
+	      "six #Deltay vs x;xB [mm];<driplet - triplet #Deltay> [mm]",
+	      200, -10, 10, -0.5, 0.5 );
 
-  TProfile sixdxvstx = TProfile( "sixdxvstx",
-				"six #Deltax vs slope x;slope x [rad];<driplet - triplet #Deltax> [mm]",
-				100, -0.002, 0.002, -0.5, 0.5 );
-  TProfile sixdyvsty = TProfile( "sixdyvsty",
-				"six #Deltay vs slope y;slope y [rad];<driplet - triplet #Deltay> [mm]",
-				100, -0.002, 0.002, -0.5, 0.5 );
+  TProfile sixdxvstx =
+    TProfile( "sixdxvstx",
+	      "six #Deltax vs slope x;slope x [rad];<driplet - triplet #Deltax> [mm]",
+	      100, -0.002, 0.002, -0.5, 0.5 );
+  TProfile sixdyvsty =
+    TProfile( "sixdyvsty",
+	      "six #Deltay vs slope y;slope y [rad];<driplet - triplet #Deltay> [mm]",
+	      100, -0.002, 0.002, -0.5, 0.5 );
 
-  TH1I hsixdslpx = TH1I( "sixdslpx",
-			 "driplet slope x - triplet slope x;driplet slope x - triplet slope x;driplet-triplet pairs",
-			 100, -0.005, 0.005 );     
-  TH1I hsixdslpy = TH1I( "sixdslpy",
-			 "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
-			 100, -0.005, 0.005 );     
+  TH1I hsixdslpx =
+    TH1I( "sixdslpx",
+	  "driplet slope x - triplet slope x;driplet slope x - triplet slope x;driplet-triplet pairs",
+	  100, -0.005, 0.005 );     
+  TH1I hsixdslpy =
+    TH1I( "sixdslpy",
+	  "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
+	  100, -0.005, 0.005 );     
 
-  TH2I sixxyHisto = TH2I( "sixxy", "sixplets at z DUT;x [mm];y [mm];sixplets",
-			  240, -12, 12, 120, -6, 6 );
+  TH2I sixxyHisto =
+    TH2I( "sixxy", "sixplets at z DUT;x [mm];y [mm];sixplets",
+	  240, -12, 12, 120, -6, 6 );
 
   // DUT pixel vs triplets:
 
@@ -1183,12 +2214,14 @@ int main( int argc, char* argv[] )
 	  "fiducial #Deltax cut y;cluster - triplet #Deltax [mm];fiducial clusters",
 	  200, -0.5, 0.5 );
 
-  TProfile cmsdxvsx = TProfile( "cmsdxvsx",
-			   "#Deltax vs x;x track [mm];<cluster - triplet #Deltax> [mm]",
-				80, -4, 4, -0.5, 0.5 );
-  TProfile cmsdxvsy = TProfile( "cmsdxvsy",
-			   "#Deltax vs y;y track [mm];<cluster - triplet #Deltax> [mm]",
-				80, -4, 4, -0.5, 0.5 );
+  TProfile cmsdxvsx =
+    TProfile( "cmsdxvsx",
+	      "#Deltax vs x;x track [mm];<cluster - triplet #Deltax> [mm]",
+	      50, -3.75, 3.75, -0.5, 0.5 );
+  TProfile cmsdxvsy =
+    TProfile( "cmsdxvsy",
+	      "#Deltax vs y;y track [mm];<cluster - triplet #Deltax> [mm]",
+	      76, -3.8, 3.8, -0.5, 0.5 );
   TProfile cmsdxvstx =
     TProfile( "cmsdxvstx",
 	      "#Deltax vs #theta_{x};x track slope [rad];<cluster - triplet #Deltax> [mm]",
@@ -1217,6 +2250,10 @@ int main( int argc, char* argv[] )
   TH1I cmsdyfcq3Histo =
     TH1I( "cmsdyfcq3",
 	  "fiducial #Deltay cut x q3;cluster - triplet #Deltay [mm];fiducial q3 clusters",
+	  500, -0.5, 0.5 );
+  TH1I cmsdy0fcq3Histo =
+    TH1I( "cmsdy0fcq3",
+	  "fiducial #Deltay0 cut x q3;cluster - triplet #Deltay0 [mm];fiducial q3 clusters",
 	  500, -0.5, 0.5 );
   TH1I cmsdyfcq3dotHisto =
     TH1I( "cmsdyfcq3dot",
@@ -1256,16 +2293,19 @@ int main( int argc, char* argv[] )
 	  "fiducial #Deltay cut x q4 eve col;cluster - triplet #Deltay [mm];fiducial q4 eve clusters",
 	  500, -0.5, 0.5 );
 
-  TProfile cmsrmsyvsq = TProfile( "cmsrmsyvsq",
-			   "DUT #Deltay vs Q0;normal cluster charge [ke];MAD(#Deltay>) [mm]",
-				150, 0, 150, 0, 0.2 );
+  TProfile cmsrmsyvsq =
+    TProfile( "cmsrmsyvsq",
+	      "DUT #Deltay vs Q0;normal cluster charge [ke];MAD(#Deltay>) [mm]",
+	      150, 0, 150, 0, 0.2 );
 
-  TProfile cmsdyvsx = TProfile( "cmsdyvsx",
-			   "DUT #Deltay vs x;x track [mm];<cluster - triplet #Deltay> [mm]",
-				76, -3.8, 3.8, -0.2, 0.2 );
-  TProfile cmsdyvsy = TProfile( "cmsdyvsy",
-			   "DUT #Deltay vs y;y track [mm];<cluster - triplet #Deltay> [mm]",
-				76, -3.8, 3.8, -0.2, 0.2 );
+  TProfile cmsdyvsx =
+    TProfile( "cmsdyvsx",
+	      "DUT #Deltay vs x;x track [mm];<cluster - triplet #Deltay> [mm]",
+	      50, -3.75, 3.75, -0.5, 0.5 );
+  TProfile cmsdyvsy =
+    TProfile( "cmsdyvsy",
+	      "DUT #Deltay vs y;y track [mm];<cluster - triplet #Deltay> [mm]",
+	      76, -3.8, 3.8, -0.2, 0.2 );
   TProfile cmsdyvsty =
     TProfile( "cmsdyvsty",
 	      "DUT #Deltay vs #theta_{y};y track slope [rad];<cluster - triplet #Deltay> [mm]",
@@ -1300,18 +2340,34 @@ int main( int argc, char* argv[] )
 	  "normal fiducial cluster charge peri;normal cluster charge peri [ke];linked fiducial peri clusters",
 	  160, 0, 80 );
 
-  TProfile cmsqxvsx = TProfile( "cmsqxvsx",
-			   "DUT cluster charge vs x;x track [mm];<cluster charge> [ke]",
-				76, -3.8, 3.8, 0, 0.1 );
-  TProfile cmsqxvsy = TProfile( "cmsqxvsy",
-			   "DUT cluster charge vs y;y track [mm];<cluster charge> [ke]",
-				76, -3.8, 3.8, 0, 0.1 );
-  TProfile cmsqxvsxm = TProfile( "cmsqxvsxm",
-			   "DUT cluster charge vs xmod;x track mod 0.3 [mm];<cluster charge> [ke]",
-				60, 0, 0.3, 0, 0.1 );
-  TProfile cmsqxvsym = TProfile( "cmsqxvsym",
-			   "DUT cluster charge vs ymod;y track mod 0.2 [mm];<cluster charge> [ke]",
-				40, 0, 0.2, 0, 0.1 );
+  TProfile cmsqxvst1 =
+    TProfile( "cmsqxvst1",
+	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
+	      300, 0, 300, 0, 0.1 );
+  TProfile cmsqxvst2 =
+    TProfile( "cmsqxvst2",
+	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
+	      300, 0, 3000, 0, 0.1 );
+  TProfile cmsqxvst3 =
+    TProfile( "cmsqxvst3",
+	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
+	      300, 0, 30000, 0, 0.1 );
+  TProfile cmsqxvsx =
+    TProfile( "cmsqxvsx",
+	      "DUT cluster charge vs x;x track [mm];<cluster charge> [ke]",
+	      50, -3.75, 3.75, 0, 0.1 );
+  TProfile cmsqxvsy =
+    TProfile( "cmsqxvsy",
+	      "DUT cluster charge vs y;y track [mm];<cluster charge> [ke]",
+	      76, -3.8, 3.8, 0, 0.1 );
+  TProfile cmsqxvsxm =
+    TProfile( "cmsqxvsxm",
+	      "DUT cluster charge vs xmod;x track mod 0.3 [mm];<cluster charge> [ke]",
+	      60, 0, 0.3, 0, 0.1 );
+  TProfile cmsqxvsym =
+    TProfile( "cmsqxvsym",
+	      "DUT cluster charge vs ymod;y track mod 0.2 [mm];<cluster charge> [ke]",
+	      40, 0, 0.2, 0, 0.1 );
   TProfile cmsqxvsymn =
     TProfile( "cmsqxvsymn",
 	      "DUT cluster charge vs ymod no dot;y track mod 0.2 [mm];<no dot cluster charge> [ke]",
@@ -1328,23 +2384,6 @@ int main( int argc, char* argv[] )
     TProfile2D( "cmsqxvsxmym",
 	      "DUT cluster charge vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];<dot cluster charge> [ke]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 0.1 );
-
-  TProfile cmsqxvst1 =
-    TProfile( "cmsqxvst1",
-	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      70, 0, 350, 0, 0.1 );
-  TProfile cmsqxvst2 =
-    TProfile( "cmsqxvst2",
-	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      140, 0, 700, 0, 0.1 );
-  TProfile cmsqxvst3 =
-    TProfile( "cmsqxvst3",
-	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      200, 0, 2000, 0, 0.1 );
-  TProfile cmsqxvst4 =
-    TProfile( "cmsqxvst4",
-	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      400, 0, 4000, 0, 0.1 );
 
   TH1I cmsnpxHisto =
     TH1I( "cmsnpx",
@@ -1363,10 +2402,63 @@ int main( int argc, char* argv[] )
 	      "DUT cluster size vs Q0;normal cluster charge [ke];<cluster size> [pixels]",
 	      150, 0, 150, 0, 20 );
 
+  TH1I cmsrmsrowHisto =
+    TH1I( "cmsrmsrow",
+	  "DUT row rms;DUT cluster row rms;DUT linked clusters",
+	  100, 0, 1 );
+  TH1I cmsskwrowHisto =
+    TH1I( "cmsskwrow",
+	  "DUT row skw;DUT cluster row skw;DUT linked clusters",
+	  120, -0.3, 0.3 );
+  TProfile cmsrmsrowvsq0 =
+    TProfile( "cmsrmsrowvsq0",
+	      "DUT cluster row rms vs Q0;normal cluster charge [ke];<cluster row rms>",
+	      140, 10, 150, 0, 1 );
+  TProfile cmsrmsrowvsym =
+    TProfile( "cmsrmsrowvsym",
+	      "DUT cluster row rms vs ymod;y track mod 0.2 [mm];<cluster row rms>",
+	      40, 0, 0.2, 0, 1 );
+  TProfile cmsskwrowvsym =
+    TProfile( "cmsskwrowvsym",
+	      "DUT cluster row skw vs ymod;y track mod 0.2 [mm];<cluster row skw>",
+	      40, 0, 0.2, -0.3, 0.3 );
+
+  TProfile cmsdyvsrmsrow =
+    TProfile( "cmsdyvsrmsrow",
+	      "DUT y resid vs row rms;cluster row rms;<#Deltay> [mm]",
+	      40, 0, 1, -0.15, 0.15 );
+  TProfile cmsrmsyvsrmsrow =
+    TProfile( "cmsrmsyvsrmsrow",
+	      "DUT y MAD vs row rms;cluster row rms;MAD(#Deltay) [mm]",
+	      40, 0, 1, 0, 0.1 );
+
+  TProfile cmsdyvsskwrow =
+    TProfile( "cmsdyvsskwrow",
+	      "DUT y resid vs row skw;cluster row skw;<#Deltay> [mm]",
+	      80, -0.2, 0.2, -0.15, 0.15 );
+  TProfile cmsdy0vsskwrow =
+    TProfile( "cmsdy0vsskwrow",
+	      "DUT y resid0 vs row skw;cluster row skw;<#Deltay0> [mm]",
+	      80, -0.2, 0.2, -0.15, 0.15 );
+  TProfile cmsskwrowvsdy =
+    TProfile( "cmsskwrowvsdy",
+	      "DUT row skw vs y resid;#Deltay [#mum];<cluster row skw>",
+	      50, -50, 50, -0.3, 0.3 );
+  TProfile cmsskwrowvsdy0 =
+    TProfile( "cmsskwrowvsdy0",
+	      "DUT row skw vs y0 resid;#Deltay0 [#mum];<cluster row skw>",
+	      50, -50, 50, -0.3, 0.3 );
+
+  TProfile cmsrmsyvsskwrow =
+    TProfile( "cmsrmsyvsskwrow",
+	      "DUT y MAD vs row skw;cluster row skw;MAD(#Deltay) [mm]",
+	      80, -0.2, 0.2, 0, 0.1 );
+
   TH1I cmspxqHisto =
     TH1I( "cmspxq",
 	  "DUT pixel charge linked;pixel charge [ke];linked pixels",
 	  100, 0, 25 );
+
   TH1I cmspxqoddHisto =
     TH1I( "cmspxqodd",
 	  "DUT pixel charge linked odd col;pixel charge [ke];linked odd col pixels",
@@ -1428,7 +2520,7 @@ int main( int argc, char* argv[] )
   TProfile cmsrmsxvsx =
     TProfile( "cmsrmsxvsx",
 	      "DUT x resolution vs x;x track [mm];MAD(#Deltax) [mm]",
-	      76, -3.8, 3.8, 0, 0.2 );
+	      50, -3.75, 3.75, 0, 0.2 );
   TProfile cmsrmsyvsx =
     TProfile( "cmsrmsyvsx",
 	      "DUT y resolution vs x;x track [mm];MAD(#Deltay) [mm]",
@@ -1471,7 +2563,7 @@ int main( int argc, char* argv[] )
   TProfile cmsncolvsx =
     TProfile( "cmsncolvsx",
 	      "DUT cluster size vs x;x track [mm];<cluster size> [columns]",
-	      76, -3.8, 3.8, 0, 20 );
+	      50, -3.75, 3.75, 0, 20 );
   TProfile cmsncolvsy =
     TProfile( "cmsncolvsy",
 	      "DUT cluster size vs y;y track [mm];<cluster size> [columns]",
@@ -1509,12 +2601,32 @@ int main( int argc, char* argv[] )
 			    "REF-linked sixplets with DUT;x [mm];y [mm];DUT-REF-linked sixplets",
 			    240, -12, 12, 120, -6, 6 );
 
-  TProfile effvsx = TProfile( "effvsx",
-			      "DUT efficiency vs x;x track at DUT [mm];efficiency",
-			      54, -4.05, 4.05, -1, 2 ); // bin = col
-  TProfile effvsy = TProfile( "effvsy",
-			      "DUT efficiency vs y;y track at DUT [mm];efficiency",
-			      80, -4, 4, -1, 2 ); // bin = row
+  TProfile effvsx =
+    TProfile( "effvsx",
+	      "DUT efficiency vs x;x track at DUT [mm];efficiency",
+	      54, -4.05, 4.05, -1, 2 ); // bin = col
+  TProfile effvsy =
+    TProfile( "effvsy",
+	      "DUT efficiency vs y;y track at DUT [mm];efficiency",
+	      80, -4, 4, -1, 2 ); // bin = row
+
+  TProfile effvst1 =
+    TProfile( "effvst1",
+	      "DUT efficiency vs time;time [s];efficiency",
+	      300, 0, 300, -1, 2 );
+  TProfile effvst2 =
+    TProfile( "effvst2",
+	      "DUT efficiency vs time;time [s];efficiency",
+	      300, 0, 3000, -1, 2 );
+  TProfile effvst3 =
+    TProfile( "effvst3",
+	      "DUT efficiency vs time;time [s];efficiency",
+	      300, 0, 30000, -1, 2 );
+
+  TProfile effvsntri =
+    TProfile( "effvsntri",
+	      "DUT efficiency vs triplets;triplets [s];efficiency",
+	      20, 0.5, 20.5, -1, 2 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
@@ -1557,6 +2669,14 @@ int main( int argc, char* argv[] )
     if( event_nr < 2  )
       evTLU0 = evTLU;
     double evsec = (evTLU - evTLU0) / fTLU;
+    t1Histo.Fill( evsec );
+    t100Histo.Fill( evsec );
+    t300Histo.Fill( evsec );
+    t1000Histo.Fill( evsec );
+    t3000Histo.Fill( evsec );
+    t10000Histo.Fill( evsec );
+    t30000Histo.Fill( evsec );
+
     double evdt = (evTLU - prevTLU) / fTLU;
     hdtus.Fill( evdt * 1E6 ); // [us]
     hdtms.Fill( evdt * 1E3 ); // [ms]
@@ -2152,6 +3272,8 @@ int main( int argc, char* argv[] )
       trixHisto.Fill( xA );
       triyHisto.Fill( yA );
       trixyHisto.Fill( xA, yA );
+      trislpxHisto.Fill( slx );
+      trislpyHisto.Fill( sly );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // tri vs tri: isolation at DUT
@@ -2304,12 +3426,11 @@ int main( int argc, char* argv[] )
       // pixel core, 2x2 pixel region:
 
       bool lcore = 1;
-      if( xmod < 0.020 ) lcore = 0; // outer edge, see cmsncolvsxm
-      if( xmod > 0.280 ) lcore = 0; // outer edge
-      if( ymod < 0.020 ) lcore = 0; // outer edge, see cmsnrowvsym
-      if( ymod > 0.180 ) lcore = 0; // outer edge
-      if( xmod > 0.130 && xmod < 0.170 ) lcore = 0; // inner edge
-      if( ymod > 0.080 && ymod < 0.120 ) lcore = 0; // inner edge
+      if( xmod < 0.015 ) lcore = 0; // outer edge, see cmsncolvsxm
+      if( xmod > 0.285 ) lcore = 0; // outer edge
+      if( xmod > 0.105 && xmod < 0.195 ) lcore = 0; // cmsqxvsxmym
+      if( ymod > 0.030 && ymod < 0.070 ) lcore = 0; // inner edge
+      if( ymod > 0.130 && ymod < 0.170 ) lcore = 0; // inner edge
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // DUT pixel clusters:
@@ -2320,6 +3441,8 @@ int main( int argc, char* argv[] )
 
 	double ccol = c->col;
 	double crow = c->row;
+	double ccol0 = ccol; // before correction
+	double crow0 = crow; // before correction
 
 	int oddcol = int(ccol) % 2;
 
@@ -2392,7 +3515,7 @@ int main( int argc, char* argv[] )
 	  }
 
 	} // rows
-	/*
+
 	double rmsrow = 0;
 	double skwrow = 0;
 	if( nrow > 1 ) {
@@ -2401,9 +3524,9 @@ int main( int argc, char* argv[] )
 	  // from fitskw:
 	  crow -= // overwrite!
 	    ( skwoff + skwslp * (skwrow-skwmid) + // Sun 5.7.2015
-	      skwrng * sin( (skwrow-skwmid) / skwwid ) ) * 1E-3 / pitchrow;
+	      skwrng * sin( (skwrow-skwmid) / skwwid ) ) * 1E-3 / ptchy[iDUT];
 	}
-	*/
+
 	double q12 = q1 + q2;
 	double eta = 0;
 	if( q12 > 1 ) eta = ( q1 - q2 ) / q12;
@@ -2472,9 +3595,6 @@ int main( int argc, char* argv[] )
 
 	// column cluster:
 
-	double qhtcol = qcol[colmin] + qcol[colmax];
-	double asycol = ( qcol[colmax] - qcol[colmin] ) / qhtcol; // -1..1
-
 	sumq = 0;
 	double sumcol = 0;
 	double sumcol2 = 0;
@@ -2507,25 +3627,15 @@ int main( int argc, char* argv[] )
 
 	} // cols
 
-	double rmscol = 0;
-	double dm2col = 0;
-	double sm2col = 0;
+	//double rmscol = 0;
 	double skwcol = 0;
 	if( ncol > 1 ) {
-	  rmscol = sqrt( sumcol2/sumq );
-	  dm2col = ( rmscol - 0.288/ptchx[iDUT]*tan(DUTtilt*wt)/sqrt(12) ) / ncol;
-	  sm2col = dm2col;
-	  if( asycol < 0 )
-	    sm2col = -sm2col;
-	  //skwcol = sumcol3/sumq; // 3rd moment
-	  //skwcol = sumcol3/sumq/rmscol/rmscol/rmscol; // normalized 3rd moment
+	  //rmscol = sqrt( sumcol2/sumq );
 	  skwcol = sumcol3/sumq*8/ncol/ncol/ncol; // normalized 3rd moment
 	  // from fitskw:
-	  /*
 	  ccol -= // overwrite!
 	    ( skwoff + skwslp * (skwcol-skwmid) + // Fri 3.7.2015
-	      skwrng * sin( (skwcol-skwmid) / skwwid ) ) * 1E-3 / pitchcol;
-	  */
+	      skwrng * sin( (skwcol-skwmid) / skwwid ) ) * 1E-3 / ptchx[iDUT];
 	}
 
 	double p12 = p1 + p2;
@@ -2547,9 +3657,14 @@ int main( int argc, char* argv[] )
 	double cmsx = ( ccol - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
 	double cmsy = ( crow - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
 
+	double cmsx0 = ( ccol0 - nx[iDUT]/2 ) * ptchx[iDUT]; // before corr
+	double cmsy0 = ( crow0 - ny[iDUT]/2 ) * ptchy[iDUT]; // 
+
 	if( rot90 ) {
 	  cmsx = ( crow - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
 	  cmsy = ( ccol - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
+	  cmsx0 = ( crow0 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
+	  cmsy0 = ( ccol0 - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
 	}
 
 	// residuals for pre-alignment:
@@ -2564,6 +3679,8 @@ int main( int argc, char* argv[] )
 
 	double cmsdx = cmsx - x4; // new style
 	double cmsdy = cmsy - y4;
+	double cmsdx0 = cmsx0 - x4; // before skw correction
+	double cmsdy0 = cmsy0 - y4;
 
 	cmsdxHisto.Fill( cmsdx );
 	cmsdyHisto.Fill( cmsdy );
@@ -2634,6 +3751,7 @@ int main( int argc, char* argv[] )
 	      if( Q0 < 25 ) {
 
 		cmsdyfcq3Histo.Fill( cmsdy );
+		cmsdy0fcq3Histo.Fill( cmsdy0 );
 
 		if( ldot )
 		  cmsdyfcq3dotHisto.Fill( cmsdy );
@@ -2703,6 +3821,9 @@ int main( int argc, char* argv[] )
 
 	    // cluster charge profiles, exponential weighting Qx:
 
+	    cmsqxvst1.Fill( evsec, Qx );
+	    cmsqxvst2.Fill( evsec, Qx );
+	    cmsqxvst3.Fill( evsec, Qx );
 	    cmsqxvsx.Fill( x4, Qx );
 	    cmsqxvsy.Fill( y4, Qx );
 	    cmsqxvsxm.Fill( xmod, Qx ); // Q within pixel
@@ -2721,17 +3842,20 @@ int main( int argc, char* argv[] )
 
 	    cmsqxvsxmym.Fill( xmod, ymod, Qx ); // cluster charge profile
 
-	    cmsqxvst1.Fill( evsec, Qx ); // cluster charge vs time
-	    cmsqxvst2.Fill( evsec, Qx ); // cluster charge vs time
-	    cmsqxvst3.Fill( evsec, Qx ); // cluster charge vs time
-	    cmsqxvst4.Fill( evsec, Qx ); // cluster charge vs time
-
 	    if( lq ) {
 	      cmsnpxHisto.Fill( c->size );
 	      cmsncolHisto.Fill( ncol );
 	      cmsnrowHisto.Fill( nrow );
 	    }
 	    cmsnpxvsq.Fill( Q0, c->size ); // rising
+
+	    if( nrow > 1 ) {
+	      cmsrmsrowHisto.Fill( rmsrow );
+	      cmsskwrowHisto.Fill( skwrow );
+	      cmsrmsrowvsq0.Fill( Q0, rmsrow );
+	      cmsrmsrowvsym.Fill( ymod, rmsrow/nrow ); // within pixel
+	      cmsskwrowvsym.Fill( ymod, skwrow ); // within pixel
+	    }
 
 	    for( vector<pixel>::iterator px = c->vpix.begin(); px != c->vpix.end(); ++px ) {
 
@@ -2766,6 +3890,16 @@ int main( int argc, char* argv[] )
 		  cmsdyvsymodd.Fill( ymod, cmsdy );
 		else
 		  cmsdyvsymeve.Fill( ymod, cmsdy );
+	      }
+
+	      if( nrow > 1 ) {
+		cmsdyvsrmsrow.Fill( rmsrow/ncol, cmsdy );
+		cmsrmsyvsrmsrow.Fill( rmsrow/ncol, fabs(cmsdy) );
+		cmsdyvsskwrow.Fill( skwrow, cmsdy );
+		cmsdy0vsskwrow.Fill( skwrow, cmsdy0 ); // before correction
+		cmsskwrowvsdy.Fill( cmsdy*1E3, skwrow );
+		cmsskwrowvsdy0.Fill( cmsdy0*1E3, skwrow ); // before correction
+		cmsrmsyvsskwrow.Fill( skwrow, fabs(cmsdy) );
 	      }
 
 	      cmsrmsxvsx.Fill( x4, fabs(cmsdx) ); //resolution across cols
@@ -2818,6 +3952,12 @@ int main( int argc, char* argv[] )
 	  effvsx.Fill( x4, nm );
 	if( abs( x4 ) < 3.9 )
 	  effvsy.Fill( y4, nm );
+	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) {
+	  effvst1.Fill( evsec, nm );
+	  effvst2.Fill( evsec, nm );
+	  effvst3.Fill( evsec, nm );
+	  effvsntri.Fill( triplets.size(), nm );
+	}
       }
 
     } // loop triplets iA
