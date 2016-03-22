@@ -5,6 +5,7 @@
 // make scope
 // scope -l 9999 20833  # tilted DUT 504
 // scope 19037
+// scope -s 23403 # re-sync
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
@@ -180,12 +181,20 @@ int main( int argc, char* argv[] )
 
   int lev = 999222111; // last event
 
+  bool sync = 0; // re-sync required ?
+
   for( int i = 1; i < argc; ++i ) {
 
     if( !strcmp( argv[i], "-l" ) )
       lev = atoi( argv[++i] ); // last event
 
+    if( !strcmp( argv[i], "-s" ) )
+      sync = 1;
+
   } // argc
+
+  if( sync )
+    cout << "re-sync DUT and REF" << endl;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // runs.dat:
@@ -744,9 +753,9 @@ int main( int argc, char* argv[] )
     if( run >= 20823 ) // 12.7.2015 chiller 17
       ke = 0.238; // to get q0f peak at 22 ke
     if( run >= 23000 ) // Mar 2016 chiller 17
-      ke = 0.246; // to get q0fc peak at 22 ke
+      ke = 0.253; // to get q0fc peak at 22 ke
     if( run >= 23518 ) // Mar 2016 chiller 17
-      ke = 0.242; // to get q0fc peak at 22 ke
+      ke = 0.247; // to get q0fc peak at 22 ke
   }
 
   if( chip0 == 506 ) {
@@ -760,6 +769,18 @@ int main( int argc, char* argv[] )
     if( run >= 20744 ) // chiller off
       ke = 0.268;
   }
+
+  // tsunami correction:
+
+  double eps = 0.0;
+  if( chip0 == 504 )
+    eps = 0.06;
+
+  // correct trend in q vs y:
+
+  double yco = 0.0;
+  if( chip0 == 504 )
+    yco = 0.0009;
 
   // skew correction, depends on tilt:
 
@@ -2634,21 +2655,23 @@ int main( int argc, char* argv[] )
   cout << endl;
 
   FileReader * reader;
-  if( run < 100 )
-    reader = new FileReader( runnum.c_str(), "data/run0000$2R$X");
-  else if( run < 1000 )
-    reader = new FileReader( runnum.c_str(), "data/run000$3R$X");
-  else if( run < 10000 )
-    reader = new FileReader( runnum.c_str(), "data/run00$4R$X");
+  if(      run <    100 )
+    reader = new FileReader( runnum.c_str(), "data/run0000$2R$X" );
+  else if( run <   1000 )
+    reader = new FileReader( runnum.c_str(), "data/run000$3R$X" );
+  else if( run <  10000 )
+    reader = new FileReader( runnum.c_str(), "data/run00$4R$X" );
   else if( run < 100000 )
-    reader = new FileReader( runnum.c_str(), "data/run0$5R$X");
+    reader = new FileReader( runnum.c_str(), "data/run0$5R$X" );
   else
-    reader = new FileReader( runnum.c_str(), "data/run$6R$X");
+    reader = new FileReader( runnum.c_str(), "data/run$6R$X" );
 
   int event_nr = 0;
   uint64_t evTLU0 = 0;
   const double fTLU = 384E6; // 384 MHz TLU clock
   uint64_t prevTLU = 0;
+
+  vector <cluster> cl0[9]; // remember from previous event
 
   do {
     // Get next event:
@@ -2662,7 +2685,7 @@ int main( int argc, char* argv[] )
     if( event_nr <  0 )
       ldbg = 1;
 
-    if( lev < 100 )
+    if( lev < 10 )
       ldbg = 1;
 
     uint64_t evTLU = evt.GetTimestamp(); // 384 MHz = 2.6 ns
@@ -2700,7 +2723,7 @@ int main( int argc, char* argv[] )
 
     vector <cluster> cl[9];
 
-    for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane) {
+    for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane ) {
 
       const eudaq::StandardPlane &plane = sevt.GetPlane(iplane);
 
@@ -2796,19 +2819,24 @@ int main( int argc, char* argv[] )
 
       cl[ipl] = getClus();
 
-      if( ldbg ) cout << "A clusters " << cl[ipl].size() << endl;
+      if( ldbg ) cout << "clusters " << cl[ipl].size() << endl;
 
       hncl[ipl].Fill( cl[ipl].size() );
 
-      for( vector<cluster>::iterator cA = cl[ipl].begin(); cA != cl[ipl].end(); ++cA ) {
+      for( vector<cluster>::iterator c = cl[ipl].begin(); c != cl[ipl].end(); ++c ) {
 
-	hsiz[ipl].Fill( cA->size );
-	hncol[ipl].Fill( cA->ncol );
-	hnrow[ipl].Fill( cA->nrow );
+	hsiz[ipl].Fill( c->size );
+	hncol[ipl].Fill( c->ncol );
+	hnrow[ipl].Fill( c->nrow );
 
-      } // cl A
+      } // cl
 
     } // planes
+
+    if( ! sync ) {
+      cl0[iDUT] = cl[iDUT];
+      cl0[iREF] = cl[iREF];
+    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // make driplets 3+5-4:
@@ -2936,7 +2964,7 @@ int main( int argc, char* argv[] )
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // driplets vs REF clusters:
 
-      for( vector<cluster>::iterator c = cl[iREF].begin(); c != cl[iREF].end(); ++c ) {
+      for( vector<cluster>::iterator c = cl0[iREF].begin(); c != cl0[iREF].end(); ++c ) {
 
 	double ccol = c->col;
 	double crow = c->row;
@@ -2991,7 +3019,7 @@ int main( int argc, char* argv[] )
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // DUT:
 
-    for( vector<cluster>::iterator c = cl[iDUT].begin(); c != cl[iDUT].end(); ++c ) {
+    for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c ) {
 
       if( c->vpix.size() < 2 ) continue; // skip 1-pix clusters
 
@@ -3024,11 +3052,9 @@ int main( int argc, char* argv[] )
 
     } // DUT cl
 
-    double eps = 0.06;
-
     // apply:
 
-    for( vector<cluster>::iterator c = cl[iDUT].begin(); c != cl[iDUT].end(); ++c ) {
+    for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c ) {
 
       // pix in clus:
 
@@ -3040,7 +3066,7 @@ int main( int argc, char* argv[] )
 
 	double qprv = 0;
 
-	for( vector<cluster>::iterator d = cl[iDUT].begin(); d != cl[iDUT].end(); ++d )
+	for( vector<cluster>::iterator d = cl0[iDUT].begin(); d != cl0[iDUT].end(); ++d )
 	  for( vector<pixel>::iterator qx = d->vpix.begin(); qx != d->vpix.end(); ++qx )
 	    if( qx->ord == px->ord - 1 ) 
 	      qprv = qx->q;
@@ -3048,15 +3074,20 @@ int main( int argc, char* argv[] )
 	// apply tsunami correction:
 
 	px->q -= eps*qprv; // overwrite!
-	//px->q -= eps; // subtract constant, overwrite!
 
       } // pix
 
     } // DUT clusters
 
+    // correct row-trend:
+
+    for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c )
+      for( vector<pixel>::iterator px = c->vpix.begin(); px != c->vpix.end(); ++px )
+	px->q *= ( 1 + yco * ( px->row - 40 ) );
+
     // tsunami corrected clusters:
 
-    for( vector<cluster>::iterator c = cl[iDUT].begin(); c != cl[iDUT].end(); ++c ) {
+    for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c ) {
 
       int colmin = 99;
       int colmax = -1;
@@ -3103,7 +3134,7 @@ int main( int argc, char* argv[] )
 
       // cluster charge after tsunami correction:
 
-      //28.3.2015 c->charge = qsum; // overwrite creates shift in cmsqvsxmym
+      c->charge = qsum; // overwrite ! creates shift in cmsqvsxmym
       c->col = sumcol / qsum; // overwrite !
       c->row = sumrow / qsum; // overwrite !
 
@@ -3437,7 +3468,7 @@ int main( int argc, char* argv[] )
 
       int nm = 0; 
 
-      for( vector<cluster>::iterator c = cl[iDUT].begin(); c != cl[iDUT].end(); ++c ) {
+      for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c ) {
 
 	double ccol = c->col;
 	double crow = c->row;
@@ -3963,6 +3994,11 @@ int main( int argc, char* argv[] )
     } // loop triplets iA
 
     ++event_nr;
+
+    if( sync ) {
+      cl0[iDUT] = cl[iDUT]; // remember for re-sync
+      cl0[iREF] = cl[iREF];
+    }
 
   } while( reader->NextEvent() && event_nr < lev );
 
