@@ -73,10 +73,12 @@ test beam pixel telescope analysis based on eudaq only
   git clone https://github.com/pitzl/tele-scope.git
   cd tele-scope	
   ```
+
 * adjust the makefile according to your setup
   ```
   change /home/pitzl/eudaq everywhere to your location of eudaq
   ```
+
 * step 0:  
   prepare a geo.dat file with the telescope and DUT/REF planes  
   (see one of the examples)  
@@ -85,15 +87,17 @@ test beam pixel telescope analysis based on eudaq only
   (raw data files are called run020833.raw)  
 
 * step 1: telescope triplet alignment
+  ```
   make tele  
   tele -g geo.dat 20833  
   (reads data/run020833.raw  
   (writes align_20833.dat and hot_20833.dat)  
   iterate at least once (re-run)  
   creates tele_20833.root  
-  
+  ```
 * step 2: telescope with DUT and REF  
   prepare a runs.dat file with any needed constants (see example)  
+  ```
   make scope  
   scope 20833  
   (reads runs.dat, which must a link to geo.dat)  
@@ -101,5 +105,5 @@ test beam pixel telescope analysis based on eudaq only
   (write alignDUT_20833.dat)  
   iterate 3 times  
   creates scope_20833.root  
-
+  ```
 * present and publish!
