@@ -59,13 +59,14 @@ test beam pixel telescope analysis based on eudaq only
   cmake -DBUILD_cmspixel=ON ..  
   make install  
   ```
+
   Problems might occur on OS X when compiling eudaq in pxar.
-  Solution:
-  modify: pxar/core/utils/helper.h
+  Possible solution is to modify: pxar/core/utils/helper.h
   ```
   -#include "api.h"
   +#include "../api/api.h"	
   ```
+
 ## tele-scope
 * ceckout the tele-scope package
   ```
