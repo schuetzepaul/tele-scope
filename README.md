@@ -5,9 +5,10 @@ test beam pixel telescope analysis based on eudaq only
 
 * you need to have sudo priviliges for your system to install some software
 
-* you need ROOT (5 or 6)  
+* you need ROOT (5 or 6) 
+  ```
   export ROOTSYS=/home/YOU/root (or wherever your root-config sits)
-
+  ```
 * you need to have git installed:  
   sudo apt-get install git
   
