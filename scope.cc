@@ -181,20 +181,38 @@ int main( int argc, char* argv[] )
 
   int lev = 999222111; // last event
 
-  bool sync = 0; // re-sync required ?
+  bool syncdut = 0; // re-sync required ?
+  bool syncref = 0; // re-sync required ?
+
+  double thr = 0; // offline pixel threshold [ke]
 
   for( int i = 1; i < argc; ++i ) {
 
     if( !strcmp( argv[i], "-l" ) )
       lev = atoi( argv[++i] ); // last event
 
-    if( !strcmp( argv[i], "-s" ) )
-      sync = 1;
+    if( !strcmp( argv[i], "-t" ) )
+      thr = atof( argv[++i] ); // [ke]
+
+    if( !strcmp( argv[i], "-s" ) ) {
+      syncdut = 1;
+      syncref = 1;
+    }
+
+    if( !strcmp( argv[i], "-d" ) )
+      syncdut = 1;
+
+    if( !strcmp( argv[i], "-r" ) )
+      syncref = 1;
 
   } // argc
 
-  if( sync )
-    cout << "re-sync DUT and REF" << endl;
+  if( syncdut )
+    cout << "re-sync DUT" << endl;
+  if( syncref )
+    cout << "re-sync REF" << endl;
+
+  cout << "apply offline pixel threshold at " << thr << " ke" << endl;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // runs.dat:
@@ -530,7 +548,7 @@ int main( int argc, char* argv[] )
 
   double wt = atan(1.0) / 45.0; // pi/180 deg
 
-  double thr = 1.5; // [ke]
+  //double thr = 1.5; // [ke]
   double qwid = 3.5; // [ke] for Moyal
 
   bool rot90 = 0; // 504
@@ -1973,6 +1991,18 @@ int main( int argc, char* argv[] )
   TH1I reflkrowHisto = TH1I( "reflkrow",
 			     "REF linked row;REF linked row;linked REF cluster",
 			     80, 0, 80 );
+  TProfile reflkvst1 =
+    TProfile( "reflkvst1",
+	      "driplet-REF links vs time;time [s];driplets with REF links",
+	      300, 0, 300, -0.5, 1.5 );
+  TProfile reflkvst2 =
+    TProfile( "reflkvst2",
+	      "driplet-REF links vs time;time [s];driplets with REF links",
+	      300, 0, 3000, -0.5, 1.5 );
+  TProfile reflkvst3 =
+    TProfile( "reflkvst3",
+	      "driplet-REF links vs time;time [s];driplets with REF links",
+	      300, 0, 30000, -0.5, 1.5 );
 
   // DUT:
 
@@ -2622,6 +2652,10 @@ int main( int argc, char* argv[] )
 			    "REF-linked sixplets with DUT;x [mm];y [mm];DUT-REF-linked sixplets",
 			    240, -12, 12, 120, -6, 6 );
 
+  TProfile2D effvsxy =
+    TProfile2D( "effvsxy",
+		"DUT efficiency vs x;x track at DUT [mm];efficiency",
+		60, -4.5, 4.5, 90, 4.5, 4.5, -1, 2 ); // bin = pix
   TProfile effvsx =
     TProfile( "effvsx",
 	      "DUT efficiency vs x;x track at DUT [mm];efficiency",
@@ -2643,11 +2677,24 @@ int main( int argc, char* argv[] )
     TProfile( "effvst3",
 	      "DUT efficiency vs time;time [s];efficiency",
 	      300, 0, 30000, -1, 2 );
+  TProfile effvst5 =
+    TProfile( "effvst5",
+	      "DUT efficiency vs time;time [s];efficiency",
+	      500, 0, 50000, -1, 2 );
 
   TProfile effvsntri =
     TProfile( "effvsntri",
 	      "DUT efficiency vs triplets;triplets [s];efficiency",
 	      20, 0.5, 20.5, -1, 2 );
+
+  TProfile2D effvsxmym =
+    TProfile2D( "effvsxmym",
+		"DUT efficiency vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];efficiency",
+		60, 0, 0.3, 40, 0, 0.2, -1, 2 );
+  TProfile effvsxm =
+    TProfile( "effvsxm",
+	      "DUT efficiency vs xmod ymod;x track mod 0.3 [mm];efficiency",
+	      60, 0, 0.3, -1, 2 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
@@ -2766,6 +2813,8 @@ int main( int argc, char* argv[] )
 	      ( pow( -log( -Ared / a3 ), 1/p2[xm][ym] ) - p0[xm][ym] ) * ke;
 	  // q = ( (-ln(-(A-p4)/p3))^1/p2 - p0 )*p1
 
+	  if( q < thr ) continue; // offline threshold [ke]
+
 	}  // DUT
 
 	if( ipl == iREF &&
@@ -2833,10 +2882,10 @@ int main( int argc, char* argv[] )
 
     } // planes
 
-    if( ! sync ) {
+    if( ! syncdut )
       cl0[iDUT] = cl[iDUT];
+    if( ! syncref )
       cl0[iREF] = cl[iREF];
-    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // make driplets 3+5-4:
@@ -2934,6 +2983,7 @@ int main( int argc, char* argv[] )
 
     double xcutREF = 0.3;
     double ycutREF = 0.2;
+    int nm = 0;
 
     const double cr = cos( REFrot );
     const double sr = sin( REFrot );
@@ -3006,6 +3056,7 @@ int main( int argc, char* argv[] )
 
 	if( fabs( refdy ) < 0.10 && fabs( refdx ) < 0.15 ) { // tight cuts for eff
 	  driplets[iB].lk = 1;
+	  nm = 1; // we have a REF-driplet match in this event
 	  reflkxHisto.Fill( xB );
 	  reflkyHisto.Fill( yB );
 	  reflkcolHisto.Fill( ccol );
@@ -3015,6 +3066,10 @@ int main( int argc, char* argv[] )
       } // REF
 
     } // driplets
+
+    reflkvst1.Fill( evsec, nm ); // REF yield vs time
+    reflkvst2.Fill( evsec, nm );
+    reflkvst3.Fill( evsec, nm );
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // DUT:
@@ -3979,6 +4034,7 @@ int main( int argc, char* argv[] )
       if( liso && lsixlk ) {
 	sixxylkHisto.Fill( xA, yA );
 	if( nm ) sixxyeffHisto.Fill( xA, yA );
+	effvsxy.Fill( x4, y4, nm );
 	if( abs( y4 ) < 3.9 )
 	  effvsx.Fill( x4, nm );
 	if( abs( x4 ) < 3.9 )
@@ -3987,7 +4043,10 @@ int main( int argc, char* argv[] )
 	  effvst1.Fill( evsec, nm );
 	  effvst2.Fill( evsec, nm );
 	  effvst3.Fill( evsec, nm );
+	  effvst5.Fill( evsec, nm );
 	  effvsntri.Fill( triplets.size(), nm );
+	  effvsxmym.Fill( xmod, ymod, nm );
+	  effvsxm.Fill( xmod, nm );
 	}
       }
 
@@ -3995,10 +4054,10 @@ int main( int argc, char* argv[] )
 
     ++event_nr;
 
-    if( sync ) {
+    if( syncdut )
       cl0[iDUT] = cl[iDUT]; // remember for re-sync
+    if( syncref )
       cl0[iREF] = cl[iREF];
-    }
 
   } while( reader->NextEvent() && event_nr < lev );
 

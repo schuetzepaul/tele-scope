@@ -8,7 +8,8 @@
 // tele -g geo_2015_04x.dat 19037  # tilted DUT 504
 // tele -g geo_2015_07b.dat 20833  #  66k tilted DUT 504
 // tele -g geo_2015_07b.dat 20842  # 521k tilted DUT 504
-// tele -g geo_2016_03a.dat 23133  # 250k
+// tele -g geo_2016_03a.dat 23133
+// tele -g geo_2016_03b.dat 23407
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
