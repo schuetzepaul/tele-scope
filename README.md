@@ -112,12 +112,12 @@ test beam pixel telescope analysis based on eudaq only
 ## Trouble shooting
 
 * Problem when running ./tele
-```
+  ```
   dyld: Library not loaded: @rpath/libEUDAQ.dylib
   Referenced from: /home/YOUR/tele-scope/./tele
-```
+  ```
 
-Solution:
-```
-sudo ln -s  /home/YOUR/eudaq/lib/libEUDAQ.dylib /usr/local/lib/.
-```
+  Solution:
+  ```
+  sudo ln -s  /home/YOUR/eudaq/lib/libEUDAQ.dylib /usr/local/lib/.
+  ```
