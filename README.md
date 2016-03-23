@@ -108,3 +108,16 @@ test beam pixel telescope analysis based on eudaq only
   ```
 
 * present and publish!
+
+## Trouble shooting
+
+* Problem when running ./tele
+```
+  dyld: Library not loaded: @rpath/libEUDAQ.dylib
+  Referenced from: /Users/ClaudiaSeitz/Documents/CMS/DESY/Pixel/TestBeam2016/tele-scope/./tele
+```
+
+Solution:
+```
+sudo ln -s  /home/YOUR/eudaq/lib/libEUDAQ.dylib /usr/local/lib/.
+```
