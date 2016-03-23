@@ -5,18 +5,22 @@ test beam pixel telescope analysis based on eudaq only
 
 * you need to have sudo priviliges for your system to install some software
 
-* you need ROOT (5 or 6)  
+* you need ROOT (5 or 6) 
+  ```
   export ROOTSYS=/home/YOU/root (or wherever your root-config sits)
-
+  ```
 * you need to have git installed:  
+  ```
   sudo apt-get install git
-  
+  ```
 * you need to have cmake installed:  
+  ```
   sudo apt-get install cmake
-
+  ```
 * (you may need to have svn installed)
 
 * for pXar you need the USB driver from FTDI:  
+  ```
   download from http://www.ftdichip.com/Drivers/D2XX.htm  
   (for Linux: x64 (64 bit))  
   gunzip libftd2xx-x86_64-1.3.6.tgz  
@@ -28,10 +32,11 @@ test beam pixel telescope analysis based on eudaq only
   (release/build contains libftd2xx.so.1.3.6)  
   cd /usr/local/lib  
   sudo ln -s /home/YOU/release/build/libftd2xx.so.1.3.6  libftd2xx.so  
-
+  ```
 * for pXar you need to install the libusb-1.0-0-dev package for your system
 
 * if you want to analyse CMS pixel data you need pXar:  
+  ```
   see https://twiki.cern.ch/twiki/bin/viewauth/CMS/Pxar  
   or like this:  
   git clone https://github.com/psi46/pxar.git  
@@ -40,10 +45,11 @@ test beam pixel telescope analysis based on eudaq only
   cd build  
   cmake -DBUILD_pxarui=OFF ..  
   make VERBOSE=1 -j4 install  
-
+  ```
 * install eudaq as described in  
   https://github.com/eudaq/eudaq/blob/v1.5-dev/README.md  
   or like this:  
+  ```
   git clone https://github.com/eudaq/eudaq.git  
   git checkout  v1.5-dev
   cd eudaq  
@@ -52,10 +58,26 @@ test beam pixel telescope analysis based on eudaq only
   export PXARPATH=/home/YOU/pxar  
   cmake -DBUILD_cmspixel=ON ..  
   make install  
+  ```
+
+  Problems might occur on OS X when compiling eudaq in pxar.
+  Possible solution is to modify: pxar/core/utils/helper.h
+  ```
+  -#include "api.h"
+  +#include "../api/api.h"	
+  ```
 
 ## tele-scope
+* ceckout the tele-scope package
+  ```
+  git clone https://github.com/pitzl/tele-scope.git
+  cd tele-scope	
+  ```
 
-* cd tele-scope
+* adjust the makefile according to your setup
+  ```
+  change /home/pitzl/eudaq everywhere to your location of eudaq
+  ```
 
 * step 0:  
   prepare a geo.dat file with the telescope and DUT/REF planes  
@@ -65,15 +87,17 @@ test beam pixel telescope analysis based on eudaq only
   (raw data files are called run020833.raw)  
 
 * step 1: telescope triplet alignment
+  ```
   make tele  
   tele -g geo.dat 20833  
   (reads data/run020833.raw  
   (writes align_20833.dat and hot_20833.dat)  
   iterate at least once (re-run)  
   creates tele_20833.root  
-  
+  ```
 * step 2: telescope with DUT and REF  
   prepare a runs.dat file with any needed constants (see example)  
+  ```
   make scope  
   scope 20833  
   (reads runs.dat, which must a link to geo.dat)  
@@ -81,5 +105,19 @@ test beam pixel telescope analysis based on eudaq only
   (write alignDUT_20833.dat)  
   iterate 3 times  
   creates scope_20833.root  
+  ```
 
 * present and publish!
+
+## Trouble shooting
+
+* Problem when running ./tele
+  ```
+  dyld: Library not loaded: @rpath/libEUDAQ.dylib
+  Referenced from: /home/YOUR/tele-scope/./tele
+  ```
+
+  Solution:
+  ```
+  sudo ln -s  /home/YOUR/eudaq/lib/libEUDAQ.dylib /usr/local/lib/.
+  ```
