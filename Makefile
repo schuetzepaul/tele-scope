@@ -8,14 +8,14 @@ ROOTLIBS   = $(shell $(ROOTSYS)/bin/root-config --libs)
 # -pg for gprof
 # -std=c++11
 
-CXXFLAGS = -std=c++11 -O2 -Wall -Wextra $(ROOTCFLAGS) -I/Users/ClaudiaSeitz/Documents/CMS/DESY/Pixel/TestBeam2016/eudaq/main/include
+CXXFLAGS = -std=c++11 -O2 -Wall -Wextra $(ROOTCFLAGS) -I$(EUDAQ)/main/include
 
 scope: scope.cc
 	g++ $(CXXFLAGS) scope.cc -o scope \
-	$(ROOTLIBS) -L/Users/ClaudiaSeitz/Documents/CMS/DESY/Pixel/TestBeam2016/eudaq/lib -lEUDAQ
+	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: scope'
 
 tele: tele.cc
 	g++ $(CXXFLAGS) tele.cc -o tele \
-	$(ROOTLIBS) -L/Users/ClaudiaSeitz/Documents/CMS/DESY/Pixel/TestBeam2016/eudaq/lib -lEUDAQ
+	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: tele'
