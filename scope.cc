@@ -20,6 +20,7 @@
 
 #include <sstream> // stringstream
 #include <fstream> // filestream
+#include <set>
 
 using namespace std;
 using namespace eudaq;
@@ -335,7 +336,7 @@ int main( int argc, char* argv[] )
       return 1;
     }
 
-  } // alignFile
+  } // runsFile
 
   runsFile.close();
 
@@ -542,6 +543,69 @@ int main( int argc, char* argv[] )
   } // alignFile
 
   ialignFile.close();
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // hot pixels:
+
+  ostringstream hotFileName; // output string stream
+
+  hotFileName << "hot_" << run << ".dat";
+
+  ifstream ihotFile( hotFileName.str() );
+
+  set <int> hotset[9];
+
+  if( ihotFile.bad() || ! ihotFile.is_open() ) {
+    cout << "Error opening " << hotFileName.str() << endl;
+  }
+  else {
+
+    cout << "read hot pixel list from " << hotFileName.str() << endl;
+
+    string hash( "#" );
+    string plane( "plane" );
+    string pix( "pix" );
+
+    int ipl = 0;
+
+    while( ! ihotFile.eof() ) {
+
+      string line;
+      getline( ihotFile, line );
+      cout << line << endl;
+
+      if( line.empty() ) continue;
+
+      stringstream tokenizer( line );
+      string tag;
+      tokenizer >> tag; // leading white space is suppressed
+      if( tag.substr(0,1) == hash ) // comments start with #
+	continue;
+
+      if( tag == plane )
+	tokenizer >> ipl;
+
+      if( ipl < 0 || ipl >= 6 ) {
+	//cout << "wrong plane number " << ipl << endl;
+	continue;
+      }
+
+      if( tag == pix ) {
+	int ix, iy;
+	tokenizer >> ix;
+	tokenizer >> iy;
+	int ipx = ix*ny[ipl]+iy;
+	hotset[ipl].insert(ipx);
+      }
+
+    } // while getline
+
+  } // hotFile
+
+  ihotFile.close();
+
+  for( int ipl = 0; ipl < 6; ++ipl )
+    cout << ipl << ": hot " << hotset[ipl].size() << endl;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // DUT:
@@ -2177,9 +2241,12 @@ int main( int argc, char* argv[] )
 			 100, -5, 5 );
   TH1I ttdx1Histo = TH1I( "ttdx1", "telescope triplets;triplets #Deltax [mm];triplet pairs",
 			  100, -0.5, 0.5 );
-  TH1I ttdminHisto = TH1I( "ttdmin",
-			   "telescope triplets isolation;triplets #Delta [mm];triplet pairs",
-			   100, 0, 1 );
+  TH1I ttdmin1Histo = TH1I( "ttdmin1",
+			    "telescope triplets isolation;triplets min #Delta_{xy} [mm];triplet pairs",
+			    100, 0, 1 );
+  TH1I ttdmin2Histo = TH1I( "ttdmin2",
+			    "telescope triplets isolation;triplets min #Delta_{xy} [mm];triplet pairs",
+			    150, 0, 15 );
 
   // dripets - triplets:
 
@@ -2684,7 +2751,7 @@ int main( int argc, char* argv[] )
 
   TProfile effvsntri =
     TProfile( "effvsntri",
-	      "DUT efficiency vs triplets;triplets [s];efficiency",
+	      "DUT efficiency vs triplets;triplets;efficiency",
 	      20, 0.5, 20.5, -1, 2 );
 
   TProfile2D effvsxmym =
@@ -2693,8 +2760,24 @@ int main( int argc, char* argv[] )
 		60, 0, 0.3, 40, 0, 0.2, -1, 2 );
   TProfile effvsxm =
     TProfile( "effvsxm",
-	      "DUT efficiency vs xmod ymod;x track mod 0.3 [mm];efficiency",
+	      "DUT efficiency vs xmod;x track mod 0.3 [mm];efficiency",
 	      60, 0, 0.3, -1, 2 );
+  TProfile effvstx =
+    TProfile( "effvstx",
+	      "DUT efficiency vs track slope x;x track slope [rad];efficiency",
+	      100, -0.005, 0.005, -1, 2 );
+  TProfile effvsty =
+    TProfile( "effvsty",
+	      "DUT efficiency vs track slope y;y track slope [rad];efficiency",
+	      100, -0.005, 0.005, -1, 2 );
+  TProfile effvstxy =
+    TProfile( "effvstxy",
+	      "DUT efficiency vs track slope x;x track slope [rad];efficiency",
+	      80, 0, 0.004, -1, 2 );
+  TProfile effvsdmin =
+    TProfile( "effvsdmin",
+	      "DUT efficiency vs track isolation;track isolation [mm];efficiency",
+	      80, 0, 8, -1, 2 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
@@ -2763,11 +2846,6 @@ int main( int argc, char* argv[] )
 
     StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
 
-    int xm = 0;
-    int ym = 0;
-    int adc = 0;
-    double q = 0;
-
     vector <cluster> cl[9];
 
     for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane ) {
@@ -2791,26 +2869,31 @@ int main( int argc, char* argv[] )
 		    << " " << plane.GetY(ipix)
 		    << " " << plane.GetPixel(ipix) << " ";
 
-	xm = plane.GetX(ipix); // global column 0..415
-	ym = plane.GetY(ipix); // global row 0..159
-	adc = plane.GetPixel(ipix); // ADC 0..255
+	int ix = plane.GetX(ipix); // global column 0..415
+	int iy = plane.GetY(ipix); // global row 0..159
+	int adc = plane.GetPixel(ipix); // ADC 0..255
 
-	q = adc;
+	// skip hot pixels:
+
+	int ipx = ix*ny[ipl] + iy;
+	if( hotset[ipl].count(ipx) ) continue;
+
+	double q = adc;
 
 	if( ipl == iDUT &&
 	    adc > 0 &&
-	    xm >= 0 && xm < 52 &&
-	    ym >= 0 && ym < 80 ) {
+	    ix >= 0 && ix < 52 &&
+	    iy >= 0 && iy < 80 ) {
 
-	  double Ared = adc - p4[xm][ym]; // p4 is asymptotic maximum
+	  double Ared = adc - p4[ix][iy]; // p4 is asymptotic maximum
 
 	  if( Ared >= 0 )
 	    Ared = -0.1; // avoid overflow
 
-	  double a3 = p3[xm][ym]; // positive
+	  double a3 = p3[ix][iy]; // positive
 	  if( weib == 3 )
-	    q = p1[xm][ym] *
-	      ( pow( -log( -Ared / a3 ), 1/p2[xm][ym] ) - p0[xm][ym] ) * ke;
+	    q = p1[ix][iy] *
+	      ( pow( -log( -Ared / a3 ), 1/p2[ix][iy] ) - p0[ix][iy] ) * ke;
 	  // q = ( (-ln(-(A-p4)/p3))^1/p2 - p0 )*p1
 
 	  if( q < thr ) continue; // offline threshold [ke]
@@ -2819,31 +2902,29 @@ int main( int argc, char* argv[] )
 
 	if( ipl == iREF &&
 	    adc > 0 &&
-	    xm >= 0 && xm < 52 &&
-	    ym >= 0 && ym < 80 ) {
+	    ix >= 0 && ix < 52 &&
+	    iy >= 0 && iy < 80 ) {
 
-	  double Ared = adc - r4[xm][ym]; // r4 is asymptotic maximum
+	  double Ared = adc - r4[ix][iy]; // r4 is asymptotic maximum
 
 	  if( Ared >= 0 )
 	    Ared = -0.1; // avoid overflow
 
-	  double a3 = r3[xm][ym]; // positive
+	  double a3 = r3[ix][iy]; // positive
 	  if( weib == 3 )
-	    q = r1[xm][ym] *
-	      ( pow( -log( -Ared / a3 ), 1/r2[xm][ym] ) - r0[xm][ym] ) * refke;
+	    q = r1[ix][iy] *
+	      ( pow( -log( -Ared / a3 ), 1/r2[ix][iy] ) - r0[ix][iy] ) * refke;
 	  // q = ( (-ln(-(A-r4)/r3))^1/r2 - r0 )*r1
 
 	}  // REF
 
-	hcol[ipl].Fill( xm );
-	hrow[ipl].Fill( ym );
+	hcol[ipl].Fill( ix );
+	hrow[ipl].Fill( iy );
 
 	// fill pixel block for clustering:
 
-	// mask telescope hot pixels: to do
-
-	pb[npx].col = xm;
-	pb[npx].row = ym;
+	pb[npx].col = ix;
+	pb[npx].row = iy;
 	pb[npx].adc = adc;
 	pb[npx].q = q;
 	pb[npx].ord = npx; // readout order
@@ -3054,7 +3135,11 @@ int main( int argc, char* argv[] )
 	  refqxvsxmym.Fill( xmod, ymod, qx );
 	}
 
-	if( fabs( refdy ) < 0.10 && fabs( refdx ) < 0.15 ) { // tight cuts for eff
+	if( fabs( refdy ) < 0.10 && // tight cuts for eff
+	    fabs( refdx ) < 0.15 &&
+	    fabs( x4 ) < 3.9 && // fiducial at REF
+	    fabs( y4 ) < 3.9
+	    ) {
 	  driplets[iB].lk = 1;
 	  nm = 1; // we have a REF-driplet match in this event
 	  reflkxHisto.Fill( xB );
@@ -3350,6 +3435,7 @@ int main( int argc, char* argv[] )
       double avz = triplets[iA].zm;
       double slx = triplets[iA].sx;
       double sly = triplets[iA].sy;
+      double txy = sqrt( slx*slx + sly*sly );
 
       double zA = DUTz - avz; // z DUT from mid of triplet
       double xA = avx + slx * zA; // triplet impact point on DUT
@@ -3384,10 +3470,11 @@ int main( int argc, char* argv[] )
 
       } // jj
 
-      ttdminHisto.Fill( dmin );
+      ttdmin1Histo.Fill( dmin );
+      ttdmin2Histo.Fill( dmin );
 
       bool liso = 0;
-      if( dmin > 0.3 ) liso = 1;
+      if( dmin > 0.33 ) liso = 1;
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // match triplet and driplet for efficiency
@@ -3892,9 +3979,9 @@ int main( int argc, char* argv[] )
 	      cmsq0fnodHisto.Fill( Q0 );
 
 	      if( oddcol )
-		cmsq0foddHisto.Fill( Q0 ); // more
+		cmsq0foddHisto.Fill( Q0 ); // 21.84
 	      else
-		cmsq0feveHisto.Fill( Q0 ); // less
+		cmsq0feveHisto.Fill( Q0 ); // 21.51
 
 	      if( lcore ) { // pixel core
 		cmsq0fcHisto.Fill( Q0 );
@@ -4018,7 +4105,7 @@ int main( int argc, char* argv[] )
 
 	  } // dx and dy
 
-	} // fiducial
+	} // fiducial and iso
 
 	// wide linking cut in x and y for efficiency:
 
@@ -4031,24 +4118,42 @@ int main( int argc, char* argv[] )
 
       // DUT efficiency vs isolated REF-linked fiducial tracks:
 
-      if( liso && lsixlk ) {
-	sixxylkHisto.Fill( xA, yA );
-	if( nm ) sixxyeffHisto.Fill( xA, yA );
-	effvsxy.Fill( x4, y4, nm );
-	if( abs( y4 ) < 3.9 )
-	  effvsx.Fill( x4, nm );
-	if( abs( x4 ) < 3.9 )
-	  effvsy.Fill( y4, nm );
-	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) {
-	  effvst1.Fill( evsec, nm );
-	  effvst2.Fill( evsec, nm );
-	  effvst3.Fill( evsec, nm );
-	  effvst5.Fill( evsec, nm );
-	  effvsntri.Fill( triplets.size(), nm );
-	  effvsxmym.Fill( xmod, ymod, nm );
-	  effvsxm.Fill( xmod, nm );
-	}
-      }
+      if( lsixlk ) {
+
+	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) // fiducial
+	  effvsdmin.Fill( dmin, nm ); // strong effect
+
+	if( dmin > 1.4 ) { // stronger iso [mm]
+
+	  sixxylkHisto.Fill( xA, yA );
+	  if( nm ) sixxyeffHisto.Fill( xA, yA );
+
+	  effvsxy.Fill( x4, y4, nm );
+
+	  if( abs( y4 ) < 3.9 )
+	    effvsx.Fill( x4, nm );
+
+	  if( abs( x4 ) < 3.9 )
+	    effvsy.Fill( y4, nm );
+
+	  if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) {
+
+	    effvst1.Fill( evsec, nm );
+	    effvst2.Fill( evsec, nm );
+	    effvst3.Fill( evsec, nm );
+	    effvst5.Fill( evsec, nm );
+	    effvsntri.Fill( triplets.size(), nm );
+	    effvsxmym.Fill( xmod, ymod, nm );
+	    effvsxm.Fill( xmod, nm );
+	    effvstx.Fill( slx, nm );
+	    effvsty.Fill( sly, nm );
+	    effvstxy.Fill( txy, nm ); // no effect
+
+	  } // fiducial
+
+	} // iso
+
+      } // six
 
     } // loop triplets iA
 
