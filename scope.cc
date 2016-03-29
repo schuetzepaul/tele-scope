@@ -6,6 +6,7 @@
 // scope -l 9999 20833  # tilted DUT 504
 // scope 19037
 // scope -s 23403 # re-sync
+// scope -t 3.2 23494 # apply threshold [ke]
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
@@ -48,6 +49,7 @@ struct triplet {
   double sx;
   double sy;
   bool lk;
+  double ttdmin;
 };
 
 // globals:
@@ -612,7 +614,6 @@ int main( int argc, char* argv[] )
 
   double wt = atan(1.0) / 45.0; // pi/180 deg
 
-  //double thr = 1.5; // [ke]
   double qwid = 3.5; // [ke] for Moyal
 
   bool rot90 = 0; // 504
@@ -829,15 +830,15 @@ int main( int argc, char* argv[] )
   if( chip0 == 504 ) {
     ke = 0.254; // 14614 to get q0f peak at 22 ke
     if( run >= 19019 ) // Apr 2015
-      ke = 0.235; // 19045 to get q0f peak at 22 ke
+      ke = 0.243; // 19037 to get q0f peak at 22 ke
     if( run >= 20785 ) // Jul 2015
       ke = 0.235;
     if( run >= 20823 ) // 12.7.2015 chiller 17
-      ke = 0.238; // to get q0f peak at 22 ke
+      ke = 0.244; // to get q0f peak at 22 ke
     if( run >= 23000 ) // Mar 2016 chiller 17
-      ke = 0.253; // to get q0fc peak at 22 ke
+      ke = 0.259; // to get q0f peak at 22 ke
     if( run >= 23518 ) // Mar 2016 chiller 17
-      ke = 0.247; // to get q0fc peak at 22 ke
+      ke = 0.254; // to get q0f peak at 22 ke
   }
 
   if( chip0 == 506 ) {
@@ -856,7 +857,9 @@ int main( int argc, char* argv[] )
 
   double eps = 0.0;
   if( chip0 == 504 )
-    eps = 0.06;
+    eps = 0.05; // 2016 sy 7.66
+  //eps = 0.06; // 2015 sy 7.74
+  //eps = 0.04; // 2016 sy 7.72
 
   // correct trend in q vs y:
 
@@ -1909,8 +1912,8 @@ int main( int argc, char* argv[] )
 
   double refke = 0.250; // to get q0f peak at 22 ke
 
-  if( refchip0 == 500 )
-    refke = 0.305;
+  if(      refchip0 == 500 )
+    refke = 0.336;
 
   else if( refchip0 == 501 )
     refke = 0.305;
@@ -1930,12 +1933,11 @@ int main( int argc, char* argv[] )
   TH1I hdtms = TH1I( "dtms", "time between events;time between events [ms];events", 100, 0, 1000 );
 
   TH1I t1Histo = TH1I( "t1", "event time;event time [s];events", 100, 0, 1 );
-  TH1I t100Histo = TH1I( "t100", "event time;event time [s];events", 100, 0, 100 );
-  TH1I t300Histo = TH1I( "t300", "event time;event time [s];events", 300, 0, 300 );
-  TH1I t1000Histo = TH1I( "t1000", "event time;event time [s];events", 100, 0, 1000 );
-  TH1I t3000Histo = TH1I( "t3000", "event time;event time [s];events", 300, 0, 3000 );
-  TH1I t10000Histo = TH1I( "t10000", "event time;event time [s];events", 100, 0, 10000 );
-  TH1I t30000Histo = TH1I( "t30000", "event time;event time [s];events", 300, 0, 30000 );
+  TH1I t2Histo = TH1I( "t2", "event time;event time [s];events", 100, 0, 100 );
+  TH1I t3Histo = TH1I( "t3", "event time;event time [s];events", 300, 0, 300 );
+  TH1I t4Histo = TH1I( "t4", "event time;event time [s];events", 100, 0, 1500 );
+  TH1I t5Histo = TH1I( "t5", "event time;event time [s];events", 100, 0, 10000 );
+  TH1I t6Histo = TH1I( "t6", "event time;event time [s];events", 300, 0, 60000 );
 
   TH1I hcol[9];
   TH1I hrow[9];
@@ -1987,6 +1989,13 @@ int main( int argc, char* argv[] )
 
   TH1I ndriHisto = TH1I( "ndri", "driplets;driplets;events", 51, -0.5, 50.5 );
 
+  TH1I dddmin1Histo = TH1I( "dddmin1",
+			    "telescope driplets isolation;driplets min #Delta_{xy} [mm];driplet pairs",
+			    100, 0, 1 );
+  TH1I dddmin2Histo = TH1I( "dddmin2",
+			    "telescope driplets isolation;driplets min #Delta_{xy} [mm];driplet pairs",
+			    150, 0, 15 );
+
   // REF vs driplets:
 
   TH1I refsxaHisto = TH1I( "refsxa",
@@ -2032,22 +2041,28 @@ int main( int argc, char* argv[] )
 			 "REF linked clusters;REF cluster charge [ke];linked REF cluster",
 			 80, 0, 80 );
 
-  TProfile2D refnpxvsxmym =
+  TProfile2D * refnpxvsxmym = new
     TProfile2D( "refnpxvsxmym",
-	      "REF cluster size vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];REF <cluster size> [pixels]",
+		"REF cluster size vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];REF <cluster size> [pixels]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 20 );
 
-  TProfile2D refqxvsxmym =
+  TProfile2D * refqxvsxmym = new
     TProfile2D( "refqxvsxmym",
 	      "REF cluster charge vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];REF <cluster charge> [ke]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 0.1 );
 
-  TH1I reflkxHisto = TH1I( "reflkx",
+  TH1I reflkxBHisto = TH1I( "reflkxb",
 			   "linked driplet at REF x;driplet x at REF [mm];linked driplets",
 			   220, -11, 11 );
+  TH1I reflkyBHisto = TH1I( "reflkyb",
+			   "linked driplet at REF y;driplet y at REF [mm];linked driplets",
+			   120, -6, 6 );
+  TH1I reflkxHisto = TH1I( "reflkx",
+			   "linked driplet at REF x;driplet x at REF [mm];linked driplets",
+			   60, -4.5, 4.5 );
   TH1I reflkyHisto = TH1I( "reflky",
 			   "linked driplet at REF y;driplet y at REF [mm];linked driplets",
-			   110, -5.5, 5.5 );
+			   90, -4.5, 4.5 );
 
   TH1I reflkcolHisto = TH1I( "reflkcol",
 			     "REF linked col;REF linked col;linked REF cluster",
@@ -2062,11 +2077,14 @@ int main( int argc, char* argv[] )
   TProfile reflkvst2 =
     TProfile( "reflkvst2",
 	      "driplet-REF links vs time;time [s];driplets with REF links",
-	      300, 0, 3000, -0.5, 1.5 );
+	      150, 0, 1500, -0.5, 1.5 );
   TProfile reflkvst3 =
     TProfile( "reflkvst3",
 	      "driplet-REF links vs time;time [s];driplets with REF links",
 	      300, 0, 30000, -0.5, 1.5 );
+
+  TH1I ndrilkHisto = TH1I( "ndrilk", "driplet - REF links;driplet - REF links;events",
+			    11, -0.5, 10.5 );
 
   // DUT:
 
@@ -2118,7 +2136,7 @@ int main( int argc, char* argv[] )
 	  52, -0.5, 51.5 );
   TH1I dutrowHisto =
     TH1I( "dutrow",
-	  "DUT pixel rowumn;pixel rowumn;pixels",
+	  "DUT pixel row;pixel row;pixels",
 	  80, -0.5, 79.5 );
 
   TH1I dutq0fHisto =
@@ -2230,8 +2248,9 @@ int main( int argc, char* argv[] )
 			  240, -12, 12 );
   TH1I triyHisto = TH1I( "triy", "triplets at z DUT;y [mm];triplets",
 			  120, -6, 6 );
-  TH2I trixyHisto = TH2I( "trixy", "triplets at z DUT;x [mm];y [mm];triplets",
-			  240, -12, 12, 120, -6, 6 );
+  TH2I * trixyHisto = new
+    TH2I( "trixy", "triplets at z DUT;x [mm];y [mm];triplets",
+	  240, -12, 12, 120, -6, 6 );
   TH1I trislpxHisto = TH1I( "trislpx", "triplet slope x;slope x [rad];triplets",
 			    100, -0.005, 0.005 );
   TH1I trislpyHisto = TH1I( "trislpy", "triplet slope y;slope y [rad];triplets",
@@ -2282,7 +2301,7 @@ int main( int argc, char* argv[] )
 	  "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
 	  100, -0.005, 0.005 );     
 
-  TH2I sixxyHisto =
+  TH2I * sixxyHisto = new
     TH2I( "sixxy", "sixplets at z DUT;x [mm];y [mm];sixplets",
 	  240, -12, 12, 120, -6, 6 );
 
@@ -2293,24 +2312,24 @@ int main( int argc, char* argv[] )
 		       100, -0.01, 0.01 );
 
   TH1I cmssxaHisto = TH1I( "cmssxa",
-			   "Pixel + Telescope x;cluster + triplet #Sigmax [mm];clusters",
+			   "DUT + Telescope x;cluster + triplet #Sigmax [mm];clusters",
 			   440, -11, 11 );
   TH1I cmsdxaHisto = TH1I( "cmsdxa",
-			   "Pixel - Telescope x;cluster - triplet #Deltax [mm];clusters",
+			   "DUT - Telescope x;cluster - triplet #Deltax [mm];clusters",
 			   440, -11, 11 );
 
   TH1I cmssyaHisto = TH1I( "cmssya",
-			   "Pixel + Telescope y;cluster + triplet #Sigmay [mm];clusters",
-			   220, -5.5, 5.5 );
+			   "DUT + Telescope y;cluster + triplet #Sigmay [mm];clusters",
+			   440, -11, 11 ); // shallow needs wide range
   TH1I cmsdyaHisto = TH1I( "cmsdya",
-			   "Pixel - Telescope y;cluster - triplet #Deltay [mm];clusters",
-			   220, -5.5, 5.5 );
+			   "DUT - Telescope y;cluster - triplet #Deltay [mm];clusters",
+			   440, -11, 11 );
 
   TH1I cmsdxHisto = TH1I( "cmsdx",
-			   "Pixel - Telescope x;cluster - triplet #Deltax [mm];clusters",
+			   "DUT - Telescope x;cluster - triplet #Deltax [mm];clusters",
 			   200, -0.5, 0.5 );
   TH1I cmsdyHisto = TH1I( "cmsdy",
-			   "Pixel - Telescope y;cluster - triplet #Deltay [mm];clusters",
+			   "DUT - Telescope y;cluster - triplet #Deltay [mm];clusters",
 			   500, -0.5, 0.5 );
 
   TH1I cmslkxHisto = TH1I( "cmslkx",
@@ -2327,10 +2346,22 @@ int main( int argc, char* argv[] )
 			   "DUT linked rows;DUT linked cluster row;linked clusters",
 			   80, 0, 80 );
 
+  TH1I cmsdxfHisto =
+    TH1I( "cmsdxf",
+	  "fiducial #Deltax ;cluster - triplet #Deltax [mm];fiducial clusters",
+	  200, -1, 1 );
+  TH1I cmsdx0fHisto =
+    TH1I( "cmsdx0f",
+	  "fiducial #Deltax0 ;cluster - triplet #Deltax0 [mm];fiducial clusters",
+	  200, -1, 1 );
+  TH1I cmsdxfq9Histo =
+    TH1I( "cmsdxfq9",
+	  "fiducial #Deltax q9;cluster - triplet #Deltax [mm];fiducial q9 clusters",
+	  200, -1, 1 );
   TH1I cmsdxfcHisto =
     TH1I( "cmsdxfc",
 	  "fiducial #Deltax cut y;cluster - triplet #Deltax [mm];fiducial clusters",
-	  200, -0.5, 0.5 );
+	  200, -1, 1 );
 
   TProfile cmsdxvsx =
     TProfile( "cmsdxvsx",
@@ -2345,6 +2376,14 @@ int main( int argc, char* argv[] )
 	      "#Deltax vs #theta_{x};x track slope [rad];<cluster - triplet #Deltax> [mm]",
 	      80, -0.004, 0.004, -0.5, 0.5 );
 
+  TH1I cmsdyfq0Histo =
+    TH1I( "cmsdyfq0",
+	  "fiducial #Deltay q0;cluster - triplet #Deltay [mm];fiducial q0 clusters",
+	  200, -1, 1 );
+  TH1I cmsdyfq9Histo =
+    TH1I( "cmsdyfq9",
+	  "fiducial #Deltay q9;cluster - triplet #Deltay [mm];fiducial q9 clusters",
+	  200, -1, 1 );
   TH1I cmsdyfcHisto =
     TH1I( "cmsdyfc",
 	  "fiducial #Deltay cut x;cluster - triplet #Deltay [mm];fiducial clusters",
@@ -2352,11 +2391,15 @@ int main( int argc, char* argv[] )
   TH1I cmsdyfcq0Histo =
     TH1I( "cmsdyfcq0",
 	  "fiducial #Deltay cut x q0;cluster - triplet #Deltay [mm];fiducial q0 clusters",
-	  200, -0.5, 0.5 );
+	  200, -1, 1 );
   TH1I cmsdyfcq9Histo =
     TH1I( "cmsdyfcq9",
 	  "fiducial #Deltay cut x q9;cluster - triplet #Deltay [mm];fiducial q9 clusters",
-	  200, -0.5, 0.5 );
+	  200, -1, 1 );
+  TH1I cmsdyfcq8Histo =
+    TH1I( "cmsdyfcq8",
+	  "fiducial #Deltay cut x q8;cluster - triplet #Deltay [mm];fiducial q8 clusters",
+	  200, -1, 1 );
   TH1I cmsdyfcq1Histo =
     TH1I( "cmsdyfcq1",
 	  "fiducial #Deltay cut x q1;cluster - triplet #Deltay [mm];fiducial q1 clusters",
@@ -2429,6 +2472,23 @@ int main( int argc, char* argv[] )
 	      "DUT #Deltay vs #theta_{y};y track slope [rad];<cluster - triplet #Deltay> [mm]",
 	      80, -0.002, 0.002, -0.2, 0.2 );
 
+  TProfile cmsqrowvsd =
+    TProfile( "cmsqrowvsd",
+	      "DUT charge vs depth;track depth [mm];<row charge> [ke]",
+	      40, -0.2, 0.2, 0, 0.65 ); // 0.65 = cut off 1.5 ke
+  TProfile cmsqrowvsdc =
+    TProfile( "cmsqrowvsdc",
+	      "DUT charge vs depth fiducial;track depth [mm];<fiducial row charge> [ke]",
+	      40, -0.2, 0.2, 0, 0.65 );
+  TH1I cmsqrownegHisto =
+    TH1I( "cmsqrowneg",
+	  "row charge negative depth;row charge [ke];linked fiducial deep rows",
+	  160, 0, 80 );
+  TH1I cmsqrowposHisto =
+    TH1I( "cmsqrowpos",
+	  "row charge positive depth;row charge [ke];linked fiducial shallow rows",
+	  160, 0, 80 );
+
   TH1I cmsq0fHisto =
     TH1I( "cmsq0f",
 	  "normal fiducial cluster charge;normal cluster charge [ke];linked fiducial clusters",
@@ -2461,11 +2521,11 @@ int main( int argc, char* argv[] )
   TProfile cmsqxvst1 =
     TProfile( "cmsqxvst1",
 	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      300, 0, 300, 0, 0.1 );
+	      300, 0, 300, 0, 0.1 ); // 0.1 = cut off 8 ke
   TProfile cmsqxvst2 =
     TProfile( "cmsqxvst2",
 	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
-	      300, 0, 3000, 0, 0.1 );
+	      150, 0, 1500, 0, 0.1 );
   TProfile cmsqxvst3 =
     TProfile( "cmsqxvst3",
 	      "DUT cluster charge vs time;time [s];<cluster charge> [ke]",
@@ -2481,7 +2541,7 @@ int main( int argc, char* argv[] )
   TProfile cmsqxvsxm =
     TProfile( "cmsqxvsxm",
 	      "DUT cluster charge vs xmod;x track mod 0.3 [mm];<cluster charge> [ke]",
-	      60, 0, 0.3, 0, 0.1 );
+	      60, 0, 0.3, 0, 0.1 ); // 0.1 = cut off 8 ke
   TProfile cmsqxvsym =
     TProfile( "cmsqxvsym",
 	      "DUT cluster charge vs ymod;y track mod 0.2 [mm];<cluster charge> [ke]",
@@ -2498,7 +2558,7 @@ int main( int argc, char* argv[] )
     TProfile( "cmsqxvsxmd",
 	      "DUT cluster charge vs xmod dot;x track mod 0.3 [mm];<dot cluster charge> [ke]",
 	      60, 0, 0.3, 0, 0.1 );
-  TProfile2D cmsqxvsxmym =
+  TProfile2D * cmsqxvsxmym = new
     TProfile2D( "cmsqxvsxmym",
 	      "DUT cluster charge vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];<dot cluster charge> [ke]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 0.1 );
@@ -2642,7 +2702,7 @@ int main( int argc, char* argv[] )
   TProfile cmsrmsyvsx =
     TProfile( "cmsrmsyvsx",
 	      "DUT y resolution vs x;x track [mm];MAD(#Deltay) [mm]",
-	      76, -3.8, 3.8, 0, 0.2 );
+	      50, -3.75, 3.75, 0, 0.2 );
   TProfile cmsrmsxvsy =
     TProfile( "cmsrmsxvsy",
 	      "DUT x resolution vs y;y track [mm];MAD(#Deltax) [mm]",
@@ -2651,6 +2711,15 @@ int main( int argc, char* argv[] )
     TProfile( "cmsrmsyvsy",
 	      "DUT y resolution vs y;y track [mm];MAD(#Deltay) [mm]",
 	      76, -3.8, 3.8, 0, 0.2 );
+
+  TProfile cmsrmsyvstx =
+    TProfile( "cmsrmsyvstx",
+	      "DUT y resolution vs slope x;track slope x [rad];MAD(#Deltay) [mm]",
+	      60, -0.003, 0.003, 0, 0.2 );
+  TProfile cmsrmsyvsty =
+    TProfile( "cmsrmsyvsty",
+	      "DUT y resolution vs slope y;track slope y [rad];MAD(#Deltay) [mm]",
+	      60, -0.003, 0.003, 0, 0.2 );
 
   TProfile cmsrmsxvsxm =
     TProfile( "cmsrmsxvsxm",
@@ -2669,14 +2738,32 @@ int main( int argc, char* argv[] )
 	      "DUT y resolution vs ymod;y track mod 0.2 [mm];MAD(#Deltay) [mm]",
 	      40, 0, 0.2, 0, 0.2 );
 
-  TProfile2D cmsrmsxvsxmym =
+  TProfile2D * cmsrmsxvsxmym = new
     TProfile2D( "cmsrmsxvsxmym",
 		"DUT x resolution vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];MAD(#Deltax) [mm]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 0.2 );
-  TProfile2D cmsrmsyvsxmym =
+  TProfile2D * cmsrmsyvsxmym = new
     TProfile2D( "cmsrmsyvsxmym",
 		"DUT y resolution vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];MAD(#Deltay) [mm]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 0.2 );
+
+  TProfile cmsdyvst1 =
+    TProfile( "cmsdyvst1",
+	      "DUT #Deltay vs time;time [s];<cluster - triplet #Deltay> [mm]",
+	      300, 0, 300, -0.1, 0.1 );
+  TProfile cmsdyvst2 =
+    TProfile( "cmsdyvst2",
+	      "DUT #Deltay vs time;time [s];<cluster - triplet #Deltay> [mm]",
+	      100, 0, 1000, -0.1, 0.1 );
+
+  TProfile cmsrmsyvst1 =
+    TProfile( "cmsrmsyvst1",
+	      "DUT y resolution vs time;time [s];MAD(cluster - triplet #Deltay) [mm]",
+	      300, 0, 300, -0.1, 0.1 );
+  TProfile cmsrmsyvst2 =
+    TProfile( "cmsrmsyvst2",
+	      "DUT y resolution vs time;time [s];MAD(cluster - triplet #Deltay) [mm]",
+	      100, 0, 1000, -0.1, 0.1 );
 
   TProfile cmsncolvsx =
     TProfile( "cmsncolvsx",
@@ -2704,25 +2791,70 @@ int main( int argc, char* argv[] )
     TProfile( "cmsnrowvsym",
 	      "DUT cluster size vs ymod;y track mod 0.2 [mm];<cluster size> [rows]",
 	      40, 0, 0.2, 0, 20 );
-  TProfile2D cmsnpxvsxmym =
+  TProfile2D * cmsnpxvsxmym = new
     TProfile2D( "cmsnpxvsxmym",
 	      "DUT cluster size vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];<cluster size> [pixels]",
 		60, 0, 0.3, 40, 0, 0.2, 0, 20 );
 
-  TH2I trixylkHisto = TH2I( "trixylk",
-			    "triplets with DUT;x [mm];y [mm];DUT-linked triplets",
-			    240, -12, 12, 120, -6, 6 );
-  TH2I sixxylkHisto = TH2I( "sixxylk",
-			    "REF-linked sixplets at z DUT;x [mm];y [mm];REF-linked sixplets",
-			    240, -12, 12, 120, -6, 6 );
-  TH2I sixxyeffHisto = TH2I( "sixxyeff",
-			    "REF-linked sixplets with DUT;x [mm];y [mm];DUT-REF-linked sixplets",
-			    240, -12, 12, 120, -6, 6 );
+  TH2I * trixylkHisto = new
+    TH2I( "trixylk",
+	  "triplets with DUT;x [mm];y [mm];DUT-linked triplets",
+	  240, -12, 12, 120, -6, 6 );
+  TH2I * sixxylkHisto = new
+    TH2I( "sixxylk",
+	  "REF-linked sixplets at z DUT;x [mm];y [mm];REF-linked sixplets",
+	  240, -12, 12, 120, -6, 6 );
+  TH2I * sixxyeffHisto = new
+    TH2I( "sixxyeff",
+	  "REF-linked sixplets with DUT;x [mm];y [mm];DUT-REF-linked sixplets",
+	  240, -12, 12, 120, -6, 6 );
 
-  TProfile2D effvsxy =
+  TH1I effdminHisto = TH1I( "effdmin",
+			 "min DUT - triplet distance;min DUT - triplet #Delta_{xy} [mm];REF linked fiducial iso triplets",
+			 200, 0, 20 );
+  TH1I effdmin0Histo =
+    TH1I( "effdmin0",
+	  "min DUT - triplet distance;min DUT - triplet #Delta_{xy} [mm];inefficient triplets",
+	  200, 0, 20 );
+
+  TH1I effclq0Histo =
+    TH1I( "effclq0",
+	  "nearest cluster charge;DUT cluster charge [ke];nearest clusters",
+	  150, 0, 150 );
+  TH1I effclq1Histo =
+    TH1I( "effclq1",
+	  "nearest cluster charge dxy > 0.1;DUT cluster charge [ke];dxy > 0.1 nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq2Histo =
+    TH1I( "effclq2",
+	  "nearest cluster charge dxy > 0.2;DUT cluster charge [ke];dxy > 0.2 nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq3Histo =
+    TH1I( "effclq3",
+	  "nearest cluster charge dxy > 0.3;DUT cluster charge [ke];dxy > 0.3 nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq4Histo =
+    TH1I( "effclq4",
+	  "nearest cluster charge dxy > 0.4;DUT cluster charge [ke];dxy > 0.4 nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq5Histo =
+    TH1I( "effclq5",
+	  "nearest cluster charge dxy > 0.5;DUT cluster charge [ke];dxy > 0.5 nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq6Histo =
+    TH1I( "effclq6",
+	  "nearest cluster charge dxy > 0.6;DUT cluster charge [ke];dxy > 0.6 nearest cluster",
+	  150, 0, 150 );
+
+  TH1I effclqrHisto =
+    TH1I( "effclqr",
+	  "nearest cluster charge, 1 driplet-REF;DUT cluster charge [ke];mono nearest clusters",
+	  150, 0, 150 );
+
+  TProfile2D * effvsxy = new
     TProfile2D( "effvsxy",
-		"DUT efficiency vs x;x track at DUT [mm];efficiency",
-		60, -4.5, 4.5, 90, 4.5, 4.5, -1, 2 ); // bin = pix
+		"DUT efficiency vs x;x track at DUT [mm];y track at DUT [mm];efficiency",
+		60, -4.5, 4.5, 90, -4.5, 4.5, -1, 2 ); // bin = pix
   TProfile effvsx =
     TProfile( "effvsx",
 	      "DUT efficiency vs x;x track at DUT [mm];efficiency",
@@ -2739,22 +2871,27 @@ int main( int argc, char* argv[] )
   TProfile effvst2 =
     TProfile( "effvst2",
 	      "DUT efficiency vs time;time [s];efficiency",
-	      300, 0, 3000, -1, 2 );
+	      150, 0, 1500, -1, 2 );
   TProfile effvst3 =
     TProfile( "effvst3",
 	      "DUT efficiency vs time;time [s];efficiency",
 	      300, 0, 30000, -1, 2 );
-  TProfile effvst5 =
-    TProfile( "effvst5",
+  TProfile effvst4 =
+    TProfile( "effvst4",
 	      "DUT efficiency vs time;time [s];efficiency",
-	      500, 0, 50000, -1, 2 );
+	      600, 0, 60000, -1, 2 );
 
   TProfile effvsntri =
     TProfile( "effvsntri",
 	      "DUT efficiency vs triplets;triplets;efficiency",
 	      20, 0.5, 20.5, -1, 2 );
 
-  TProfile2D effvsxmym =
+  TProfile effvsndrilk =
+    TProfile( "effvsndrilk",
+	      "DUT efficiency vs linked driplets;linked driplets;efficiency",
+	      10, 0.5, 10.5, -1, 2 );
+
+  TProfile2D * effvsxmym = new
     TProfile2D( "effvsxmym",
 		"DUT efficiency vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];efficiency",
 		60, 0, 0.3, 40, 0, 0.2, -1, 2 );
@@ -2762,6 +2899,7 @@ int main( int argc, char* argv[] )
     TProfile( "effvsxm",
 	      "DUT efficiency vs xmod;x track mod 0.3 [mm];efficiency",
 	      60, 0, 0.3, -1, 2 );
+
   TProfile effvstx =
     TProfile( "effvstx",
 	      "DUT efficiency vs track slope x;x track slope [rad];efficiency",
@@ -2772,11 +2910,20 @@ int main( int argc, char* argv[] )
 	      100, -0.005, 0.005, -1, 2 );
   TProfile effvstxy =
     TProfile( "effvstxy",
-	      "DUT efficiency vs track slope x;x track slope [rad];efficiency",
+	      "DUT efficiency vs track slope;track slope [rad];efficiency",
 	      80, 0, 0.004, -1, 2 );
+  TProfile effvsdslp =
+    TProfile( "effvsdslp",
+	      "DUT efficiency vs kink;driplet - triplet kink angle [rad];efficiency",
+	      100, 0, 0.01, -1, 2 );
+
+  TProfile effvstmin =
+    TProfile( "effvstmin",
+	      "DUT efficiency vs triplet isolation;triplet isolation [mm];efficiency",
+	      80, 0, 8, -1, 2 );
   TProfile effvsdmin =
     TProfile( "effvsdmin",
-	      "DUT efficiency vs track isolation;track isolation [mm];efficiency",
+	      "DUT efficiency vs driplet isolation;driplet isolation [mm];efficiency",
 	      80, 0, 8, -1, 2 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2823,12 +2970,11 @@ int main( int argc, char* argv[] )
       evTLU0 = evTLU;
     double evsec = (evTLU - evTLU0) / fTLU;
     t1Histo.Fill( evsec );
-    t100Histo.Fill( evsec );
-    t300Histo.Fill( evsec );
-    t1000Histo.Fill( evsec );
-    t3000Histo.Fill( evsec );
-    t10000Histo.Fill( evsec );
-    t30000Histo.Fill( evsec );
+    t2Histo.Fill( evsec );
+    t3Histo.Fill( evsec );
+    t4Histo.Fill( evsec );
+    t5Histo.Fill( evsec );
+    t6Histo.Fill( evsec );
 
     double evdt = (evTLU - prevTLU) / fTLU;
     hdtus.Fill( evdt * 1E6 ); // [us]
@@ -3049,6 +3195,7 @@ int main( int argc, char* argv[] )
 	  dri.sx = slpx;
 	  dri.sy = slpy;
 	  dri.lk = 0;
+	  dri.ttdmin = 99.9; // isolation [mm]
 	  driplets.push_back(dri);
 
 	} // cl B
@@ -3065,6 +3212,7 @@ int main( int argc, char* argv[] )
     double xcutREF = 0.3;
     double ycutREF = 0.2;
     int nm = 0;
+    int ndrilk = 0;
 
     const double cr = cos( REFrot );
     const double sr = sin( REFrot );
@@ -3081,6 +3229,30 @@ int main( int argc, char* argv[] )
       double xB = avx + slx * zB; // driplet impact point on REF
       double yB = avy + sly * zB;
 
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // dri vs dri: isolation at REF
+
+      double dddmin = 99.9;
+
+      for( unsigned int jj = 0; jj < driplets.size(); ++jj ) {
+
+	if( jj == iB ) continue;
+
+	double zj = REFz - driplets[jj].zm;
+	double xj = driplets[jj].xm + driplets[jj].sx * zj; // triplet impact point on DUT
+	double yj = driplets[jj].ym + driplets[jj].sy * zj;
+
+	double dx = xB - xj;
+	double dy = yB - yj;
+	double dd = sqrt( dx*dx + dy*dy );
+	if( dd < dddmin ) dddmin = dd;
+
+      } // jj
+
+      dddmin1Histo.Fill( dddmin );
+      dddmin2Histo.Fill( dddmin );
+      driplets[iB].ttdmin = dddmin;
+
       // transform into REF system:
 
       double x3 = xB*cr + yB*sr; // rotate
@@ -3089,8 +3261,8 @@ int main( int argc, char* argv[] )
       double x4 = -x3 + REFalignx; // invert and shift to mid
       double y4 =  y3 + REFaligny; // shift to mid
 
-      double xmod = fmod( 9.075 + x4, 0.3 ); // [0,0.3] mm, 2 pixel wide
-      double ymod = fmod( 9.050 + y4, 0.2 ); // [0,0.2] mm
+      double xmod = fmod( 9.000 + x4, 0.3 ); // [0,0.3] mm, 2 pixel wide
+      double ymod = fmod( 9.000 + y4, 0.2 ); // [0,0.2] mm
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // driplets vs REF clusters:
@@ -3099,8 +3271,8 @@ int main( int argc, char* argv[] )
 
 	double ccol = c->col;
 	double crow = c->row;
-	double refx = ( ccol - nx[iREF]/2 ) * ptchx[iREF]; // -3.9..3.9 mm
-	double refy = ( crow - ny[iREF]/2 ) * ptchy[iREF]; // -4..4 mm
+	double refx = ( ccol + 0.5 - nx[iREF]/2 ) * ptchx[iREF]; // -3.9..3.9 mm
+	double refy = ( crow + 0.5 - ny[iREF]/2 ) * ptchy[iREF]; // -4..4 mm
 	double q = c->charge;
 	double qx = exp( -q/qwid);
 
@@ -3128,26 +3300,31 @@ int main( int argc, char* argv[] )
 	  refdxHisto.Fill( refdx );
 	}
 
-	if( abs( refdx ) < xcutREF && abs( refdy ) < ycutREF ) {
+	if( abs( refdx ) < xcutREF &&
+	    abs( refdy ) < ycutREF &&
+	    fabs( x4 ) < 3.9 && // fiducial at REF
+	    fabs( y4 ) < 3.9 ) {
 	  refnpxHisto.Fill( npx );
 	  refqHisto.Fill( q );
-	  refnpxvsxmym.Fill( xmod, ymod, npx );
-	  refqxvsxmym.Fill( xmod, ymod, qx );
+	  refnpxvsxmym->Fill( xmod, ymod, npx );
+	  refqxvsxmym->Fill( xmod, ymod, qx );
 	}
 
-	if( fabs( refdy ) < 0.10 && // tight cuts for eff
-	    fabs( refdx ) < 0.15 &&
-	    fabs( x4 ) < 3.9 && // fiducial at REF
-	    fabs( y4 ) < 3.9
-	    ) {
-	  driplets[iB].lk = 1;
-	  nm = 1; // we have a REF-driplet match in this event
-	  reflkxHisto.Fill( xB );
-	  reflkyHisto.Fill( yB );
+	//if( fabs( refdy ) < 0.100 && fabs( refdx ) < 0.150 ) { // 99.92  99.96
+	if( fabs( refdx ) < 0.100 && fabs( refdy ) < 0.075 ) { // 99.93  99.97
+	  reflkxBHisto.Fill( xB );
+	  reflkyBHisto.Fill( yB );
+	  reflkxHisto.Fill( x4 );
+	  reflkyHisto.Fill( y4 );
 	  reflkcolHisto.Fill( ccol );
 	  reflkrowHisto.Fill( crow );
+	  if( fabs( x4 ) < 3.9 && // fiducial at REF
+	      fabs( y4 ) < 3.9 ) { // 3.8 same eff
+	    driplets[iB].lk = 1;
+	    nm = 1; // we have a REF-driplet match in this event
+	    ++ndrilk;
+	  }
 	}
-
       } // REF
 
     } // driplets
@@ -3155,6 +3332,7 @@ int main( int argc, char* argv[] )
     reflkvst1.Fill( evsec, nm ); // REF yield vs time
     reflkvst2.Fill( evsec, nm );
     reflkvst3.Fill( evsec, nm );
+    ndrilkHisto.Fill( ndrilk );
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // DUT:
@@ -3214,6 +3392,7 @@ int main( int argc, char* argv[] )
 	// apply tsunami correction:
 
 	px->q -= eps*qprv; // overwrite!
+	//px->q -= 1.4; // [ke] worse
 
       } // pix
 
@@ -3412,6 +3591,8 @@ int main( int argc, char* argv[] )
 	  tri.zm = avz;
 	  tri.sx = slpx;
 	  tri.sy = slpy;
+	  tri.lk = 0;
+	  tri.ttdmin = 99.9; // isolation [mm]
 	  triplets.push_back(tri);
 
 	} // cl B
@@ -3443,14 +3624,14 @@ int main( int argc, char* argv[] )
 
       trixHisto.Fill( xA );
       triyHisto.Fill( yA );
-      trixyHisto.Fill( xA, yA );
+      trixyHisto->Fill( xA, yA );
       trislpxHisto.Fill( slx );
       trislpyHisto.Fill( sly );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // tri vs tri: isolation at DUT
 
-      double dmin = 99.9;
+      double ttdmin = 99.9;
 
       for( unsigned int jj = 0; jj < triplets.size(); ++jj ) {
 
@@ -3463,24 +3644,28 @@ int main( int argc, char* argv[] )
 	double dx = xA - xj;
 	double dy = yA - yj;
 	double dd = sqrt( dx*dx + dy*dy );
-	if( dd < dmin ) dmin = dd;
+	if( dd < ttdmin ) ttdmin = dd;
 
 	ttdxHisto.Fill( dx );
 	ttdx1Histo.Fill( dx );
 
       } // jj
 
-      ttdmin1Histo.Fill( dmin );
-      ttdmin2Histo.Fill( dmin );
+      ttdmin1Histo.Fill( ttdmin );
+      ttdmin2Histo.Fill( ttdmin );
+      triplets[iA].ttdmin = ttdmin;
 
       bool liso = 0;
-      if( dmin > 0.33 ) liso = 1;
+      //if( ttdmin > 0.33 ) liso = 1;
+      if( ttdmin > 0.6 ) liso = 1; // harder cut = cleaner Q0
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // match triplet and driplet for efficiency
+      // match triplet and driplet for efficiency:
 
       bool lsixlk = 0;
       double sixcut = 0.1; // [mm]
+      double dddmin = 99.9; // driplet isolation at REF
+      double sixdslp = 0.099; // [rad]
 
       for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = upstream
 
@@ -3500,6 +3685,9 @@ int main( int argc, char* argv[] )
 
 	double dx = xB - xA;
 	double dy = yB - yA;
+	if( run > 19200 ) dx += 0.057; // correct for May 2015 driplet tilt
+	if( run > 20700 ) dx -= 0.040; // correct for Jul 2015 driplet tilt
+	if( run > 23000 ) dx += 0.047; // correct for Mar 2016 driplet tilt
 
 	hsixdx.Fill( dx ); // for align fit
 	hsixdy.Fill( dy ); // for align fit
@@ -3522,9 +3710,11 @@ int main( int argc, char* argv[] )
 	}
 
 	if( fabs(dx) < sixcut && fabs(dy) < sixcut ) {
-	  sixxyHisto.Fill( xA, yA );
+	  sixxyHisto->Fill( xA, yA );
 	  if( driplets[jB].lk ) {
 	    lsixlk = 1;
+	    dddmin = driplets[jB].ttdmin;
+	    sixdslp = sqrt( pow( slxB - slx, 2 ) + pow( slyB - sly, 2 ) );
 	  }
 	}
 
@@ -3574,11 +3764,11 @@ int main( int argc, char* argv[] )
 
       // reduce to 2x2 pixel region:
 
-      double xmod = fmod( 9.075 + x4, 0.3 ); // [0,0.3] mm, 2 pixel wide
-      double ymod = fmod( 9.050 + y4, 0.2 ); // [0,0.2] mm
+      double xmod = fmod( 9.000 + x4, 0.3 ); // [0,0.3] mm, 2 pixel wide
+      double ymod = fmod( 9.000 + y4, 0.2 ); // [0,0.2] mm
       if( rot90 ) { // x = col = yt, y = row = xt
-	xmod = fmod( 9.075 + y4, 0.3 ); // [0,0.3] mm, 2 pixel wide
-	ymod = fmod( 9.050 + x4, 0.2 ); // [0,0.2] mm
+	xmod = fmod( 9.000 + y4, 0.3 ); // [0,0.3] mm, 2 pixel wide
+	ymod = fmod( 9.000 + x4, 0.2 ); // [0,0.2] mm
       }
 
       // bias dot, from cmsqvsxmym:
@@ -3609,6 +3799,8 @@ int main( int argc, char* argv[] )
       // DUT pixel clusters:
 
       int nm = 0; 
+      double dmin = 19.9; // [mm]
+      double clQ0 = 0;
 
       for( vector<cluster>::iterator c = cl0[iDUT].begin(); c != cl0[iDUT].end(); ++c ) {
 
@@ -3655,6 +3847,12 @@ int main( int argc, char* argv[] )
 
 	int ncol = colmax - colmin + 1;
 	int nrow = rowmax - rowmin + 1;
+
+	bool fiducialc = fiducial;
+	if( colmin ==  0 ) fiducialc = 0;
+	if( colmax == 51 ) fiducialc = 0;
+	if( rowmin ==  0 ) fiducialc = 0;
+	if( rowmax == 79 ) fiducialc = 0;
 
 	// eta-algo in rows:
 
@@ -3753,8 +3951,8 @@ int main( int argc, char* argv[] )
 
 	  // threshold:
 
-	  if( U1 < thr ) U1 = thr; // [ke] threshold
-	  if( U2 < thr ) U2 = thr; // This alone improves resolution !
+	  if( U1 < 1.5 ) U1 = 1.5; // [ke] threshold
+	  if( U2 < 1.5 ) U2 = 1.5; // This alone improves resolution !
 
 	  double U12 = U1 + U2;
 
@@ -3827,17 +4025,17 @@ int main( int argc, char* argv[] )
 
 	// DUT - triplet:
 
-	double cmsx = ( ccol - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
-	double cmsy = ( crow - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
+	double cmsx = ( ccol + 0.5 - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
+	double cmsy = ( crow + 0.5 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
 
-	double cmsx0 = ( ccol0 - nx[iDUT]/2 ) * ptchx[iDUT]; // before corr
-	double cmsy0 = ( crow0 - ny[iDUT]/2 ) * ptchy[iDUT]; // 
+	double cmsx0 = ( ccol0 + 0.5 - nx[iDUT]/2 ) * ptchx[iDUT]; // before corr
+	double cmsy0 = ( crow0 + 0.5 - ny[iDUT]/2 ) * ptchy[iDUT]; // 
 
 	if( rot90 ) {
-	  cmsx = ( crow - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
-	  cmsy = ( ccol - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
-	  cmsx0 = ( crow0 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
-	  cmsy0 = ( ccol0 - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
+	  cmsx = ( crow + 0.5 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
+	  cmsy = ( ccol + 0.5 - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
+	  cmsx0 = ( crow0 + 0.5 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
+	  cmsy0 = ( ccol0 + 0.5 - nx[iDUT]/2 ) * ptchx[iDUT]; // -3.9..3.9 mm
 	}
 
 	// residuals for pre-alignment:
@@ -3860,15 +4058,15 @@ int main( int argc, char* argv[] )
 
 	if( chip0 == 500 ) { // 28.3.2015
 	  if( oddcol )
-	    cmsdy = cmsdy - 1.2E-3;
+	    cmsdy -= 1.2E-3;
 	  else
-	    cmsdy = cmsdy + 1.2E-3;
+	    cmsdy += 1.2E-3;
 	}
 	if( chip0 == 504 ) {
 	  if( oddcol )
-	    cmsdy = cmsdy - 1.0E-3;
+	    cmsdy -= 0.0E-3; // 2016
 	  else
-	    cmsdy = cmsdy + 1.0E-3;
+	    cmsdy += 0.5E-3; // 2016
 	}
 
 	if( abs(cmsdx) < xcut  && abs(cmsdy) < ycut ) {
@@ -3882,9 +4080,14 @@ int main( int argc, char* argv[] )
 
 	// cuts:
 
-	if( fiducial && liso ) {
+	if( fiducialc && liso && lsixlk ) { // require REF link (cleaner)
 
 	  // for dx:
+
+	  cmsdxfHisto.Fill( cmsdx );
+	  cmsdx0fHisto.Fill( cmsdx0 );
+	  if( Q0 > 77 )  // 1% Landau tail
+	    cmsdxfq9Histo.Fill( cmsdx );
 
 	  if( abs(cmsdy) < ycut ) {
 
@@ -3902,18 +4105,29 @@ int main( int argc, char* argv[] )
 
 	  // for dy:
 
+	  if(      Q0 < 15 ) // broken cluster
+	    cmsdyfq0Histo.Fill( cmsdy );
+	  else if( Q0 > 77 ) // 1% Landau tail
+	    cmsdyfq9Histo.Fill( cmsdy );
+
 	  if( abs(cmsdx) < xcut ) {
 
 	    cmsdyfcHisto.Fill( cmsdy );
 	    cmsrmsyvsq.Fill( Q0, fabs(cmsdy) ); //resolution vs charge
 
-	    if(      Q0 < 16 ) // broken cluster
+	    if(      Q0 < 15 ) // broken cluster
 	      cmsdyfcq0Histo.Fill( cmsdy );
 
-	    else if( Q0 > 35 )  // Landau tail
-	      cmsdyfcq9Histo.Fill( cmsdy );
+	    else if( Q0 < 17 )
+	      ;
 
-	    else { // 16..35
+	    else if( Q0 > 77 ) // 1% Landau tail
+	      cmsdyfcq9Histo.Fill( cmsdy ); // 82 um
+
+	    else if( Q0 > 35 ) // Landau tail
+	      cmsdyfcq8Histo.Fill( cmsdy );
+
+	    else { // 17..35
 
 	      cmsdyfcq1Histo.Fill( cmsdy );
 
@@ -3944,7 +4158,7 @@ int main( int argc, char* argv[] )
 
 	      }
 
-	      if( Q0 > 17 && Q0 < 23 && !ldot) {
+	      if( Q0 > 19 && Q0 < 23 && !ldot) {
 
 		cmsdyfcq4nodHisto.Fill( cmsdy );
 
@@ -3962,6 +4176,27 @@ int main( int argc, char* argv[] )
 	      cmsdyvsy.Fill( y4, cmsdy );
 	      cmsdyvsty.Fill( sly, cmsdy );
 	    } // lq
+
+	    // depth charge profile:
+
+	    for( int irow = rowmin; irow <= rowmax; ++irow ) {
+
+	      double q = qrow[irow];
+	      double qx = exp(-q/qwid);
+
+	      double yrow = ( irow + 0.5 - ny[iDUT]/2 ) * ptchy[iDUT]; // -4..4 mm
+	      double depth = ( y4 - yrow ) / tan(DUTtilt*wt); // [-thick/2,thick/2]
+
+	      cmsqrowvsd.Fill( depth, qx );
+	      if( irow > rowmin && irow < rowmax ) {
+		cmsqrowvsdc.Fill( depth, qx );
+		if( depth < 0 )
+		  cmsqrownegHisto.Fill( q );
+		else
+		  cmsqrowposHisto.Fill( q );
+	      }
+
+	    } // rows
 
 	  } // dx
 
@@ -4013,7 +4248,7 @@ int main( int argc, char* argv[] )
 		( ymod > 160 && ymod < 180 ) ) // dot
 	      cmsqxvsxmd.Fill( xmod, Qx ); // q within pixel
 
-	    cmsqxvsxmym.Fill( xmod, ymod, Qx ); // cluster charge profile
+	    cmsqxvsxmym->Fill( xmod, ymod, Qx ); // cluster charge profile
 
 	    if( lq ) {
 	      cmsnpxHisto.Fill( c->size );
@@ -4075,19 +4310,33 @@ int main( int argc, char* argv[] )
 		cmsrmsyvsskwrow.Fill( skwrow, fabs(cmsdy) );
 	      }
 
-	      cmsrmsxvsx.Fill( x4, fabs(cmsdx) ); //resolution across cols
-	      cmsrmsyvsx.Fill( x4, fabs(cmsdy) ); //resolution across cols
-	      cmsrmsxvsy.Fill( y4, fabs(cmsdx) ); //resolution across rows
-	      cmsrmsyvsy.Fill( y4, fabs(cmsdy) ); //resolution across rows
+	      // resolution profiles:
 
-	      cmsrmsxvsxm.Fill( xmod, fabs(cmsdx) ); //resolution within pixel
-	      cmsrmsyvsxm.Fill( xmod, fabs(cmsdy) ); //resolution within pixel
+	      cmsrmsxvsx.Fill( x4, fabs(cmsdx) ); // resolution across cols
+	      cmsrmsyvsx.Fill( x4, fabs(cmsdy) ); // resolution across cols
+	      cmsrmsxvsy.Fill( y4, fabs(cmsdx) ); // resolution across rows
+	      cmsrmsyvsy.Fill( y4, fabs(cmsdy) ); // resolution across rows
+
+	      cmsrmsyvstx.Fill( slx, fabs(cmsdy) );
+	      cmsrmsyvsty.Fill( sly, fabs(cmsdy) );
+
+	      cmsrmsxvsxm.Fill( xmod, fabs(cmsdx) ); // resolution within pixel
+	      cmsrmsyvsxm.Fill( xmod, fabs(cmsdy) ); // resolution within pixel
 	      if( !ldot ) {
-		cmsrmsxvsym.Fill( ymod, fabs(cmsdx) ); //resolution within pixel
-		cmsrmsyvsym.Fill( ymod, fabs(cmsdy) ); //resolution within pixel
+		cmsrmsxvsym.Fill( ymod, fabs(cmsdx) ); // resolution within pixel
+		cmsrmsyvsym.Fill( ymod, fabs(cmsdy) ); // resolution within pixel
 	      }
-	      cmsrmsyvsxmym.Fill( xmod, ymod, fabs(cmsdy) ); //resolution within pixel
-	      cmsrmsxvsxmym.Fill( xmod, ymod, fabs(cmsdx) ); //resolution within pixel
+	      cmsrmsyvsxmym->Fill( xmod, ymod, fabs(cmsdy) ); // resolution within pixel
+	      cmsrmsxvsxmym->Fill( xmod, ymod, fabs(cmsdx) ); // resolution within pixel
+
+	      // pump oscillation ?
+
+	      cmsdyvst1.Fill( evsec, cmsdy );
+	      cmsdyvst2.Fill( evsec, cmsdy );
+	      cmsrmsyvst1.Fill( evsec, fabs(cmsdy) );
+	      cmsrmsyvst2.Fill( evsec, fabs(cmsdy) );
+
+	      // cluster size profiles:
 
 	      cmsncolvsx.Fill( x4, ncol ); // no trend
 	      cmsncolvsy.Fill( y4, ncol ); // 
@@ -4099,7 +4348,7 @@ int main( int argc, char* argv[] )
 		cmsncolvsym.Fill( ymod, ncol ); // within pixel
 		cmsnrowvsym.Fill( ymod, nrow ); // within pixel
 	      }
-	      cmsnpxvsxmym.Fill( xmod, ymod, c->size ); // cluster size map
+	      cmsnpxvsxmym->Fill( xmod, ymod, c->size ); // cluster size map
 
 	    } // q Landau peak
 
@@ -4109,9 +4358,15 @@ int main( int argc, char* argv[] )
 
 	// wide linking cut in x and y for efficiency:
 
-	if( abs(cmsdx) < xcut  && abs(cmsdy) < ycut ) {
+	double dxy = sqrt( cmsdx*cmsdx + cmsdy*cmsdy );
+	//if( abs( cmsdx ) < xcut && abs( cmsdy ) < ycut ) {
+	if( dxy < 0.6 ) {
 	  nm = 1;
-	  trixylkHisto.Fill( xA, yA );
+	  trixylkHisto->Fill( xA, yA );
+	}
+	if( dxy < dmin ) {
+	  dmin = dxy;
+	  clQ0 = Q0;
 	}
 
       } // loop DUT clusters
@@ -4120,34 +4375,58 @@ int main( int argc, char* argv[] )
 
       if( lsixlk ) {
 
-	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) // fiducial
-	  effvsdmin.Fill( dmin, nm ); // strong effect
+	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) { // fiducial
+	  effvsdmin.Fill( dddmin, nm ); // at REF, small effect
+	  if( dddmin > 0.4 )
+	    effvstmin.Fill( ttdmin, nm ); // at DUT, flat
+	}
 
-	if( dmin > 1.4 ) { // stronger iso [mm]
+	//if( dddmin > 0.4 && ttdmin > 1.4 ) { // stronger iso [mm] 99.94
+	//if( dddmin > 0.4 && ttdmin > 0.6 ) { // iso [mm] 99.93
+	if( dddmin > 0.6 ) { // iso [mm] 99.94
 
-	  sixxylkHisto.Fill( xA, yA );
-	  if( nm ) sixxyeffHisto.Fill( xA, yA );
+	  sixxylkHisto->Fill( xA, yA );
+	  if( nm ) sixxyeffHisto->Fill( xA, yA );
 
-	  effvsxy.Fill( x4, y4, nm );
+	  effvsxy->Fill( x4, y4, nm );
 
-	  if( abs( y4 ) < 3.9 )
+	  double fidx = 3.9;
+	  double fidy = 3.9;
+	  if( run == 23311 ) {
+	    fidx = 3.4;
+	    fidy = 3.0;
+	  }
+
+	  if( abs( y4 ) < fidy )
 	    effvsx.Fill( x4, nm );
 
-	  if( abs( x4 ) < 3.9 )
+	  if( abs( x4 ) < fidx )
 	    effvsy.Fill( y4, nm );
 
-	  if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) {
+	  if( abs( x4 ) < fidx && abs( y4 ) < fidy ) {
 
+	    effdminHisto.Fill( dmin );
+	    if( nm == 0 ) effdmin0Histo.Fill( dmin );
+	    effclq0Histo.Fill( clQ0 );
+	    if( ndrilk == 1 ) effclqrHisto.Fill( clQ0 );
+	    if( dmin > 0.1 ) effclq1Histo.Fill( clQ0 );
+	    if( dmin > 0.2 ) effclq2Histo.Fill( clQ0 );
+	    if( dmin > 0.3 ) effclq3Histo.Fill( clQ0 );
+	    if( dmin > 0.4 ) effclq4Histo.Fill( clQ0 );
+	    if( dmin > 0.5 ) effclq5Histo.Fill( clQ0 );
+	    if( dmin > 0.6 ) effclq6Histo.Fill( clQ0 );
 	    effvst1.Fill( evsec, nm );
 	    effvst2.Fill( evsec, nm );
 	    effvst3.Fill( evsec, nm );
-	    effvst5.Fill( evsec, nm );
+	    effvst4.Fill( evsec, nm );
 	    effvsntri.Fill( triplets.size(), nm );
-	    effvsxmym.Fill( xmod, ymod, nm );
+	    effvsndrilk.Fill( ndrilk, nm );
+	    effvsxmym->Fill( xmod, ymod, nm );
 	    effvsxm.Fill( xmod, nm );
 	    effvstx.Fill( slx, nm );
 	    effvsty.Fill( sly, nm );
 	    effvstxy.Fill( txy, nm ); // no effect
+	    effvsdslp.Fill( sixdslp, nm ); // no effect
 
 	  } // fiducial
 
@@ -4257,7 +4536,7 @@ int main( int argc, char* argv[] )
     cout << endl << cmsdxHisto.GetTitle()
 	 << " bin " << cmsdxHisto.GetBinWidth(1)
 	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
     fgp0->SetParameter( 0, cmsdxHisto.GetMaximum() ); // amplitude
     fgp0->SetParameter( 1, cmsdxHisto.GetBinCenter( cmsdxHisto.GetMaximumBin() ) );
     fgp0->SetParameter( 2, 8*cmsdxHisto.GetBinWidth(1) ); // sigma
@@ -4278,7 +4557,7 @@ int main( int argc, char* argv[] )
     cout << endl << cmsdyHisto.GetTitle()
 	 << " bin " << cmsdyHisto.GetBinWidth(1)
 	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
     fgp0->SetParameter( 0, cmsdyHisto.GetMaximum() ); // amplitude
     fgp0->SetParameter( 1, cmsdyHisto.GetBinCenter( cmsdyHisto.GetMaximumBin() ) );
     fgp0->SetParameter( 2, 5*cmsdyHisto.GetBinWidth(1) ); // sigma
