@@ -63,4 +63,4 @@ sizex 7.8
 sizey 8.0
 npixelx 52 # with 2 big pix
 npixely 80 # with 1 big pix
-zpos 40 # relative to plane 5
+zpos 55 # relative to plane 5

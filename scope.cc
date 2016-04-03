@@ -1990,6 +1990,24 @@ int main( int argc, char* argv[] )
   TH1I hdridxc = TH1I( "dridxc", "driplet dx;driplet dx [mm];driplets", 100, -0.05, 0.05 );
   TH1I hdridyc = TH1I( "dridyc", "driplet dy;driplet dy [mm];driplets", 100, -0.05, 0.05 );
 
+  TProfile dridxvsy =
+    TProfile( "dridxvsy",
+	      "driplet dx vs y;driplet yB [mm];<driplets #Deltax> [mm]",
+	      110, -5.5, 5.5, -0.05, 0.05 );
+  TProfile dridyvsx =
+    TProfile( "dridyvsx",
+	      "driplet dy vs x;driplet xB [mm];<driplets #Deltay> [mm]",
+	      110, -11, 11, -0.05, 0.05 );
+
+  TProfile dridxvstx =
+    TProfile( "dridxstx",
+	      "driplet dx vs slope x;driplet slope x [rad];<driplets #Deltax> [mm]",
+	      60, -0.003, 0.003, -0.05, 0.05 );
+  TProfile dridyvsty =
+    TProfile( "dridysty",
+	      "driplet dy vs slope y;driplet slope y [rad];<driplets #Deltay> [mm]",
+	      60, -0.003, 0.003, -0.05, 0.05 );
+
   TH1I ndriHisto = TH1I( "ndri", "driplets;driplets;events", 51, -0.5, 50.5 );
 
   TH1I dddmin1Histo = TH1I( "dddmin1",
@@ -2244,6 +2262,22 @@ int main( int argc, char* argv[] )
 			100, -0.05, 0.05 );
   TH1I htridxs5 = TH1I( "tridxs5", "triplet dx 5-px;5-px triplet dx [mm];5-px triplets",
 			100, -0.05, 0.05 );
+  TProfile tridxvsy =
+    TProfile( "tridxvsy",
+	      "triplet dx vs y;triplet yB [mm];<triplets #Deltax> [mm]",
+	      110, -5.5, 5.5, -0.05, 0.05 );
+  TProfile tridyvsx =
+    TProfile( "tridyvsx",
+	      "triplet dy vs x;triplet xB [mm];<triplets #Deltay> [mm]",
+	      110, -11, 11, -0.05, 0.05 );
+  TProfile tridxvstx =
+    TProfile( "tridxstx",
+	      "triplet dx vs slope x;triplet slope x [rad];<triplets #Deltax> [mm]",
+	      60, -0.003, 0.003, -0.05, 0.05 );
+  TProfile tridyvsty =
+    TProfile( "tridysty",
+	      "triplet dy vs slope y;triplet slope y [rad];<triplets #Deltay> [mm]",
+	      60, -0.003, 0.003, -0.05, 0.05 );
 
   TH1I ntriHisto = TH1I( "ntri", "triplets;triplets;events", 51, -0.5, 50.5 );
 
@@ -3163,8 +3197,8 @@ int main( int argc, char* argv[] )
 	hdx35.Fill( dx2 );
 	hdy35.Fill( dy2 );
 
-	if( abs( dx2 ) > 0.005 * dz35 ) continue; // angle cut
-	if( abs( dy2 ) > 0.005 * dz35 ) continue; // angle cut
+	if( fabs( dx2 ) > 0.005 * dz35 ) continue; // angle cut
+	if( fabs( dy2 ) > 0.005 * dz35 ) continue; // angle cut
 
 	double avx = 0.5 * ( xA + xC ); // mid
 	double avy = 0.5 * ( yA + yC );
@@ -3195,11 +3229,17 @@ int main( int argc, char* argv[] )
 	  hdridx.Fill( dx3 );
 	  hdridy.Fill( dy3 );
 
-	  if( abs( dy3 ) < 0.02 ) {
+	  if( fabs( dy3 ) < 0.05 ) {
 	    hdridxc.Fill( dx3 );
+	    dridxvsy.Fill( yB, dx3 );
+	    dridxvstx.Fill( slpx, dx3 );
 	  }
-	  if( abs( dx3 ) < 0.02 )
+
+	  if( fabs( dx3 ) < 0.05 ) {
 	    hdridyc.Fill( dy3 );
+	    dridyvsx.Fill( xB, dy3 );
+	    dridyvsty.Fill( slpy, dy3 );
+	  }
 
 	  // telescope driplet cuts:
 
@@ -3307,19 +3347,19 @@ int main( int argc, char* argv[] )
 	double refdx = refx - x4;
 	double refdy = refy - y4;
 
-	if( abs( refdx ) < xcutREF ) {
+	if( fabs( refdx ) < xcutREF ) {
 	  refdyHisto.Fill( refdy );
 	  refdyvsx.Fill( x4, refdy );
 	  refdyvsy.Fill( y4, refdy );
 	  refdyvsty.Fill( sly, refdy );
 	}
 
-	if( abs( refdy ) < ycutREF ) {
+	if( fabs( refdy ) < ycutREF ) {
 	  refdxHisto.Fill( refdx );
 	}
 
-	if( abs( refdx ) < xcutREF &&
-	    abs( refdy ) < ycutREF &&
+	if( fabs( refdx ) < xcutREF &&
+	    fabs( refdy ) < ycutREF &&
 	    fabs( x4 ) < 3.9 && // fiducial at REF
 	    fabs( y4 ) < 3.9 ) {
 	  refnpxHisto.Fill( npx );
@@ -3537,8 +3577,8 @@ int main( int argc, char* argv[] )
 	hdx02.Fill( dx2 );
 	hdy02.Fill( dy2 );
 
-	if( abs( dx2 ) > 0.005 * dz02 ) continue; // angle cut
-	if( abs( dy2 ) > 0.005 * dz02 ) continue; // angle cut
+	if( fabs( dx2 ) > 0.005 * dz02 ) continue; // angle cut
+	if( fabs( dy2 ) > 0.005 * dz02 ) continue; // angle cut
 
 	double avx = 0.5 * ( xA + xC ); // mid
 	double avy = 0.5 * ( yA + yC );
@@ -3569,9 +3609,11 @@ int main( int argc, char* argv[] )
 	  htridx.Fill( dx3 );
 	  htridy.Fill( dy3 );
 
-	  if( abs( dy3 ) < 0.02 ) {
+	  if( fabs( dy3 ) < 0.05 ) {
 
 	    htridxc.Fill( dx3 );
+	    tridxvsy.Fill( yB, dx3 );
+	    tridxvstx.Fill( slpx, dx3 );
 
 	    if(      cB->size == 1 )
 	      htridxs1.Fill( dx3 ); // 4.2 um
@@ -3594,9 +3636,14 @@ int main( int argc, char* argv[] )
 	      htridxc4.Fill( dx3 ); // 3.5 um
 	    else
 	      htridxc5.Fill( dx3 ); // 4.1 um
-	  }
-	  if( abs( dx3 ) < 0.02 )
+
+	  } // dy
+
+	  if( fabs( dx3 ) < 0.05 ) {
 	    htridyc.Fill( dy3 );
+	    tridyvsx.Fill( xB, dy3 );
+	    tridyvsty.Fill( slpy, dy3 );
+	  }
 
 	  // telescope triplet cuts:
 
@@ -3710,12 +3757,12 @@ int main( int argc, char* argv[] )
 
 	hsixdx.Fill( dx ); // for align fit
 	hsixdy.Fill( dy ); // for align fit
-	if( abs(dy) < sixcut ) {
+	if( fabs(dy) < sixcut ) {
 	  hsixdxc.Fill( dx );
 	  sixdxvsy.Fill( yB, dx );
 	  sixdxvstx.Fill( slx, dx );
 	}
-	if( abs(dx) < sixcut ) {
+	if( fabs(dx) < sixcut ) {
 	  hsixdyc.Fill( dy );
 	  sixdyvsx.Fill( xB, dy );
 	  sixdyvsty.Fill( sly, dy );
@@ -3723,7 +3770,7 @@ int main( int argc, char* argv[] )
 
 	// compare slopes:
 
-	if( abs(dy) < 0.1 && abs(dx) < 0.1 ) {
+	if( fabs(dy) < 0.1 && fabs(dx) < 0.1 ) {
 	  hsixdslpx.Fill( slxB - slx );
 	  hsixdslpy.Fill( slyB - sly ); // width: 0.3 mrad
 	}
@@ -3780,8 +3827,8 @@ int main( int argc, char* argv[] )
       double y4 =-upsigny*y3 + DUTaligny; // invert y, shift to mid
 
       bool fiducial = 1;
-      if( abs( x4 ) > 3.9 ) fiducial = 0; // skip big col
-      if( abs( y4 ) > 3.9 ) fiducial = 0; // skip 1st and last row
+      if( fabs( x4 ) > 3.9 ) fiducial = 0; // skip big col
+      if( fabs( y4 ) > 3.9 ) fiducial = 0; // skip 1st and last row
 
       // reduce to 2x2 pixel region:
 
@@ -4092,7 +4139,7 @@ int main( int argc, char* argv[] )
 	    cmsdy += 0.5E-3; // 2016
 	}
 
-	if( abs(cmsdx) < xcut  && abs(cmsdy) < ycut ) {
+	if( fabs(cmsdx) < xcut  && fabs(cmsdy) < ycut ) {
 
 	  cmslkxHisto.Fill( xc );
 	  cmslkyHisto.Fill( yc );
@@ -4114,7 +4161,7 @@ int main( int argc, char* argv[] )
 	  if( Q0 > 77 )  // 1% Landau tail
 	    cmsdxfq9Histo.Fill( cmsdx );
 
-	  if( abs(cmsdy) < ycut ) {
+	  if( fabs(cmsdy) < ycut ) {
 
 	    cmsdxfcHisto.Fill( cmsdx );
 
@@ -4135,7 +4182,7 @@ int main( int argc, char* argv[] )
 	  else if( Q0 > 77 ) // 1% Landau tail
 	    cmsdyfq9Histo.Fill( cmsdy );
 
-	  if( abs(cmsdx) < xcut ) {
+	  if( fabs(cmsdx) < xcut ) {
 
 	    cmsdyfcHisto.Fill( cmsdy );
 	    cmsrmsyvsq.Fill( Q0, fabs(cmsdy) ); //resolution vs charge
@@ -4227,7 +4274,7 @@ int main( int argc, char* argv[] )
 
 	  // cut in x and y:
 
-	  if( abs(cmsdx) < xcut  && abs(cmsdy) < ycut ) {
+	  if( fabs(cmsdx) < xcut  && fabs(cmsdy) < ycut ) {
 
 	    cmsq0fHisto.Fill( Q0 ); // Landau
 
@@ -4384,7 +4431,7 @@ int main( int argc, char* argv[] )
 	// wide linking cut in x and y for efficiency:
 
 	double dxy = sqrt( cmsdx*cmsdx + cmsdy*cmsdy );
-	//if( abs( cmsdx ) < xcut && abs( cmsdy ) < ycut ) {
+	//if( fabs( cmsdx ) < xcut && fabs( cmsdy ) < ycut ) {
 	//if( dxy < 0.6 ) {
 	if( dxy < 0.9 ) {
 	  nm = 1;
@@ -4405,7 +4452,7 @@ int main( int argc, char* argv[] )
 	  //&& cl0[iDUT].size() < 2 // empty or single cluster, same eff
 	  ) {
 
-	if( abs( x4 ) < 3.9 && abs( y4 ) < 3.9 ) { // fiducial
+	if( fabs( x4 ) < 3.9 && fabs( y4 ) < 3.9 ) { // fiducial
 	  effvsdmin.Fill( dddmin, nm ); // at REF, small effect
 	  if( dddmin > 0.4 )
 	    effvstmin.Fill( ttdmin, nm ); // at DUT, flat
@@ -4427,13 +4474,13 @@ int main( int argc, char* argv[] )
 	    fidy = 3.0;
 	  }
 
-	  if( abs( y4 ) < fidy )
+	  if( fabs( y4 ) < fidy )
 	    effvsx.Fill( x4, nm );
 
-	  if( abs( x4 ) < fidx )
+	  if( fabs( x4 ) < fidx )
 	    effvsy.Fill( y4, nm );
 
-	  if( abs( x4 ) < fidx && abs( y4 ) < fidy ) {
+	  if( fabs( x4 ) < fidx && fabs( y4 ) < fidy ) {
 
 	    effdminHisto.Fill( dmin );
 	    if( nm == 0 ) {
@@ -4567,7 +4614,7 @@ int main( int argc, char* argv[] )
 
   // finer alignment:
 
-  if( abs( newDUTalignx - DUTalignx ) < 0.1 ) {
+  if( fabs( newDUTalignx - DUTalignx ) < 0.1 ) {
 
     cout << endl << cmsdxHisto.GetTitle()
 	 << " bin " << cmsdxHisto.GetBinWidth(1)
@@ -4588,7 +4635,7 @@ int main( int argc, char* argv[] )
 
   }
 
-  if( abs( newDUTaligny - DUTaligny ) < 0.1 ) {
+  if( fabs( newDUTaligny - DUTaligny ) < 0.1 ) {
 
     cout << endl << cmsdyHisto.GetTitle()
 	 << " bin " << cmsdyHisto.GetBinWidth(1)
@@ -4739,7 +4786,7 @@ int main( int argc, char* argv[] )
 
   // finer alignment:
 
-  if( abs( newREFalignx - REFalignx ) < 0.1 ) {
+  if( fabs( newREFalignx - REFalignx ) < 0.1 ) {
 
     cout << endl << refdxHisto.GetTitle()
 	 << " bin " << refdxHisto.GetBinWidth(1)
@@ -4760,7 +4807,7 @@ int main( int argc, char* argv[] )
 
   }
 
-  if( abs( newREFaligny - REFaligny ) < 0.1 ) {
+  if( fabs( newREFaligny - REFaligny ) < 0.1 ) {
 
     cout << endl << refdyHisto.GetTitle()
 	 << " bin " << refdyHisto.GetBinWidth(1)
