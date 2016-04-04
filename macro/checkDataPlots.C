@@ -122,7 +122,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTCanvas["canvas3x2"]->Divide(3,2);
   
   /// Open file to print and save canvases on different pages
-  mapOfTCanvas["canvas3x2"]->Print(TString(outputfilename+"["));
+  mapOfTCanvas["canvas3x2"]->Print(TString(scopeNumber+"/"+outputfilename+"["));
 
   mapOfTCanvas["canvas2x2"]->cd(1);
   mapOfTH1I["trix"]->Draw();
@@ -204,7 +204,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTProfile["cmsrmsxvsy"]->Draw();
   mapOfTCanvas["canvas2x2"]->cd(4);
   mapOfTProfile["cmsrmsyvsy"]->Draw();
-  mapOfTCanvas["canvas2x2"]->Print(TString(outputfilename));
+  mapOfTCanvas["canvas2x2"]->Print(TString(scopeNumber+"/"+outputfilename));
 
   mapOfTCanvas["canvas2x2"]->cd(1);
   mapOfTProfile["cmsrmsxvsxm"]->Draw();
@@ -222,8 +222,6 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTProfile["cmsqxvst2"]->Draw();
   mapOfTCanvas["canvas2x2"]->cd(3);
   mapOfTProfile["cmsqxvst3"]->Draw();
-  mapOfTCanvas["canvas2x2"]->cd(4);
-  mapOfTProfile["cmsqxvst4"]->Draw();
   mapOfTCanvas["canvas2x2"]->Print(TString(scopeNumber+"/"+outputfilename));
 
   mapOfTCanvas["canvas3x2"]->cd(1);
@@ -292,7 +290,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
 
 
   /// Close file used to print and save canvases on different pages   
-  mapOfTCanvas["canvas3x2"]->Print(TString(outputfilename+"]"));
+  mapOfTCanvas["canvas3x2"]->Print(TString(scopeNumber+"/"+outputfilename+"]"));
 
   /// Print the location and name of output file
   std::cout << "Output file name " << scopeNumber << "/" << outputfilename << std::endl;
