@@ -2271,11 +2271,11 @@ int main( int argc, char* argv[] )
 	      "triplet dy vs x;triplet xB [mm];<triplets #Deltay> [mm]",
 	      110, -11, 11, -0.05, 0.05 );
   TProfile tridxvstx =
-    TProfile( "tridxstx",
+    TProfile( "tridxvstx",
 	      "triplet dx vs slope x;triplet slope x [rad];<triplets #Deltax> [mm]",
 	      60, -0.003, 0.003, -0.05, 0.05 );
   TProfile tridyvsty =
-    TProfile( "tridysty",
+    TProfile( "tridyvsty",
 	      "triplet dy vs slope y;triplet slope y [rad];<triplets #Deltay> [mm]",
 	      60, -0.003, 0.003, -0.05, 0.05 );
 
@@ -4151,7 +4151,7 @@ int main( int argc, char* argv[] )
 	// cuts:
 
 	if( fiducialc &&
-	    cl0[iDUT].size() == 1 && // single cluster = clean events
+	    ( cl0[iDUT].size() == 1 || chip0 > 600 ) && // single cluster = clean events
 	    liso && lsixlk ) { // require REF link (cleaner)
 
 	  // for dx:
@@ -4533,178 +4533,6 @@ int main( int argc, char* argv[] )
   histoFile->Close();
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // DUT alignment:
-
-  double newDUTalignx = DUTalignx;
-  double newDUTaligny = DUTaligny;
-
-  if( cmsdxaHisto.GetMaximum() > cmssxaHisto.GetMaximum() ) {
-    cout << endl << cmsdxaHisto.GetTitle()
-	 << " bin " << cmsdxaHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, cmsdxaHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmsdxaHisto.GetBinCenter( cmsdxaHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, cmsdxaHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmsdxaHisto.GetBinContent(1) ); // BG
-    cmsdxaHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTalignx = fgp0->GetParameter(1);
-  }
-  else {
-    cout << endl << cmssxaHisto.GetTitle()
-	 << " bin " << cmssxaHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, cmssxaHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmssxaHisto.GetBinCenter( cmssxaHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, cmssxaHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmssxaHisto.GetBinContent(1) ); // BG
-    cmssxaHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTalignx = fgp0->GetParameter(1);
-  }
-
-  if( cmsdyaHisto.GetMaximum() > cmssyaHisto.GetMaximum() ) {
-    cout << endl << cmsdyaHisto.GetTitle()
-	 << " bin " << cmsdyaHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, cmsdyaHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmsdyaHisto.GetBinCenter( cmsdyaHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, cmsdyaHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmsdyaHisto.GetBinContent(1) ); // BG
-    cmsdyaHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTaligny = fgp0->GetParameter(1);
-  }
-  else {
-    cout << endl << cmssyaHisto.GetTitle()
-	 << " bin " << cmssyaHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, cmssyaHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmssyaHisto.GetBinCenter( cmssyaHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, cmssyaHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmssyaHisto.GetBinContent(1) ); // BG
-    cmssyaHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTaligny = fgp0->GetParameter(1);
-  }
-
-  // finer alignment:
-
-  if( fabs( newDUTalignx - DUTalignx ) < 0.1 ) {
-
-    cout << endl << cmsdxHisto.GetTitle()
-	 << " bin " << cmsdxHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
-    fgp0->SetParameter( 0, cmsdxHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmsdxHisto.GetBinCenter( cmsdxHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 8*cmsdxHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmsdxHisto.GetBinContent(1) ); // BG
-    cmsdxHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTalignx = DUTalignx + fgp0->GetParameter(1);
-
-  }
-
-  if( fabs( newDUTaligny - DUTaligny ) < 0.1 ) {
-
-    cout << endl << cmsdyHisto.GetTitle()
-	 << " bin " << cmsdyHisto.GetBinWidth(1)
-	 << endl;
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
-    fgp0->SetParameter( 0, cmsdyHisto.GetMaximum() ); // amplitude
-    fgp0->SetParameter( 1, cmsdyHisto.GetBinCenter( cmsdyHisto.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 5*cmsdyHisto.GetBinWidth(1) ); // sigma
-    fgp0->SetParameter( 3, cmsdyHisto.GetBinContent(1) ); // BG
-    cmsdyHisto.Fit( "fgp0", "q" );
-    cout << "Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "mid " << fgp0->GetParameter(1)
-	 << endl << "sig " << fgp0->GetParameter(2)
-	 << endl << " BG " << fgp0->GetParameter(3)
-	 << endl;
-    newDUTaligny = DUTaligny + fgp0->GetParameter(1);
-
-    // dyvsx -> rot
-
-    cmsdyvsx.Fit( "pol1", "q", "", -midx[iDUT]+0.2, midx[iDUT]-0.2 );
-    TF1 * fdyvsx = cmsdyvsx.GetFunction( "pol1" );
-    cout << endl << cmsdyvsx.GetTitle()
-	 << ": extra rot " << fdyvsx->GetParameter(1) << endl;
-    DUTrot += fdyvsx->GetParameter(1);
-
-    // dyvsy -> tilt:
-
-    cmsdyvsy.Fit( "pol1", "q", "", -midy[iDUT]+0.2, midy[iDUT]-0.2 );
-    TF1 * fdyvsy = cmsdyvsy.GetFunction( "pol1" );
-    cout << endl << cmsdyvsy.GetTitle()
-	 << ": slope " << fdyvsy->GetParameter(1)
-	 << ", extra tilt " << fdyvsy->GetParameter(1)/wt/max(sa,0.01)
-	 << " deg"
-	 << endl;
-    DUTtilt += fdyvsy->GetParameter(1)/wt/max(sa,0.01); // [deg] min 0.6 deg
-
-    // dyvsty -> dz:
-
-    cmsdyvsty.Fit( "pol1", "q", "", -0.002, 0.002 );
-    TF1 * fdyvsty = cmsdyvsty.GetFunction( "pol1" );
-    cout << endl << cmsdyvsty.GetTitle()
-	 << ": z shift " << fdyvsty->GetParameter(1)
-	 << " mm (subtract from DUTz)"
-	 << endl;
-    DUTz -= fdyvsty->GetParameter(1);
-  }
-
-  // write new DUT alignment:
-
-  ofstream DUTalignFile( DUTalignFileName.str() );
-
-  DUTalignFile << "# DUT alignment for run " << run << endl;
-  ++DUTaligniteration;
-  DUTalignFile << "iteration " << DUTaligniteration << endl;
-  DUTalignFile << "alignx " << newDUTalignx << endl;
-  DUTalignFile << "aligny " << newDUTaligny << endl;
-  DUTalignFile << "rot " << DUTrot << endl;
-  DUTalignFile << "tilt " << DUTtilt << endl;
-  DUTalignFile << "turn " << DUTturn << endl;
-  DUTalignFile << "dz " << DUTz - zz[2] << endl;
-
-  DUTalignFile.close();
-
-  cout << endl << "wrote DUT alignment iteration " << DUTaligniteration
-       << " to " << DUTalignFileName.str()
-       << endl;
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // REF alignment:
 
   double newREFalignx = REFalignx;
@@ -4786,7 +4614,7 @@ int main( int argc, char* argv[] )
 
   // finer alignment:
 
-  if( fabs( newREFalignx - REFalignx ) < 0.1 ) {
+  if( REFaligniteration > 0 && fabs( newREFalignx - REFalignx ) < 0.1 ) {
 
     cout << endl << refdxHisto.GetTitle()
 	 << " bin " << refdxHisto.GetBinWidth(1)
@@ -4807,7 +4635,7 @@ int main( int argc, char* argv[] )
 
   }
 
-  if( fabs( newREFaligny - REFaligny ) < 0.1 ) {
+  if( REFaligniteration > 0 && fabs( newREFaligny - REFaligny ) < 0.1 ) {
 
     cout << endl << refdyHisto.GetTitle()
 	 << " bin " << refdyHisto.GetBinWidth(1)
@@ -4862,6 +4690,185 @@ int main( int argc, char* argv[] )
   cout << endl << "wrote REF alignment iteration " << REFaligniteration
        << " to " << REFalignFileName.str()
        << endl;
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // DUT alignment:
+
+  double newDUTalignx = DUTalignx;
+  double newDUTaligny = DUTaligny;
+
+  if( cmsdxaHisto.GetMaximum() > cmssxaHisto.GetMaximum() ) {
+    cout << endl << cmsdxaHisto.GetTitle()
+	 << " bin " << cmsdxaHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -10, 10 );
+    double xpk = cmsdxaHisto.GetBinCenter( cmsdxaHisto.GetMaximumBin() );
+    fgp0->SetParameter( 0, cmsdxaHisto.GetMaximum() ); // amplitude
+    fgp0->SetParameter( 1, xpk );
+    fgp0->SetParameter( 2, cmsdxaHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmsdxaHisto.GetBinContent(1) ); // BG
+    cmsdxaHisto.Fit( "fgp0", "q", "", xpk-1, xpk+1 );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTalignx = fgp0->GetParameter(1);
+  }
+  else {
+    cout << endl << cmssxaHisto.GetTitle()
+	 << " bin " << cmssxaHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+    fgp0->SetParameter( 0, cmssxaHisto.GetMaximum() ); // amplitude
+    double xpk = cmssxaHisto.GetBinCenter( cmssxaHisto.GetMaximumBin() );
+    fgp0->SetParameter( 1, xpk );
+    fgp0->SetParameter( 2, cmssxaHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmssxaHisto.GetBinContent(1) ); // BG
+    cmssxaHisto.Fit( "fgp0", "q", "", xpk-1, xpk+1 );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTalignx = fgp0->GetParameter(1);
+  }
+
+  if( cmsdyaHisto.GetMaximum() > cmssyaHisto.GetMaximum() ) {
+    cout << endl << cmsdyaHisto.GetTitle()
+	 << " bin " << cmsdyaHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+    fgp0->SetParameter( 0, cmsdyaHisto.GetMaximum() ); // amplitude
+    double xpk = cmsdyaHisto.GetBinCenter( cmsdyaHisto.GetMaximumBin() );
+    fgp0->SetParameter( 1, xpk );
+    fgp0->SetParameter( 2, cmsdyaHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmsdyaHisto.GetBinContent(1) ); // BG
+    cmsdyaHisto.Fit( "fgp0", "q", "", xpk-1, xpk+1 );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTaligny = fgp0->GetParameter(1);
+  }
+  else {
+    cout << endl << cmssyaHisto.GetTitle()
+	 << " bin " << cmssyaHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+    fgp0->SetParameter( 0, cmssyaHisto.GetMaximum() ); // amplitude
+    double xpk = cmssyaHisto.GetBinCenter( cmssyaHisto.GetMaximumBin() );
+    fgp0->SetParameter( 1, xpk );
+    fgp0->SetParameter( 2, cmssyaHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmssyaHisto.GetBinContent(1) ); // BG
+    cmssyaHisto.Fit( "fgp0", "q", "", xpk-1, xpk+1 );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTaligny = fgp0->GetParameter(1);
+  }
+
+  // finer alignment:
+
+  if( DUTaligniteration > 0 && fabs( newDUTalignx - DUTalignx ) < 0.1 ) {
+
+    cout << endl << cmsdxHisto.GetTitle()
+	 << " bin " << cmsdxHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
+    fgp0->SetParameter( 0, cmsdxHisto.GetMaximum() ); // amplitude
+    fgp0->SetParameter( 1, cmsdxHisto.GetBinCenter( cmsdxHisto.GetMaximumBin() ) );
+    fgp0->SetParameter( 2, 8*cmsdxHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmsdxHisto.GetBinContent(1) ); // BG
+    cmsdxHisto.Fit( "fgp0", "q" );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTalignx = DUTalignx + fgp0->GetParameter(1);
+
+  }
+
+  if( DUTaligniteration > 0 && fabs( newDUTaligny - DUTaligny ) < 0.1 ) {
+
+    cout << endl << cmsdyHisto.GetTitle()
+	 << " bin " << cmsdyHisto.GetBinWidth(1)
+	 << endl;
+    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -0.5, 0.5 );
+    fgp0->SetParameter( 0, cmsdyHisto.GetMaximum() ); // amplitude
+    fgp0->SetParameter( 1, cmsdyHisto.GetBinCenter( cmsdyHisto.GetMaximumBin() ) );
+    fgp0->SetParameter( 2, 5*cmsdyHisto.GetBinWidth(1) ); // sigma
+    fgp0->SetParameter( 3, cmsdyHisto.GetBinContent(1) ); // BG
+    cmsdyHisto.Fit( "fgp0", "q" );
+    cout << "Fit Gauss + BG:"
+	 << endl << "  A " << fgp0->GetParameter(0)
+	 << endl << "mid " << fgp0->GetParameter(1)
+	 << endl << "sig " << fgp0->GetParameter(2)
+	 << endl << " BG " << fgp0->GetParameter(3)
+	 << endl;
+    newDUTaligny = DUTaligny + fgp0->GetParameter(1);
+
+    // dyvsx -> rot
+
+    cmsdyvsx.Fit( "pol1", "q", "", -midx[iDUT]+0.2, midx[iDUT]-0.2 );
+    TF1 * fdyvsx = cmsdyvsx.GetFunction( "pol1" );
+    cout << endl << cmsdyvsx.GetTitle()
+	 << ": extra rot " << fdyvsx->GetParameter(1) << endl;
+    DUTrot += fdyvsx->GetParameter(1);
+
+    // dyvsy -> tilt:
+
+    cmsdyvsy.Fit( "pol1", "q", "", -midy[iDUT]+0.2, midy[iDUT]-0.2 );
+    TF1 * fdyvsy = cmsdyvsy.GetFunction( "pol1" );
+    cout << endl << cmsdyvsy.GetTitle()
+	 << ": slope " << fdyvsy->GetParameter(1)
+	 << ", extra tilt " << fdyvsy->GetParameter(1)/wt/max(sa,0.01)
+	 << " deg"
+	 << endl;
+    DUTtilt += fdyvsy->GetParameter(1)/wt/max(sa,0.01); // [deg] min 0.6 deg
+
+    // dyvsty -> dz:
+
+    cmsdyvsty.Fit( "pol1", "q", "", -0.002, 0.002 );
+    TF1 * fdyvsty = cmsdyvsty.GetFunction( "pol1" );
+    cout << endl << cmsdyvsty.GetTitle()
+	 << ": z shift " << fdyvsty->GetParameter(1)
+	 << " mm (subtract from DUTz)"
+	 << endl;
+    DUTz -= fdyvsty->GetParameter(1);
+  }
+
+  // write new DUT alignment:
+
+  ofstream DUTalignFile( DUTalignFileName.str() );
+
+  DUTalignFile << "# DUT alignment for run " << run << endl;
+  ++DUTaligniteration;
+  DUTalignFile << "iteration " << DUTaligniteration << endl;
+  DUTalignFile << "alignx " << newDUTalignx << endl;
+  DUTalignFile << "aligny " << newDUTaligny << endl;
+  DUTalignFile << "rot " << DUTrot << endl;
+  DUTalignFile << "tilt " << DUTtilt << endl;
+  DUTalignFile << "turn " << DUTturn << endl;
+  DUTalignFile << "dz " << DUTz - zz[2] << endl;
+
+  DUTalignFile.close();
+
+  cout << endl << "wrote DUT alignment iteration " << DUTaligniteration
+       << " to " << DUTalignFileName.str()
+       << endl;
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // done
 
   cout << endl << histoFile->GetName() << endl;
 
