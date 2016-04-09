@@ -25,6 +25,7 @@
 #include <fstream> // filestream
 #include <map>
 #include <set>
+#include <cmath>
 
 using namespace std;
 using namespace eudaq;

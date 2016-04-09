@@ -22,6 +22,7 @@
 #include <sstream> // stringstream
 #include <fstream> // filestream
 #include <set>
+#include <cmath>
 
 using namespace std;
 using namespace eudaq;
