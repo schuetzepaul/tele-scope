@@ -52,8 +52,8 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   gROOT->ProcessLine("gErrorIgnoreLevel = 1001;");
 
   /// Extract file name
-  TObjArray* token  = TString(file).Tokenize(".");
-  std::string  scopeNumber = ((TObjString*)token->At(0))->GetString().Data();
+  TObjArray* token  = TString(file).Tokenize("/");
+  std::string  scopeNumber = TString(((TObjString*)token->At(token->GetLast()))->GetString()).ReplaceAll(".root","").Data();
 
   /// Create directory to store pdf file
   gSystem->MakeDirectory(TString(scopeNumber));
@@ -66,7 +66,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
 
   /// Create input file handler
   TFile* sampleFile = new TFile(file.c_str());
-  std::cout << "reading file " << sampleFile->GetName() << std::endl;
+  std::cout << "Reading file " << sampleFile->GetName() << std::endl;
 
   /// Check input file is not a zombine (corrupt or does not exit)
   if(sampleFile->IsZombie()) {
@@ -122,13 +122,42 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTCanvas["canvas3x2"]->Divide(3,2);
   
   /// Open file to print and save canvases on different pages
-  mapOfTCanvas["canvas3x2"]->Print(TString(outputfilename+"["));
+  mapOfTCanvas["canvas3x2"]->Print(TString(scopeNumber+"/"+outputfilename+"["));
 
   mapOfTCanvas["canvas2x2"]->cd(1);
   mapOfTH1I["trix"]->Draw();
   mapOfTCanvas["canvas2x2"]->cd(2);
   mapOfTH1I["triy"]->Draw();
   mapOfTCanvas["canvas2x2"]->Print(TString(scopeNumber+"/"+outputfilename));
+
+
+  mapOfTCanvas["canvas2x1"]->cd(1);
+  mapOfTH1I["dddmin1"]->Draw();
+  mapOfTCanvas["canvas2x1"]->cd(2);
+  mapOfTH1I["dddmin2"]->Draw();
+  mapOfTCanvas["canvas2x1"]->Print(TString(scopeNumber+"/"+outputfilename));
+
+  mapOfTCanvas["canvas2x1"]->cd(1);
+  mapOfTH1I["effdmin"]->Draw();
+  mapOfTCanvas["canvas2x1"]->cd(2);
+  mapOfTH1I["effdmin0"]->Draw();
+  mapOfTCanvas["canvas2x1"]->Print(TString(scopeNumber+"/"+outputfilename));
+
+  mapOfTCanvas["canvas2x1"]->cd(1);
+  mapOfTH1I["refdx"]->Draw();
+  mapOfTCanvas["canvas2x1"]->cd(2);
+  mapOfTH1I["refdy"]->Draw();
+  mapOfTCanvas["canvas2x1"]->Print(TString(scopeNumber+"/"+outputfilename));
+
+  mapOfTCanvas["canvas2x1"]->cd(1);
+  mapOfTH1I["effdxmin0"]->Draw();
+  mapOfTCanvas["canvas2x1"]->cd(2);
+  mapOfTH1I["effdymin0"]->Draw();
+  mapOfTCanvas["canvas2x1"]->Print(TString(scopeNumber+"/"+outputfilename));
+
+  mapOfTCanvas["canvas2x1"]->cd(1);
+  mapOfTH1I["effclq0"]->Draw();
+  mapOfTCanvas["canvas2x1"]->Print(TString(scopeNumber+"/"+outputfilename));
 
   mapOfTCanvas["canvas2x1"]->cd(1);
   mapOfTProfile["effvsx"]->Draw();
@@ -204,7 +233,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTProfile["cmsrmsxvsy"]->Draw();
   mapOfTCanvas["canvas2x2"]->cd(4);
   mapOfTProfile["cmsrmsyvsy"]->Draw();
-  mapOfTCanvas["canvas2x2"]->Print(TString(outputfilename));
+  mapOfTCanvas["canvas2x2"]->Print(TString(scopeNumber+"/"+outputfilename));
 
   mapOfTCanvas["canvas2x2"]->cd(1);
   mapOfTProfile["cmsrmsxvsxm"]->Draw();
@@ -222,8 +251,6 @@ void  checkDataPlots(std::string file = "scope23168.root") {
   mapOfTProfile["cmsqxvst2"]->Draw();
   mapOfTCanvas["canvas2x2"]->cd(3);
   mapOfTProfile["cmsqxvst3"]->Draw();
-  mapOfTCanvas["canvas2x2"]->cd(4);
-  mapOfTProfile["cmsqxvst4"]->Draw();
   mapOfTCanvas["canvas2x2"]->Print(TString(scopeNumber+"/"+outputfilename));
 
   mapOfTCanvas["canvas3x2"]->cd(1);
@@ -292,7 +319,7 @@ void  checkDataPlots(std::string file = "scope23168.root") {
 
 
   /// Close file used to print and save canvases on different pages   
-  mapOfTCanvas["canvas3x2"]->Print(TString(outputfilename+"]"));
+  mapOfTCanvas["canvas3x2"]->Print(TString(scopeNumber+"/"+outputfilename+"]"));
 
   /// Print the location and name of output file
   std::cout << "Output file name " << scopeNumber << "/" << outputfilename << std::endl;
