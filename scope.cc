@@ -135,7 +135,7 @@ vector<cluster> getClus()
 
     //cout << "(cluster with " << c.vpix.size() << " pixels)" << endl;
 
-    if( ! (c.charge == 0) ) {
+    if( ! ( c.charge == 0 ) ) {
       c.col /= sumQ;
       c.row /= sumQ;
     }
@@ -618,6 +618,18 @@ int main( int argc, char* argv[] )
 
   bool rot90 = 0; // 504
   //bool rot90 = 1; // 506
+
+  double upsign = 1; // 504
+
+  double upsignx = upsign;
+  double upsigny = upsign;
+  if( chip0 == 603 && run > 24290 )
+    upsigny = -upsign;
+  
+  if( rot90 ) {
+    upsignx =  1;
+    upsigny = -1;
+  }
 
   int iDUT = 7;
 
@@ -3814,15 +3826,6 @@ int main( int argc, char* argv[] )
 
       z3Histo.Fill( z3 ); // is zero
 
-      double upsign = 1; // 504
-
-      double upsignx = upsign;
-      double upsigny = upsign;
-    
-      if( rot90 ) {
-	upsignx =  1;
-	upsigny = -1;
-      }
       double x4 = upsignx*x3 + DUTalignx; // shift to mid
       double y4 =-upsigny*y3 + DUTaligny; // invert y, shift to mid
 
@@ -4025,7 +4028,6 @@ int main( int argc, char* argv[] )
 	  if( U2 < 1.5 ) U2 = 1.5; // This alone improves resolution !
 
 	  double U12 = U1 + U2;
-
 	  if( fabs(cx) > 0.01 ) // for chips 400
 	    crow = ( i1*U1 + i2*U2 ) / U12; // overwrite !
 
@@ -4823,7 +4825,7 @@ int main( int argc, char* argv[] )
     TF1 * fdyvsx = cmsdyvsx.GetFunction( "pol1" );
     cout << endl << cmsdyvsx.GetTitle()
 	 << ": extra rot " << fdyvsx->GetParameter(1) << endl;
-    DUTrot += fdyvsx->GetParameter(1);
+    DUTrot += upsigny*fdyvsx->GetParameter(1);
 
     // dyvsy -> tilt:
 
@@ -4842,9 +4844,9 @@ int main( int argc, char* argv[] )
     TF1 * fdyvsty = cmsdyvsty.GetFunction( "pol1" );
     cout << endl << cmsdyvsty.GetTitle()
 	 << ": z shift " << fdyvsty->GetParameter(1)
-	 << " mm (subtract from DUTz)"
+	 << " mm"
 	 << endl;
-    DUTz -= fdyvsty->GetParameter(1);
+    DUTz -= upsigny*fdyvsty->GetParameter(1);
   }
 
   // write new DUT alignment:
