@@ -935,11 +935,11 @@ int main( int argc, char* argv[] )
 	    double dz = zz[ipl] - zz[im]; // signed
 	    hdx[ipl].Fill( dx );
 	    hdy[ipl].Fill( dy );
-	    if( abs(dy) < 0.003 * abs(dz) ) { // beam divergence
+	    if( fabs(dy) < 0.003 * fabs(dz) ) { // beam divergence
 	      hdxc[ipl].Fill( dx );
 	      dxvsy[ipl].Fill( yB, dx );
 	    }
-	    if( abs(dy) < 0.003 * abs(dz) ) { // beam divergence
+	    if( fabs(dy) < 0.003 * fabs(dz) ) { // beam divergence
 	      hdyc[ipl].Fill( dy );
 	      dyvsx[ipl].Fill( xB, dy );
 	    }
@@ -998,8 +998,8 @@ int main( int argc, char* argv[] )
 	  hdxCA[itd].Fill( dx2 );
 	  hdyCA[itd].Fill( dy2 );
 
-	  if( abs( dx2 ) > 0.005 * dz02 ) continue; // angle cut
-	  if( abs( dy2 ) > 0.005 * dz02 ) continue; // angle cut
+	  if( fabs( dx2 ) > 0.005 * dz02 ) continue; // angle cut
+	  if( fabs( dy2 ) > 0.005 * dz02 ) continue; // angle cut
 
 	  double xavg2 = 0.5*(xA + xC);
 	  double yavg2 = 0.5*(yA + yC);
@@ -1029,7 +1029,7 @@ int main( int argc, char* argv[] )
 	    htridx[itd].Fill( dx3 );
 	    htridy[itd].Fill( dy3 );
 
-	    if( abs( dy3 ) < 0.02 ) {
+	    if( fabs( dy3 ) < 0.02 ) {
 
 	      htridxc[itd].Fill( dx3 );
 
@@ -1059,7 +1059,7 @@ int main( int argc, char* argv[] )
 	      tridxvsy[itd].Fill( yk, dx3 );
 	    }
 
-	    if( abs( dx3 ) < 0.02 ) {
+	    if( fabs( dx3 ) < 0.02 ) {
 	      htridyc[itd].Fill( dy3 );
 	      tridyvsx[itd].Fill( xk, dy3 );
 	      tridyvsy[itd].Fill( yk, dy3 );
@@ -1067,7 +1067,7 @@ int main( int argc, char* argv[] )
 
 	    // store triplets:
 
-	    if( abs( dx3 ) < tricut && abs( dy3 ) < tricut ) {
+	    if( fabs( dx3 ) < tricut && fabs( dy3 ) < tricut ) {
 	      triplet tri;
 	      tri.xm = xavg2;
 	      tri.ym = yavg2;
@@ -1082,7 +1082,7 @@ int main( int argc, char* argv[] )
 
 	    // check z spacing: A-B as baseline
 
-	    if( abs( dx3 ) < tricut && abs( dy3 ) < tricut ) {
+	    if( fabs( dx3 ) < tricut && fabs( dy3 ) < tricut ) {
 	      double dzAB = zB - zA;
 	      double tx = ( xB - xA ) / dzAB; // slope x
 	      double ty = ( yB - yA ) / dzAB; // slope y
@@ -1139,12 +1139,12 @@ int main( int argc, char* argv[] )
 	  double dy = yC - yA;
 	  hexdx[ipl].Fill( dx );
 	  hexdy[ipl].Fill( dy );
-	  if( abs( dy ) < 1 ) {
+	  if( fabs( dy ) < 1 ) {
 	    hexdxc[ipl].Fill( dx );
 	    exdxvsy[ipl].Fill( yC, dx );
 	    exdxvstx[ipl].Fill( slxA, dx );
 	  }
-	  if( abs( dx ) < 1 ) {
+	  if( fabs( dx ) < 1 ) {
 	    hexdyc[ipl].Fill( dy );
 	    exdxvsy[ipl].Fill( xC, dy );
 	    exdyvsty[ipl].Fill( slyA, dy );
@@ -1196,12 +1196,12 @@ int main( int argc, char* argv[] )
 
 	hsixdx.Fill( dx ); // for align fit
 	hsixdy.Fill( dy ); // for align fit
-	if( abs(dy) < 0.1 ) {
+	if( fabs(dy) < 0.1 ) {
 	  hsixdxc.Fill( dx );
 	  sixdxvsy.Fill( yB, dx );
 	  sixdxvstx.Fill( slxA, dx );
 	}
-	if( abs(dx) < 0.1 ) {
+	if( fabs(dx) < 0.1 ) {
 	  hsixdyc.Fill( dy );
 	  sixdyvsx.Fill( xB, dy );
 	  sixdyvsty.Fill( slyA, dy );
@@ -1209,7 +1209,7 @@ int main( int argc, char* argv[] )
 
 	// compare slopes:
 
-	if( abs(dy) < 0.1 && abs(dx) < 0.1 ) {
+	if( fabs(dy) < 0.1 && fabs(dx) < 0.1 ) {
 	  hsixdslpx.Fill( slxB - slxA );
 	  hsixdslpy.Fill( slyB - slyA ); // width: 0.3 mrad
 	}
