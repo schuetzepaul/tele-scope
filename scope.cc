@@ -33,6 +33,7 @@ struct pixel {
   int adc;
   double q;
   int ord;
+  bool big;
 };
 
 struct cluster {
@@ -41,6 +42,7 @@ struct cluster {
   int ncol, nrow;
   double col, row;
   double charge;
+  bool big;
 };
 
 struct triplet {
@@ -116,6 +118,7 @@ vector<cluster> getClus()
     c.col = 0;
     c.row = 0;
     double sumQ = 0;
+    c.big = 0;
     int minx = 999;
     int maxx = 0;
     int miny = 999;
@@ -128,6 +131,7 @@ vector<cluster> getClus()
       sumQ += Qpix;
       c.col += (*p).col*Qpix;
       c.row += (*p).row*Qpix;
+      if( p->big ) c.big = 1;
       if( p->col > maxx ) maxx = p->col;
       if( p->col < minx ) minx = p->col;
       if( p->row > maxy ) maxy = p->row;
@@ -187,6 +191,7 @@ int main( int argc, char* argv[] )
 
   bool syncdut = 0; // re-sync required ?
   bool syncref = 0; // re-sync required ?
+  bool syncmod = 0; // re-sync required ?
 
   double thr = 0; // offline pixel threshold [ke]
 
@@ -201,6 +206,7 @@ int main( int argc, char* argv[] )
     if( !strcmp( argv[i], "-s" ) ) {
       syncdut = 1;
       syncref = 1;
+      syncmod = 1;
     }
 
     if( !strcmp( argv[i], "-d" ) )
@@ -225,6 +231,8 @@ int main( int argc, char* argv[] )
 
   string geoFileName( "geo.dat" );
   double DUTtilt0 = 19.3;
+  double MODtilt0 = 19.3;
+  double MODturn0 = 27.8;
   double pbeam = 5.6;
   int chip0 = 504;
   int refchip0 = 501;
@@ -639,7 +647,7 @@ int main( int argc, char* argv[] )
   double DUTaligny = 0.0;
   double DUTrot = 0.0;
   double DUTturn = 0;
-  double DUTtilt = 19.3; // [deg]
+  double DUTtilt = DUTtilt0; // [deg]
   double DUTz = 40 + zz[2];
 
   ostringstream DUTalignFileName; // output string stream
@@ -796,6 +804,102 @@ int main( int argc, char* argv[] )
   } // alignFile
 
   iREFalignFile.close();
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // MOD:
+
+  int iMOD = 6;
+
+  int MODaligniteration = 0;
+  double MODalignx = 0.0;
+  double MODaligny = 0.0;
+  double MODrot = 0.0;
+  double MODtilt = MODtilt0; // [deg]
+  double MODturn = MODturn0; // [deg]
+  double MODz = 75 + zz[4];
+
+  ostringstream MODalignFileName; // output string stream
+
+  MODalignFileName << "alignMOD_" << run << ".dat";
+
+  ifstream iMODalignFile( MODalignFileName.str() );
+
+  cout << endl;
+
+  if( iMODalignFile.bad() || ! iMODalignFile.is_open() ) {
+    cout << "no " << MODalignFileName.str() << ", will bootstrap" << endl;
+  }
+  else {
+
+    cout << "read MODalignment from " << MODalignFileName.str() << endl;
+
+    string hash( "#" );
+    string iteration( "iteration" );
+    string alignx( "alignx" );
+    string aligny( "aligny" );
+    string rot( "rot" );
+    string tilt( "tilt" );
+    string turn( "turn" );
+    string dz( "dz" );
+
+    while( ! iMODalignFile.eof() ) {
+
+      string line;
+      getline( iMODalignFile, line );
+      cout << line << endl;
+
+      if( line.empty() ) continue;
+
+      stringstream tokenizer( line );
+      string tag;
+      tokenizer >> tag; // leading white space is suppressed
+      if( tag.substr(0,1) == hash ) // comments start with #
+	continue;
+
+      if( tag == iteration ) 
+	tokenizer >> MODaligniteration;
+
+      double val;
+      tokenizer >> val;
+      if(      tag == alignx )
+	MODalignx = val;
+      else if( tag == aligny )
+	MODaligny = val;
+      else if( tag == rot )
+	MODrot = val;
+      else if( tag == tilt )
+	MODtilt = val;
+      else if( tag == turn )
+	MODturn = val;
+      else if( tag == dz )
+	MODz = val + zz[4];
+
+      // anything else on the line and in the file gets ignored
+
+    } // while getline
+
+  } // alignFile
+
+  iMODalignFile.close();
+
+  // normal vector on MOD surface:
+  // N = ( 0, 0, -1 ) on MOD, towards -z
+  // transform into tele system:
+  // tilt alpha around x
+  // turn omega around y
+
+  const double com = cos( MODturn*wt );
+  const double som = sin( MODturn*wt );
+  const double cam = cos( MODtilt*wt );
+  const double sam = sin( MODtilt*wt );
+  const double cfm = cos( MODrot );
+  const double sfm = sin( MODrot );
+
+  const double Nxm =-cam*som;
+  const double Nym = sam;
+  const double Nzm =-cam*com;
+
+  const double normm = cos( MODturn*wt ) * cos( MODtilt*wt ); // length of Nz
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // DUT gain:
@@ -1968,10 +2072,10 @@ int main( int argc, char* argv[] )
 
     hcol[ipl] = TH1I( Form( "col%i", ipl ),
 		      Form( "%i col;col;%i pixels", ipl, ipl ), 
-		      max( 52, nx[ipl]/4 ), 0, max( 52, nx[ipl]/4 ) );
+		      max( 52, nx[ipl]/4 ), 0, nx[ipl] );
     hrow[ipl] = TH1I( Form( "row%i", ipl ),
 		      Form( "%i row;row;%i pixels", ipl, ipl ),
-		      max( 80, ny[ipl]/2 ), 0, max( 80, ny[ipl]/2 ) );
+		      max( 80, ny[ipl]/2 ), 0, ny[ipl] );
 
     hnpx[ipl] = TH1I( Form( "npx%i", ipl ),
 		      Form( "%i pixel per event;pixels;%i events", ipl, ipl ),
@@ -2000,8 +2104,8 @@ int main( int argc, char* argv[] )
   TH1I hdridx = TH1I( "dridx", "driplet dx;driplet dx [mm];driplets", 100, -0.1, 0.1 );
   TH1I hdridy = TH1I( "dridy", "driplet dy;driplet dy [mm];driplets", 100, -0.1, 0.1 );
 
-  TH1I hdridxc = TH1I( "dridxc", "driplet dx;driplet dx [mm];driplets", 100, -0.05, 0.05 );
-  TH1I hdridyc = TH1I( "dridyc", "driplet dy;driplet dy [mm];driplets", 100, -0.05, 0.05 );
+  TH1I hdridxc = TH1I( "dridxc", "driplet dx;driplet dx [mm];driplets", 100, -0.1, 0.1 );
+  TH1I hdridyc = TH1I( "dridyc", "driplet dy;driplet dy [mm];driplets", 100, -0.1, 0.1 );
 
   TProfile dridxvsy =
     TProfile( "dridxvsy",
@@ -2119,6 +2223,93 @@ int main( int argc, char* argv[] )
 
   TH1I ndrilkHisto = TH1I( "ndrilk", "driplet - REF links;driplet - REF links;events",
 			    11, -0.5, 10.5 );
+
+  // MOD vs driplets:
+
+  TH1I modsxaHisto = TH1I( "modsxa",
+			   "MOD + driplet x;MOD cluster + driplet #Sigmax [mm];MOD clusters",
+			   320, -32, 32 );
+  TH1I moddxaHisto = TH1I( "moddxa",
+			   "MOD - driplet x;MOD cluster - driplet #Deltax [mm];MOD clusters",
+			   320, -32, 32 );
+
+  TH1I modsyaHisto = TH1I( "modsya",
+			   "MOD + driplet y;MOD cluster + driplet #Sigmay [mm];MOD clusters",
+			   110, -5.5, 5.5 );
+  TH1I moddyaHisto = TH1I( "moddya",
+			   "MOD - driplet y;MOD cluster - driplet #Deltay [mm];MOD clusters",
+			   110, -5.5, 5.5 );
+
+  TH1I moddxHisto = TH1I( "moddx",
+			   "MOD - driplet x;MOD cluster - driplet #Deltax [mm];MOD clusters",
+			   200, -1, 1 );
+  TProfile moddxvsx =
+    TProfile( "moddxvsx",
+	      "MOD #Deltax vs x;x track [mm];<cluster - driplet #Deltax> [mm]",
+	      432, -32.4, 32.4, -0.5, 0.5 );
+  TProfile moddxvsy =
+    TProfile( "moddxvsy",
+	      "MOD #Deltax vs y;y track [mm];<cluster - driplet #Deltax> [mm]",
+	      76, -3.8, 3.8, -0.5, 0.5 );
+  TProfile moddxvstx =
+    TProfile( "moddxvstx",
+	      "MOD #Deltax vs #theta_{x};x track slope [rad];<cluster - driplet #Deltax> [mm]",
+	      80, -0.002, 0.002, -0.5, 0.5 );
+
+  TH1I moddyHisto = TH1I( "moddy",
+			   "MOD - driplet y;MOD cluster - driplet #Deltay [mm];MOD clusters",
+			   200, -1, 1 );
+  TProfile moddyvsx =
+    TProfile( "moddyvsx",
+	      "MOD #Deltay vs x;x track [mm];<cluster - driplet #Deltay> [mm]",
+	      432, -32.4, 32.4, -0.5, 0.5 );
+  TProfile moddyvsy =
+    TProfile( "moddyvsy",
+	      "MOD #Deltay vs y;y track [mm];<cluster - driplet #Deltay> [mm]",
+	      76, -3.8, 3.8, -0.5, 0.5 );
+  TProfile moddyvsty =
+    TProfile( "moddyvsty",
+	      "MOD #Deltay vs #theta_{y};y track slope [rad];<cluster - driplet #Deltay> [mm]",
+	      80, -0.002, 0.002, -0.5, 0.5 );
+
+  TH1I modnpxHisto =
+    TH1I( "modnpx",
+	  "MOD linked clusters;MOD cluster size [pixels];linked MOD cluster",
+	  20, 0.5, 20.5 );
+
+  TH1I modqHisto = TH1I( "modq",
+			 "MOD linked clusters;MOD cluster charge [ke];linked MOD cluster",
+			 80, 0, 80 );
+
+  TProfile2D * modnpxvsxmym = new
+    TProfile2D( "modnpxvsxmym",
+		"MOD cluster size vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];MOD <cluster size> [pixels]",
+		60, 0, 0.3, 40, 0, 0.2, 0, 20 );
+
+  TProfile2D * modqxvsxmym = new
+    TProfile2D( "modqxvsxmym",
+	      "MOD cluster charge vs xmod ymod;x track mod 0.3 [mm];y track mod 0.2 [mm];MOD <cluster charge> [ke]",
+		60, 0, 0.3, 40, 0, 0.2, 0, 0.1 );
+
+  TH1I modlkxBHisto = TH1I( "modlkxb",
+			   "linked driplet at MOD x;driplet x at MOD [mm];linked driplets",
+			   220, -11, 11 );
+  TH1I modlkyBHisto = TH1I( "modlkyb",
+			   "linked driplet at MOD y;driplet y at MOD [mm];linked driplets",
+			   120, -6, 6 );
+  TH1I modlkxHisto = TH1I( "modlkx",
+			   "linked driplet at MOD x;driplet x at MOD [mm];linked driplets",
+			   60, -4.5, 4.5 );
+  TH1I modlkyHisto = TH1I( "modlky",
+			   "linked driplet at MOD y;driplet y at MOD [mm];linked driplets",
+			   90, -4.5, 4.5 );
+
+  TH1I modlkcolHisto = TH1I( "modlkcol",
+			     "MOD linked col;MOD linked col;linked MOD cluster",
+			     52, 0, 52 );
+  TH1I modlkrowHisto = TH1I( "modlkrow",
+			     "MOD linked row;MOD linked row;linked MOD cluster",
+			     80, 0, 80 );
 
   // DUT:
 
@@ -3129,6 +3320,33 @@ int main( int argc, char* argv[] )
 
 	}  // REF
 
+	int xm = ix;
+	int ym = iy;
+
+	if( ipl == iMOD ) {
+
+	  // leave space for big pixels:
+
+	  int roc = ix / 52; // 0..7
+	  int col = ix % 52; // 0..51
+	  int row = iy;
+	  int x = 1 + ix + 2*roc; // 1..52 per ROC with big pix
+	  int y = iy;
+	  if( iy > 79 ) y += 2;
+
+	  // flip for upper ROCs into local addresses:
+
+	  if( iy > 79 ) {
+	    roc = 15 - roc; // 15..8
+	    col = 51 - col; // 51..0
+	    row = 159 - iy; // 79..0
+	  }
+
+	  ix = x;
+	  iy = y;
+
+	} // MOD
+
 	hcol[ipl].Fill( ix );
 	hrow[ipl].Fill( iy );
 
@@ -3139,7 +3357,63 @@ int main( int argc, char* argv[] )
 	pb[npx].adc = adc;
 	pb[npx].q = q;
 	pb[npx].ord = npx; // readout order
+	pb[npx].big = 0;
 	++npx;
+
+	if( ipl == iMOD ) {
+
+	  // double big pixels:
+	  // 0+1
+	  // 2..51
+	  // 52+53
+
+	  int col = xm % 52; // 0..51
+
+	  if( col == 0 ) {
+	    pb[npx].col = ix-1; // double
+	    pb[npx].row = iy;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].q *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].q = 0.5*q;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( col == 51 ) {
+	    pb[npx].col = ix+1; // double
+	    pb[npx].row = iy;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].q *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].q = 0.5*q;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 79 ) {
+	    pb[npx].col = ix; // double
+	    pb[npx].row = 80;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].q *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].q = 0.5*q;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 80 ) {
+	    pb[npx].col = ix; // double
+	    pb[npx].row = 81;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].q *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].q = 0.5*q;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	} // MOD
 
 	if( npx == 999 ) {
 	  cout << "pixel buffer overflow in plane " << ipl
@@ -3178,6 +3452,8 @@ int main( int argc, char* argv[] )
       cl0[iDUT] = cl[iDUT];
     if( ! syncref )
       cl0[iREF] = cl[iREF];
+    if( ! syncmod )
+      cl0[iMOD] = cl[iMOD];
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // make driplets 3+5-4:
@@ -3280,13 +3556,16 @@ int main( int argc, char* argv[] )
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // driplets vs REF:
 
-    double xcutREF = 0.3;
-    double ycutREF = 0.2;
+    double xcutREF = 0.12;
+    double ycutREF = 0.08;
     int nm = 0;
     int ndrilk = 0;
 
     const double cr = cos( REFrot );
     const double sr = sin( REFrot );
+
+    double xcutMOD = 0.30;
+    double ycutMOD = 0.20;
 
     for( unsigned int iB = 0; iB < driplets.size(); ++iB ) { // iB = downstream
 
@@ -3381,22 +3660,125 @@ int main( int argc, char* argv[] )
 	  refqxvsxmym->Fill( xmod, ymod, qx );
 	}
 
-	//if( fabs( refdy ) < 0.100 && fabs( refdx ) < 0.150 ) { // 99.92  99.96
-	if( fabs( refdx ) < 0.100 && fabs( refdy ) < 0.075 ) { // 99.93  99.97
+	if( fabs( refdx ) < xcutREF && fabs( refdy ) < ycutREF ) { // 99.93  99.97
+
 	  reflkxBHisto.Fill( xB );
 	  reflkyBHisto.Fill( yB );
 	  reflkxHisto.Fill( x4 );
 	  reflkyHisto.Fill( y4 );
 	  reflkcolHisto.Fill( ccol );
 	  reflkrowHisto.Fill( crow );
+
 	  if( fabs( x4 ) < 3.9 && // fiducial at REF
 	      fabs( y4 ) < 3.9 ) { // 3.8 same eff
+
 	    driplets[iB].lk = 1;
 	    nm = 1; // we have a REF-driplet match in this event
 	    ++ndrilk;
-	  }
-	}
+
+	  } // REF fiducial
+
+	} // REF link x and y
+
       } // REF
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // driplet at MOD:
+
+      zB = MODz - avz; // z MOD from mid of driplet
+
+      // intersect inclined track with tilted MOD plane:
+
+      double zc = (Nzm*zB - Nym*avy - Nxm*avx) / (Nxm*slx + Nym*sly + Nzm); // from avz
+      double yc = avy + sly * zc;
+      double xc = avx + slx * zc;
+
+      double dzc = zc + avz - MODz; // from MOD z0 [-8,8] mm
+
+      // transform into MOD system: (passive).
+      // large rotations don't commute: careful with order
+
+      double x1 = com*xc - som*dzc; // turn o
+      double y1 = yc;
+      double z1 = som*xc + com*dzc;
+
+      double x2 = x1;
+      double y2 = cam*y1 + sam*z1; // tilt a
+
+      x3 = cfm*x2 + sfm*y2; // rot
+      y3 =-sfm*x2 + cfm*y2;
+
+      x4 =-x3 + MODalignx; // shift to mid
+      y4 = y3 + MODaligny; // invert y, shift to mid
+
+      xmod = fmod( 9.000 + x4, 0.3 ); // [0,0.3] mm, 2 pixel wide
+      ymod = fmod( 9.000 + y4, 0.2 ); // [0,0.2] mm
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // driplets vs MOD clusters:
+
+      for( vector<cluster>::iterator c = cl0[iMOD].begin(); c != cl0[iMOD].end(); ++c ) {
+
+	double ccol = c->col;
+	double crow = c->row;
+	double modx = ( ccol + 0.5 - nx[iMOD]/2 ) * ptchx[iMOD]; // -3.9..3.9 mm
+	double mody = ( crow + 0.5 - ny[iMOD]/2 ) * ptchy[iMOD]; // -4..4 mm
+	double q = c->charge;
+	double qx = exp( -q/qwid);
+
+	int npx = c->size;
+
+	// residuals for pre-alignment:
+
+	modsxaHisto.Fill( modx + x3 ); // peak
+	moddxaHisto.Fill( modx - x3 ); // 
+
+	modsyaHisto.Fill( mody + y3 ); // 
+	moddyaHisto.Fill( mody - y3 ); // peak
+
+	double moddx = modx - x4;
+	double moddy = mody - y4;
+
+	if( fabs( moddx ) < xcutMOD &&
+	    c->big == 0 ) {
+	  moddyHisto.Fill( moddy );
+	  moddyvsx.Fill( x4, moddy );
+	  moddyvsy.Fill( y4, moddy );
+	  moddyvsty.Fill( sly, moddy );
+	}
+
+	if( fabs( moddy ) < ycutMOD &&
+	    c->big == 0 ) {
+	  moddxHisto.Fill( moddx );
+	  moddxvsx.Fill( x4, moddx );
+	  moddxvsy.Fill( y4, moddx );
+	  moddxvstx.Fill( slx, moddx );
+	}
+
+	if( fabs( moddx ) < xcutMOD &&
+	    fabs( moddy ) < ycutMOD &&
+	    fabs( x4 ) < 3.9 && // fiducial at MOD
+	    fabs( y4 ) < 3.9 &&
+	    c->big == 0 ) {
+	  modnpxHisto.Fill( npx );
+	  modqHisto.Fill( q );
+	  modnpxvsxmym->Fill( xmod, ymod, npx );
+	  modqxvsxmym->Fill( xmod, ymod, qx );
+	}
+
+	if( fabs( moddx ) < xcutMOD &&
+	    fabs( moddy ) < ycutMOD ) {
+
+	  modlkxBHisto.Fill( xB );
+	  modlkyBHisto.Fill( yB );
+	  modlkxHisto.Fill( x4 );
+	  modlkyHisto.Fill( y4 );
+	  modlkcolHisto.Fill( ccol );
+	  modlkrowHisto.Fill( crow );
+
+	} // MOD link x and y
+
+      } // MOD
 
     } // driplets
 
@@ -4528,12 +4910,201 @@ int main( int argc, char* argv[] )
       cl0[iDUT] = cl[iDUT]; // remember for re-sync
     if( syncref )
       cl0[iREF] = cl[iREF];
+    if( syncmod )
+      cl0[iMOD] = cl[iMOD];
 
   } while( reader->NextEvent() && event_nr < lev );
 
   cout << "done after " << event_nr << " events" << endl;
   histoFile->Write();
   histoFile->Close();
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // MOD alignment:
+
+  if( moddxaHisto.GetEntries() > 9999 ) {
+
+    double newMODalignx = MODalignx;
+    double newMODaligny = MODaligny;
+
+    if( moddxaHisto.GetMaximum() > modsxaHisto.GetMaximum() ) {
+      cout << endl << moddxaHisto.GetTitle()
+	   << " bin " << moddxaHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, moddxaHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, moddxaHisto.GetBinCenter( moddxaHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, moddxaHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, moddxaHisto.GetBinContent(1) ); // BG
+      moddxaHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODalignx = fgp0->GetParameter(1);
+    }
+    else {
+      cout << endl << modsxaHisto.GetTitle()
+	   << " bin " << modsxaHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, modsxaHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, modsxaHisto.GetBinCenter( modsxaHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, modsxaHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, modsxaHisto.GetBinContent(1) ); // BG
+      modsxaHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODalignx = fgp0->GetParameter(1);
+    }
+
+    if( moddyaHisto.GetMaximum() > modsyaHisto.GetMaximum() ) {
+      cout << endl << moddyaHisto.GetTitle()
+	   << " bin " << moddyaHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, moddyaHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, moddyaHisto.GetBinCenter( moddyaHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, moddyaHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, moddyaHisto.GetBinContent(1) ); // BG
+      moddyaHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODaligny = fgp0->GetParameter(1);
+    }
+    else {
+      cout << endl << modsyaHisto.GetTitle()
+	   << " bin " << modsyaHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, modsyaHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, modsyaHisto.GetBinCenter( modsyaHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, modsyaHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, modsyaHisto.GetBinContent(1) ); // BG
+      modsyaHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODaligny = fgp0->GetParameter(1);
+    }
+
+    // finer alignment:
+
+    if( MODaligniteration > 0 && fabs( newMODalignx - MODalignx ) < 0.1 ) {
+
+      cout << endl << moddxHisto.GetTitle()
+	   << " bin " << moddxHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, moddxHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, moddxHisto.GetBinCenter( moddxHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 8*moddxHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, moddxHisto.GetBinContent(1) ); // BG
+      moddxHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODalignx = MODalignx + fgp0->GetParameter(1);
+
+    }
+
+    if( MODaligniteration > 0 && fabs( newMODaligny - MODaligny ) < 0.1 ) {
+
+      cout << endl << moddyHisto.GetTitle()
+	   << " bin " << moddyHisto.GetBinWidth(1)
+	   << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, moddyHisto.GetMaximum() ); // amplitude
+      fgp0->SetParameter( 1, moddyHisto.GetBinCenter( moddyHisto.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 5*moddyHisto.GetBinWidth(1) ); // sigma
+      fgp0->SetParameter( 3, moddyHisto.GetBinContent(1) ); // BG
+      moddyHisto.Fit( "fgp0", "q" );
+      cout << "Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "mid " << fgp0->GetParameter(1)
+	   << endl << "sig " << fgp0->GetParameter(2)
+	   << endl << " BG " << fgp0->GetParameter(3)
+	   << endl;
+      newMODaligny = MODaligny + fgp0->GetParameter(1);
+
+      // dyvsx -> rot
+
+      moddyvsx.Fit( "pol1", "q", "", -midx[iMOD]+0.2, midx[iMOD]-0.2 );
+      TF1 * fdyvsx = moddyvsx.GetFunction( "pol1" );
+      cout << endl << moddyvsx.GetTitle()
+	   << ": extra rot " << fdyvsx->GetParameter(1) << endl;
+      MODrot += fdyvsx->GetParameter(1);
+
+      // dxvsx -> turn:
+
+      moddxvsx.Fit( "pol1", "q", "", -midx[iMOD]+0.2, midx[iMOD]-0.2 );
+      TF1 * fdxvsx = moddxvsx.GetFunction( "pol1" );
+      cout << endl << moddxvsx.GetTitle()
+	   << ": slope " << fdxvsx->GetParameter(1)
+	   << ", extra turn " << fdxvsx->GetParameter(1)/wt/max(som,0.01)
+	   << " deg"
+	   << endl;
+      MODturn += fdxvsx->GetParameter(1)/wt/max(som,0.01); // [deg] min 0.6 deg
+
+      // dyvsy -> tilt:
+
+      moddyvsy.Fit( "pol1", "q", "", -midy[iMOD]+0.2, midy[iMOD]-0.2 );
+      TF1 * fdyvsy = moddyvsy.GetFunction( "pol1" );
+      cout << endl << moddyvsy.GetTitle()
+	   << ": slope " << fdyvsy->GetParameter(1)
+	   << ", extra tilt " << fdyvsy->GetParameter(1)/wt/max(sam,0.01)
+	   << " deg"
+	   << endl;
+      MODtilt += fdyvsy->GetParameter(1)/wt/max(sam,0.01); // [deg] min 0.6 deg
+
+      // dyvsty -> dz:
+
+      moddyvsty.Fit( "pol1", "q", "", -0.002, 0.002 );
+      TF1 * fdyvsty = moddyvsty.GetFunction( "pol1" );
+      cout << endl << moddyvsty.GetTitle()
+	   << ": z shift " << fdyvsty->GetParameter(1)
+	   << " mm (add to MODz)"
+	   << endl;
+      MODz += fdyvsty->GetParameter(1);
+    }
+
+    // write new MOD alignment:
+
+    ofstream MODalignFile( MODalignFileName.str() );
+
+    MODalignFile << "# MOD alignment for run " << run << endl;
+    ++MODaligniteration;
+    MODalignFile << "iteration " << MODaligniteration << endl;
+    MODalignFile << "alignx " << newMODalignx << endl;
+    MODalignFile << "aligny " << newMODaligny << endl;
+    MODalignFile << "rot " << MODrot << endl;
+    MODalignFile << "tilt " << MODtilt << endl;
+    MODalignFile << "turn " << MODturn << endl;
+    MODalignFile << "dz " << MODz - zz[4] << endl;
+
+    MODalignFile.close();
+
+    cout << endl << "wrote MOD alignment iteration " << MODaligniteration
+	 << " to " << MODalignFileName.str()
+	 << endl;
+
+  } // MOD
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // REF alignment:
