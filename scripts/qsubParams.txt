@@ -1,0 +1,13 @@
+-cwd
+-m a
+-b yes
+-l h_rt=24:00:00
+-l site=hh
+-V
+-l h_vmem=4000M
+#
+#(stderr and stdout are merged together to stdout and stored in the
+# batch_output directory)
+-b y
+-j y
+-o batch_output/
