@@ -32,7 +32,7 @@ while getopts hvo:f:r: OPT; do
 	    for elem in "${array[@]}"
 	    do
 		if [[ $elem =~ "-" ]] ;then
-		    element=`echo $n | awk -F "-" '{for(i=$1; i <= $2; i++) printf "%s ",i}'`
+		    element=`echo $elem | awk -F "-" '{for(i=$1; i <= $2; i++) printf "%s ",i}'`
 		    RUNS+=($element)  
 		else
 		    RUNS+=($elem)
@@ -46,13 +46,6 @@ while getopts hvo:f:r: OPT; do
             ;;
     esac
 done
-
-# We want at least one non-option argument. 
-# Remove this block if you don't need it.
-if [ $# -eq 0 ]; then
-    echo $USAGE >&2
-    exit 1
-fi
 
 # Set environmental variables to corresponding script path
 source $(dirname `readlink -f $0`)/parallelTools.sh
@@ -87,6 +80,7 @@ do
 done < $INPUT_FILE
 
 
+# Dispatch the jobs to the NAF batch system
 for RUN in "${!GEOFILES[@]}";do
     $TA -g ${GEOFILES[$RUN]} $RUN &
 done
