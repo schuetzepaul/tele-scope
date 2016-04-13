@@ -1,12 +1,27 @@
 #!/bin/sh
 
-# Provide user with the given parameters
-echo "Options provided: $@"
-
 # Default runs file
 INPUT_FILE='runs.dat'
 
-USAGE="Usage: `basename $0` [-hv] [-o arg] [-f arg] [-r arg] args [-m arg] args"
+USAGE="Usage: ./`basename $0` [-m arg required] [-o arg] [-f arg] [-r arg] [-hv] args"
+
+# Define useage function
+usage(){
+cat <<EOF
+
+Usage: `basename $0` -m tele -f runs_DATE.dat -r 1440-1450,2590
+
+Purpose of script is to submit jobs to the batch system
+
+OPTIONS:
+   -h      Show this message
+   -m      Mode 'tele' or 'scope' to run on (REQUIRED)
+   -f      Input runs_DATE.dat file
+   -r      Range for run numbers
+   -o      Output file
+   -v      Verstion of script
+EOF
+}
 
 # Parse command line options.
 while getopts hvo:f:r:m: OPT; do
@@ -49,6 +64,13 @@ while getopts hvo:f:r:m: OPT; do
             ;;
     esac
 done
+
+# We want at least one non-option argument. 
+# Remove this block if you don't need it.
+if [ $# -eq 0 ]; then
+    usage  >&2
+    exit 1
+fi
 
 # Set environmental variables to corresponding script path
 source $(dirname `readlink -f $0`)/parallelTools.sh
@@ -101,4 +123,3 @@ if [ "$isNAF" = 1 ]; then
 else
     echo "Processing all nominal samples finished!"
 fi
-
