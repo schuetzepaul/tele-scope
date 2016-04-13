@@ -231,7 +231,7 @@ int main( int argc, char* argv[] )
 
   string geoFileName( "geo.dat" );
   double DUTtilt0 = 19.3;
-  double MODtilt0 = 19.3;
+  double MODtilt0 = 16.5;
   double MODturn0 = 27.8;
   double pbeam = 5.6;
   int chip0 = 504;
@@ -567,7 +567,7 @@ int main( int argc, char* argv[] )
   set <int> hotset[9];
 
   if( ihotFile.bad() || ! ihotFile.is_open() ) {
-    cout << "Error opening " << hotFileName.str() << endl;
+    cout << "no " << hotFileName.str() << " (created by tele)" << endl;
   }
   else {
 
@@ -816,7 +816,7 @@ int main( int argc, char* argv[] )
   double MODrot = 0.0;
   double MODtilt = MODtilt0; // [deg]
   double MODturn = MODturn0; // [deg]
-  double MODz = 75 + zz[4];
+  double MODz = 47 + zz[4];
 
   ostringstream MODalignFileName; // output string stream
 
@@ -974,6 +974,9 @@ int main( int argc, char* argv[] )
       ke = 0.268;
   }
 
+  if( chip0 == 603 )
+    ke = 0.288; // 24434
+
   // tsunami correction:
 
   double eps = 0.0;
@@ -981,6 +984,9 @@ int main( int argc, char* argv[] )
     eps = 0.05; // 2016 sy 7.66
   //eps = 0.06; // 2015 sy 7.74
   //eps = 0.04; // 2016 sy 7.72
+
+  if( chip0 == 603 )
+    eps = 0.11;
 
   // correct trend in q vs y:
 
@@ -2062,6 +2068,7 @@ int main( int argc, char* argv[] )
   TH1I hcol[9];
   TH1I hrow[9];
   TH1I hnpx[9];
+  TH2I * hmap[9];
 
   TH1I hncl[9];
   TH1I hsiz[9];
@@ -2076,6 +2083,9 @@ int main( int argc, char* argv[] )
     hrow[ipl] = TH1I( Form( "row%i", ipl ),
 		      Form( "%i row;row;%i pixels", ipl, ipl ),
 		      max( 80, ny[ipl]/2 ), 0, ny[ipl] );
+    hmap[ipl] = new TH2I( Form( "map%i", ipl ),
+			  Form( "%i map;col;row;%i pixels", ipl, ipl ),
+			  max( 52, nx[ipl]/4 ), 0, nx[ipl], max( 80, ny[ipl]/2 ), 0, ny[ipl] );
 
     hnpx[ipl] = TH1I( Form( "npx%i", ipl ),
 		      Form( "%i pixel per event;pixels;%i events", ipl, ipl ),
@@ -2095,6 +2105,19 @@ int main( int argc, char* argv[] )
 		       21, -0.5, 20.5 );
 
   } // planes
+
+  TProfile dutnpxvst2 =
+    TProfile( "dutnpxvst2",
+	      "DUT pixels vs time;time [s];DUT pixels per event",
+	      150, 0, 1500, -0.5, 99.5 );
+  TProfile dutnclvst2 =
+    TProfile( "dutnclvst2",
+	      "DUT clusters vs time;time [s];DUT clusters per event with pixels",
+	      150, 0, 1500, 0.5, 99.5 );
+  TProfile dutyldvst2 =
+    TProfile( "dutyldvst2",
+	      "DUT yield vs time;time [s];DUT events with pixels",
+	      150, 0, 1500, -0.5, 1.5 );
 
   // driplets:
 
@@ -2353,6 +2376,30 @@ int main( int argc, char* argv[] )
   TH1I dutpxq2nd09Histo =
     TH1I( "dutpxq2nd09",
 	  "DUT pixel charge 2nd - 0.09 q1;2nd - 0.09 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd10Histo =
+    TH1I( "dutpxq2nd10",
+	  "DUT pixel charge 2nd - 0.10 q1;2nd - 0.10 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd11Histo =
+    TH1I( "dutpxq2nd11",
+	  "DUT pixel charge 2nd - 0.11 q1;2nd - 0.11 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd12Histo =
+    TH1I( "dutpxq2nd12",
+	  "DUT pixel charge 2nd - 0.12 q1;2nd - 0.12 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd13Histo =
+    TH1I( "dutpxq2nd13",
+	  "DUT pixel charge 2nd - 0.13 q1;2nd - 0.13 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd14Histo =
+    TH1I( "dutpxq2nd14",
+	  "DUT pixel charge 2nd - 0.14 q1;2nd - 0.14 q1 pixel charge [ke];2nd pixels",
+	  100, 0, 25 );
+  TH1I dutpxq2nd15Histo =
+    TH1I( "dutpxq2nd15",
+	  "DUT pixel charge 2nd - 0.15 q1;2nd - 0.15 q1 pixel charge [ke];2nd pixels",
 	  100, 0, 25 );
 
   TH1I dutcolHisto =
@@ -2682,6 +2729,10 @@ int main( int argc, char* argv[] )
 	  "fiducial #Deltay cut x q3 rim;cluster - triplet #Deltay [mm];fiducial q3 rim clusters",
 	  500, -0.5, 0.5 );
 
+  TH1I cmsdyfcq4Histo =
+    TH1I( "cmsdyfcq4",
+	  "fiducial #Deltay cut x q4;cluster - triplet #Deltay [mm];fiducial q4 clusters",
+	  500, -0.5, 0.5 );
   TH1I cmsdyfcq4nodHisto =
     TH1I( "cmsdyfcq4nod",
 	  "fiducial #Deltay cut x q4 no dot;cluster - triplet #Deltay [mm];fiducial q4 no dot clusters",
@@ -3138,6 +3189,11 @@ int main( int argc, char* argv[] )
 	      "DUT efficiency vs time;time [s];efficiency",
 	      600, 0, 60000, -1, 2 );
 
+  TProfile2D * effvsxt = new
+    TProfile2D( "effvsxt",
+	      "DUT efficiency vs time and x;time [s];x [mm];efficiency",
+		100, 0, 1000, 50, -3.75, 3.75, -1, 2 );
+
   TProfile effvsntri =
     TProfile( "effvsntri",
 	      "DUT efficiency vs triplets;triplets;efficiency",
@@ -3238,17 +3294,19 @@ int main( int argc, char* argv[] )
     prevTLU = evTLU;
 
     if( event_nr < 10 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 100 && event_nr%10 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 1000 && event_nr%100 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr%1000 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
 
     StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
 
     vector <cluster> cl[9];
+
+    int DUTyld = 0;
 
     for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane ) {
 
@@ -3349,6 +3407,7 @@ int main( int argc, char* argv[] )
 
 	hcol[ipl].Fill( ix );
 	hrow[ipl].Fill( iy );
+	hmap[ipl]->Fill( ix, iy );
 
 	// fill pixel block for clustering:
 
@@ -3446,7 +3505,15 @@ int main( int argc, char* argv[] )
 
       } // cl
 
+      if( ipl == iDUT ) {
+	if( npx ) DUTyld = 1;
+	dutnpxvst2.Fill( evsec, npx );
+	dutnclvst2.Fill( evsec, cl[ipl].size() );
+      }
+
     } // planes
+
+    dutyldvst2.Fill( evsec, DUTyld );
 
     if( ! syncdut )
       cl0[iDUT] = cl[iDUT];
@@ -3820,6 +3887,12 @@ int main( int argc, char* argv[] )
       dutpxq2nd07Histo.Fill( q2 - 0.07*q1 ); // too much
       dutpxq2nd08Histo.Fill( q2 - 0.08*q1 ); // 
       dutpxq2nd09Histo.Fill( q2 - 0.09*q1 ); // 
+      dutpxq2nd10Histo.Fill( q2 - 0.10*q1 ); // 
+      dutpxq2nd11Histo.Fill( q2 - 0.11*q1 ); // 
+      dutpxq2nd12Histo.Fill( q2 - 0.12*q1 ); // 
+      dutpxq2nd13Histo.Fill( q2 - 0.13*q1 ); // 
+      dutpxq2nd14Histo.Fill( q2 - 0.14*q1 ); // 
+      dutpxq2nd15Histo.Fill( q2 - 0.15*q1 ); // 
 
     } // DUT cl
 
@@ -4615,18 +4688,24 @@ int main( int argc, char* argv[] )
 
 	      }
 
-	      if( Q0 > 19 && Q0 < 23 && !ldot) {
+	      if( Q0 > 19 && Q0 < 23 ) {
 
-		cmsdyfcq4nodHisto.Fill( cmsdy );
+		cmsdyfcq4Histo.Fill( cmsdy );
 
-		if( oddcol )
-		  cmsdyfcq4oddHisto.Fill( cmsdy );
-		else
-		  cmsdyfcq4eveHisto.Fill( cmsdy );
+		if( !ldot) {
+
+		  cmsdyfcq4nodHisto.Fill( cmsdy );
+
+		  if( oddcol )
+		    cmsdyfcq4oddHisto.Fill( cmsdy );
+		  else
+		    cmsdyfcq4eveHisto.Fill( cmsdy );
+
+		}
 
 	      }
 
-	    } // Q0 > 16
+	    } // Q0 > 17
 
 	    if( lq ) {
 	      cmsdyvsx.Fill( x4, cmsdy );
@@ -4837,7 +4916,20 @@ int main( int argc, char* argv[] )
 	  //&& cl0[iDUT].size() < 2 // empty or single cluster, same eff
 	  ) {
 
-	if( fabs( x4 ) < 3.9 && fabs( y4 ) < 3.9 ) { // fiducial
+	double fidx0 =-3.9;
+	double fidx9 = 3.9;
+	double fidy0 =-3.9;
+	double fidy9 = 3.9;
+	if( run == 23311 ) { // 504, 34M
+	  fidx0 =-3.4;
+	  fidy9 = 3.8;
+	}
+	if( run >= 24421 && run <= 24429 ) { // 603 Vdig 2
+	  fidy0 =-3.0;
+	}
+
+	if( x4 > fidx0 && x4 < fidx9 &&
+	    y4 > fidy0 && y4 < fidy9 ) { // fiducial
 	  effvsdmin.Fill( dddmin, nm ); // at REF, small effect
 	  if( dddmin > 0.4 )
 	    effvstmin.Fill( ttdmin, nm ); // at DUT, flat
@@ -4852,20 +4944,14 @@ int main( int argc, char* argv[] )
 
 	  effvsxy->Fill( x4, y4, nm );
 
-	  double fidx = 3.9;
-	  double fidy = 3.9;
-	  if( run == 23311 ) {
-	    fidx = 3.4;
-	    fidy = 3.0;
-	  }
-
-	  if( fabs( y4 ) < fidy )
+	  if( y4 > fidy0 && y4 < fidy9 )
 	    effvsx.Fill( x4, nm );
 
-	  if( fabs( x4 ) < fidx )
+	  if( x4 > fidx0 && x4 < fidx9 )
 	    effvsy.Fill( y4, nm );
 
-	  if( fabs( x4 ) < fidx && fabs( y4 ) < fidy ) {
+	  if( x4 > fidx0 && x4 < fidx9 &&
+	      y4 > fidy0 && y4 < fidy9 ) { // fiducial
 
 	    effdminHisto.Fill( dmin );
 	    if( nm == 0 ) {
@@ -4887,6 +4973,7 @@ int main( int argc, char* argv[] )
 	    effvst2.Fill( evsec, nm );
 	    effvst3.Fill( evsec, nm );
 	    effvst4.Fill( evsec, nm );
+	    effvsxt->Fill( evsec, x4, nm );
 	    effvsntri.Fill( triplets.size(), nm );
 	    effvsndrilk.Fill( ndrilk, nm );
 	    effvsxmym->Fill( xmod, ymod, nm );
