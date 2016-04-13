@@ -673,7 +673,7 @@ int main( int argc, char* argv[] )
 
   DUTalignFileName << "alignDUT_" << run << ".dat";
 
-  ifstream iDUTalignFile( DUTalignFileName.str() );
+  ifstream iDUTalignFile( outputDirectory+"/"+DUTalignFileName.str() );
 
   cout << endl;
 
@@ -770,7 +770,7 @@ int main( int argc, char* argv[] )
 
   REFalignFileName << "alignREF_" << run << ".dat";
 
-  ifstream iREFalignFile( REFalignFileName.str() );
+  ifstream iREFalignFile( outputDirectory+"/"+REFalignFileName.str() );
 
   cout << endl;
 
@@ -841,7 +841,7 @@ int main( int argc, char* argv[] )
 
   MODalignFileName << "alignMOD_" << run << ".dat";
 
-  ifstream iMODalignFile( MODalignFileName.str() );
+  ifstream iMODalignFile( outputDirectory+"/"+MODalignFileName.str() );
 
   cout << endl;
 
