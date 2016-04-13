@@ -18,6 +18,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TF1.h>
+#include <TSystem.h>
 
 #include <sstream> // stringstream
 #include <fstream> // filestream
@@ -187,6 +188,9 @@ int main( int argc, char* argv[] )
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // further arguments:
 
+  // Default runs file
+  string runFileName( "runs.dat" );
+
   int lev = 999222111; // last event
 
   bool syncdut = 0; // re-sync required ?
@@ -215,6 +219,9 @@ int main( int argc, char* argv[] )
     if( !strcmp( argv[i], "-r" ) )
       syncref = 1;
 
+    if( !strcmp( argv[i], "-f" ) )
+      runFileName = argv[++i];
+
   } // argc
 
   if( syncdut )
@@ -240,7 +247,7 @@ int main( int argc, char* argv[] )
   string refgainFileName( "gain.dat" );
   int weib = 3;
 
-  ifstream runsFile( "runs.dat" );
+  ifstream runsFile( runFileName );
 
   if( runsFile.bad() || ! runsFile.is_open() ) {
     cout << "Error opening runs.dat" << endl;
@@ -473,6 +480,18 @@ int main( int argc, char* argv[] )
 
   geoFile.close();
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  // Create a directory based on run number
+  stringstream run_number;
+  run_number << run;
+
+  // Directory created will be created in the current working directory (cwd)
+  std::string outputDirectory = std::string(gSystem->WorkingDirectory())+"/run_"+run_number.str();
+
+  // Check first if directory does not already exist
+  if(!gSystem->MakeDirectory(TString(outputDirectory)))
+    gSystem->MakeDirectory(TString(outputDirectory));
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // alignments:
 
@@ -486,7 +505,7 @@ int main( int argc, char* argv[] )
 
   alignFileName << "align_" << run << ".dat";
 
-  ifstream ialignFile( alignFileName.str() );
+  ifstream ialignFile( outputDirectory+"/"+alignFileName.str() );
 
   cout << endl;
 
@@ -562,7 +581,7 @@ int main( int argc, char* argv[] )
 
   hotFileName << "hot_" << run << ".dat";
 
-  ifstream ihotFile( hotFileName.str() );
+  ifstream ihotFile( outputDirectory+"/"+hotFileName.str() );
 
   set <int> hotset[9];
 
@@ -2046,7 +2065,7 @@ int main( int argc, char* argv[] )
 
   rootFileName << "scope" << run << ".root";
 
-  TFile* histoFile = new TFile( rootFileName.str(  ).c_str(  ), "RECREATE" );
+  TFile* histoFile = new TFile( (outputDirectory+"/"+rootFileName.str(  )).c_str(  ), "RECREATE" );
 
   // book histos:
  
@@ -5086,8 +5105,8 @@ int main( int argc, char* argv[] )
 
     // write new MOD alignment:
 
-    ofstream MODalignFile( MODalignFileName.str() );
-
+    ofstream MODalignFile( outputDirectory+"/"+MODalignFileName.str() );
+    
     MODalignFile << "# MOD alignment for run " << run << endl;
     ++MODaligniteration;
     MODalignFile << "iteration " << MODaligniteration << endl;
@@ -5249,7 +5268,7 @@ int main( int argc, char* argv[] )
 
   // write new REF alignment:
 
-  ofstream REFalignFile( REFalignFileName.str() );
+  ofstream REFalignFile( outputDirectory+"/"+REFalignFileName.str() );
 
   REFalignFile << "# REF alignment for run " << run << endl;
   ++REFaligniteration;
@@ -5423,7 +5442,7 @@ int main( int argc, char* argv[] )
 
   // write new DUT alignment:
 
-  ofstream DUTalignFile( DUTalignFileName.str() );
+  ofstream DUTalignFile( outputDirectory+"/"+DUTalignFileName.str() );
 
   DUTalignFile << "# DUT alignment for run " << run << endl;
   ++DUTaligniteration;
