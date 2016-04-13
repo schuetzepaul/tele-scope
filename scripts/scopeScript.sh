@@ -3,6 +3,9 @@
 # Provide user with the given parameters
 echo "Options provided: $@"
 
+# Default runs.dat file
+INPUT_FILE='runs.dat'
+
 USAGE="Usage: `basename $0` [-hv] [-o arg] [-f arg] [-r arg] args"
 
 # Parse command line options.
