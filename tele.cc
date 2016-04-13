@@ -342,8 +342,9 @@ int main( int argc, char* argv[] )
 
   set <int> hotset[6];
 
+  cout << endl;
   if( ihotFile.bad() || ! ihotFile.is_open() ) {
-    cout << "Error opening " << hotFileName.str() << endl;
+    cout << "no " << hotFileName.str() << ", will be created" << endl;
   }
   // can there be instructions between if and else ? no!
   else {
@@ -421,8 +422,10 @@ int main( int argc, char* argv[] )
 
   ifstream ialignFile( outputDirectory+"/"+alignFileName.str() );
 
+  cout << endl;
   if( ialignFile.bad() || ! ialignFile.is_open() ) {
-    cout << "Error opening " << alignFileName.str() << endl;
+    cout << "no " << alignFileName.str() << ", will bootstrap" << endl;
+    cout << endl;
   }
   // can there be instructions between if and else ? no!
   else {
@@ -818,13 +821,13 @@ int main( int argc, char* argv[] )
     double evsec = (evTLU - evTLU0) / fTLU;
 
     if( event_nr < 10 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 100 && event_nr%10 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 1000 && event_nr%100 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
     else if( event_nr%1000 == 0 )
-      cout<<"Processing event " << event_nr << " time " << evsec << endl;
+      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
 
     StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
 
