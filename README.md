@@ -135,24 +135,13 @@ test beam pixel telescope analysis based on eudaq only
 
 ## Running jobs on the NAF batch system
 
-* To submit batch jobs for the alignment & hot pixel masking with tele
+* To submit batch jobs for tele or scope execute (one  mode is required for running)
 
   ```
-  ./scripts/teleScript.sh 
+  ./scripts/batchJobSubmit.sh
 
   Other options and features
 
-  ./scripts/teleScript.sh -f runs_DATE.dat 
-  ./scripts/teleScript.sh -f runs_DATE.dat -r 2450-2460,2465,2470-2475
-  ```
-
-* To submit batch jobs for DUT alignment and analysis
-
-  ```  
- ./scripts/scopeScript.sh
-
-  Other options and features
-
-  ./scripts/scopeScript.sh -f runs_DATE.dat
-  ./scripts/scopeScript.sh -f runs_DATE.dat -r 2450-2460,2465,2470-2475
+  ./scripts/batchJobSubmit.sh -f runs_DATE.dat 
+  ./scripts/batchJobSubmit.sh -f runs_DATE.dat -r 2450-2460,2465,2470-2475
   ```
