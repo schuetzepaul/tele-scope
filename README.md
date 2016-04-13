@@ -122,6 +122,17 @@ test beam pixel telescope analysis based on eudaq only
   sudo ln -s  /home/YOUR/eudaq/lib/libEUDAQ.dylib /usr/local/lib/.
   ```
 
+## Setup the follwoing before running on the NAF 
+  ```
+   module load gcc/47
+   export ROOTSYS=/nfs/dust/cms/user/schuep/software/ilcsoft/v01-17-05/root/5.34.18
+   export EUDAQ=/nfs/dust/cms/user/schuep/software/ilcsoft/v01-17-05/Eutelescope/trunk/external/eudaq/v1.5.1
+   cd $ROOTSYS
+   source bin/thisroot.sh
+   cd -
+   export LD_LIBRARY_PATH=/nfs/dust/cms/user/schuep/software/ilcsoft/v01-17-05/Eutelescope/trunk/external/eudaq/v1.5.1/lib:$LD_LIBRARY_PATH
+  ```
+
 ## Running jobs on the NAF batch system
 
 * To submit batch jobs for the alignment & hot pixel masking with tele
