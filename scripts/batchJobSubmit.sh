@@ -41,14 +41,20 @@ while getopts hvo:f:r:m: OPT; do
             INPUT_FILE=$OPTARG
             ;;
         r)
-	    STRING=`echo $OPTARG | awk -F "," '{for(i=1; i <= NF; i++) printf "%s ",$i}'`
+	    if [ ! -f $OPTARG ]; then
+		STRING=`echo $OPTARG | awk -F "," '{for(i=1; i <= NF; i++) printf "%s ",$i}'`
+
+	    elif [ -s $OPTARG ]; then
+		STRING=`cat $OPTARG | awk -F "," '{for(i=1; i <= NF; i++) printf "%s ",$i}'`
+	    fi
+
 	    array=(${STRING})
 
 	    for elem in "${array[@]}"
 	    do
-		if [[ $elem =~ "-" ]] ;then
+		if [[ $elem =~ "-" ]]; then
 		    element=`echo $elem | awk -F "-" '{for(i=$1; i <= $2; i++) printf "%s ",i}'`
-		    RUNS+=($element)  
+		    RUNS+=($element)
 		else
 		    RUNS+=($elem)
 		fi
@@ -65,7 +71,7 @@ while getopts hvo:f:r:m: OPT; do
     esac
 done
 
-# We want at least one non-option argument. 
+# We want at least one non-option argument.
 # Remove this block if you don't need it.
 if [ $# -eq 0 ]; then
     usage  >&2
@@ -88,15 +94,15 @@ regex_geo="geo (geo_.*.dat)"
 # Loop through input file to set a map with key-value pair (ie. run, geo.dat file)
 while read LINE
 do
-    if [[ $LINE =~ "#" ]];then
+    if [[ $LINE =~ "#" ]]; then
         continue
     fi
 
     if [[ $LINE =~ $regex_run ]]; then RUN=${BASH_REMATCH[1]}; fi
     if [[ $LINE =~ $regex_geo ]]; then GEO=${BASH_REMATCH[1]}; fi
 
-    if [[ $RUN != "" ]] && [[ $GEO != "" ]];then
-	if [[ "${RUNS[@]}" =~ "${RUN}" ]] || [[ ${#RUNS[@]} == 0 ]]; then	    
+    if [[ $RUN != "" ]] && [[ $GEO != "" ]]; then
+	if [[ "${RUNS[@]}" =~ "${RUN}" ]] || [[ ${#RUNS[@]} == 0 ]]; then
 	    GEOFILES[$RUN]=$GEO
 	else
 	    continue
@@ -106,15 +112,16 @@ done < $INPUT_FILE
 
 
 # Dispatch the jobs to the NAF batch system
-for RUN in "${!GEOFILES[@]}";do
+for RUN in "${!GEOFILES[@]}"; do
 
-    if test "$MODE" = "tele";then
+    if test "$MODE" = "tele"; then
 	$TA -g ${GEOFILES[$RUN]} $RUN &
 
-    elif test "$MODE" = "scope";then
+    elif test "$MODE" = "scope"; then
 	$SA -f $INPUT_FILE $RUN &
     fi
 done
+
 
 wait
 
