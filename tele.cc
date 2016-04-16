@@ -1,5 +1,5 @@
 
-// Daniel Pitzl, Feb 2016
+// Daniel Pitzl, DESY, Feb 2016
 // telescope analysis with eudaq
 // triplet pre-alignment
 
@@ -54,7 +54,7 @@ struct triplet {
 
 // globals:
 
-pixel pb[999]; // global declaration: vector of pixels with hit
+pixel pb[999]; // global declaration: array of pixel hits
 int fNHit; // global
 
 //------------------------------------------------------------------------------
@@ -921,7 +921,7 @@ int main( int argc, char* argv[] )
 	double xmid = xA - midx[im];
 	double ymid = yA - midy[im];
 	xA = xmid - ymid*rotx[im];
-	yA = ymid + xmid*rotx[im];
+	yA = ymid + xmid*roty[im];
 
 	for( int ipl = ibeg; ipl <= iend; ++ipl ) {
 
@@ -1196,7 +1196,7 @@ int main( int argc, char* argv[] )
       double xA = avxA + slxA * zA; // triplet at mid
       double yA = avyA + slyA * zA;
 
-      for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = upstream
+      for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = downstream
 
 	double avxB = driplets[jB].xm;
 	double avyB = driplets[jB].ym;
@@ -1236,6 +1236,15 @@ int main( int argc, char* argv[] )
 	}
 
 	// matched tri-dri => GBL
+
+	if( fabs(dy) < 0.1 &&
+	    fabs(dx) < 0.1 &&
+	    fabs( slxB - slxA ) < 0.001 &&
+	    fabs( slyB - slyA ) < 0.001 ) {
+
+	  
+
+	} // match
 
       } // driplets
 
