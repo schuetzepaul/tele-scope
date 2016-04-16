@@ -1,8 +1,11 @@
 
-ROOTCFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
-# root C flags =  -pthread -m64 -I/home/pitzl/ROOT/armin/root-cern/include
+# user: set path to eudaq in EUDAQ, e.g.
+# export EUDAQ=/home/YOU/eudaq
 
-ROOTLIBS   = $(shell $(ROOTSYS)/bin/root-config --libs)
+ROOTCFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
+
+ROOTLIBS = $(shell $(ROOTSYS)/bin/root-config --libs)
+ROOTGLIBS = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
 # -g for gdb
 # -pg for gprof
@@ -19,3 +22,8 @@ tele: tele.cc
 	g++ $(CXXFLAGS) tele.cc -o tele \
 	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: tele'
+
+evd: evd.cc
+	g++ $(CXXFLAGS) evd.cc -o evd \
+	$(ROOTGLIBS) -L$(EUDAQ)/lib -lEUDAQ
+	@echo 'done: evd'

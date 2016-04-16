@@ -48,6 +48,8 @@ struct triplet {
   double zm;
   double sx;
   double sy;
+  vector <double> vx;
+  vector <double> vy;
 };
 
 // globals:
@@ -1072,17 +1074,32 @@ int main( int argc, char* argv[] )
 	    // store triplets:
 
 	    if( fabs( dx3 ) < tricut && fabs( dy3 ) < tricut ) {
+
 	      triplet tri;
 	      tri.xm = xavg2;
 	      tri.ym = yavg2;
 	      tri.zm = zavg2;
 	      tri.sx = slpx;
 	      tri.sy = slpy;
+
+	      vector <double> ux(3);
+	      ux[0] = xA;
+	      ux[1] = xB;
+	      ux[2] = xC;
+	      tri.vx = ux;
+
+	      vector <double> uy(3);
+	      uy[0] = yA;
+	      uy[1] = yB;
+	      uy[2] = yC;
+	      tri.vy = uy;
+
 	      if( itd )
 		driplets.push_back(tri);
 	      else
 		triplets.push_back(tri);
-	    }
+
+	    } // triplet
 
 	    // check z spacing: A-B as baseline
 
@@ -1217,6 +1234,8 @@ int main( int argc, char* argv[] )
 	  hsixdslpx.Fill( slxB - slxA );
 	  hsixdslpy.Fill( slyB - slyA ); // width: 0.3 mrad
 	}
+
+	// matched tri-dri => GBL
 
       } // driplets
 
