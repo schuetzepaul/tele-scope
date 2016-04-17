@@ -1,5 +1,5 @@
 
-// Daniel Pitzl, Feb 2016
+// Daniel Pitzl, DESY, Feb 2016
 // telescope analysis with eudaq and DUT
 
 // make scope
@@ -57,7 +57,7 @@ struct triplet {
 
 // globals:
 
-pixel pb[999]; // global declaration: vector of pixels with hit
+pixel pb[999]; // global declaration: array of pixel hits
 int fNHit; // global
 
 //------------------------------------------------------------------------------
@@ -632,7 +632,7 @@ int main( int argc, char* argv[] )
 
   double upsignx = upsign;
   double upsigny = upsign;
-  if( chip0 == 603 && run > 24290 )
+  if( chip0 == 603 && run > 24290 ) // tilt 180 deg
     upsigny = -upsign;
   
   if( rot90 ) {
@@ -2557,8 +2557,8 @@ int main( int argc, char* argv[] )
 
   // dripets - triplets:
 
-  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -2.5, 2.5 );
-  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -2.5, 2.5 );
+  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -1, 1 );
+  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -1, 1 );
   TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 100, -0.5, 0.5 );
   TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 100, -0.5, 0.5 );
 
@@ -3294,13 +3294,13 @@ int main( int argc, char* argv[] )
     prevTLU = evTLU;
 
     if( event_nr < 10 )
-      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "scope processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 100 && event_nr%10 == 0 )
-      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "scope processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 1000 && event_nr%100 == 0 )
-      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "scope processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr%1000 == 0 )
-      cout << "scope processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "scope processing  " << run << "." << event_nr << "  taken " << evsec << endl;
 
     StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
 
@@ -3634,13 +3634,13 @@ int main( int argc, char* argv[] )
     double xcutMOD = 0.30;
     double ycutMOD = 0.20;
 
-    for( unsigned int iB = 0; iB < driplets.size(); ++iB ) { // iB = downstream
+    for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // jB = downstream
 
-      double avx = driplets[iB].xm;
-      double avy = driplets[iB].ym;
-      double avz = driplets[iB].zm;
-      double slx = driplets[iB].sx;
-      double sly = driplets[iB].sy;
+      double avx = driplets[jB].xm;
+      double avy = driplets[jB].ym;
+      double avz = driplets[jB].zm;
+      double slx = driplets[jB].sx;
+      double sly = driplets[jB].sy;
 
       double zB = REFz - avz; // z REF from mid of driplet
       double xB = avx + slx * zB; // driplet impact point on REF
@@ -3653,7 +3653,7 @@ int main( int argc, char* argv[] )
 
       for( unsigned int jj = 0; jj < driplets.size(); ++jj ) {
 
-	if( jj == iB ) continue;
+	if( jj == jB ) continue;
 
 	double zj = REFz - driplets[jj].zm;
 	double xj = driplets[jj].xm + driplets[jj].sx * zj; // triplet impact point on DUT
@@ -3668,7 +3668,7 @@ int main( int argc, char* argv[] )
 
       dddmin1Histo.Fill( dddmin );
       dddmin2Histo.Fill( dddmin );
-      driplets[iB].ttdmin = dddmin;
+      driplets[jB].ttdmin = dddmin;
 
       // transform into REF system:
 
@@ -3739,7 +3739,7 @@ int main( int argc, char* argv[] )
 	  if( fabs( x4 ) < 3.9 && // fiducial at REF
 	      fabs( y4 ) < 3.9 ) { // 3.8 same eff
 
-	    driplets[iB].lk = 1;
+	    driplets[jB].lk = 1;
 	    nm = 1; // we have a REF-driplet match in this event
 	    ++ndrilk;
 
@@ -4200,7 +4200,7 @@ int main( int argc, char* argv[] )
       double dddmin = 99.9; // driplet isolation at REF
       double sixdslp = 0.099; // [rad]
 
-      for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = upstream
+      for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = downstream
 
 	double avxB = driplets[jB].xm;
 	double avyB = driplets[jB].ym;
@@ -4218,10 +4218,6 @@ int main( int argc, char* argv[] )
 
 	double dx = xB - xA;
 	double dy = yB - yA;
-	if(      run > 23000 ) dx += 0.047; // correct for Mar 2016 driplet tilt
-	else if( run > 20700 ) dx -= 0.040; // correct for Jul 2015 driplet tilt
-	else if( run > 19700 ) dx += 0.010; // correct for Jun 2015 driplet tilt
-	else if( run > 19200 ) dx += 0.057; // correct for May 2015 driplet tilt
 
 	hsixdx.Fill( dx ); // for align fit
 	hsixdy.Fill( dy ); // for align fit

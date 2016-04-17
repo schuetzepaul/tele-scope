@@ -16,7 +16,6 @@
 
 #include <TFile.h>
 #include <TH1I.h>
-#include <TH2D.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TF1.h>
@@ -479,6 +478,8 @@ int main( int argc, char* argv[] )
 
   ialignFile.close();
 
+  double DUTz = 55 + zz[2];
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // (re-)create root file:
 
@@ -747,10 +748,10 @@ int main( int argc, char* argv[] )
 
   // dripets - triplets
 
-  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -5, 5 );
-  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -5, 5 );
-  TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 100, -1, 1 );
-  TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 100, -1, 1 );
+  TH1I hsixdx = TH1I( "sixdx", "six dx;dx [mm];triplet-driplet pairs", 100, -1, 1 );
+  TH1I hsixdy = TH1I( "sixdy", "six dy;dy [mm];triplet-driplet pairs", 100, -1, 1 );
+  TH1I hsixdxc = TH1I( "sixdxc", "six dx;dx [mm];triplet-driplet pairs", 200, -0.5, 0.5 );
+  TH1I hsixdyc = TH1I( "sixdyc", "six dy;dy [mm];triplet-driplet pairs", 200, -0.5, 0.5 );
 
   TProfile sixdxvsy =
     TProfile( "sixdxvsy",
@@ -760,6 +761,11 @@ int main( int argc, char* argv[] )
     TProfile( "sixdyvsx",
 	      "six #Deltay vs x;xB [mm];<driplet - triplet #Deltay> [mm]",
 	      200, -10, 10, -0.5, 0.5 );
+
+  TProfile2D * sixdxyvsxy = new
+    TProfile2D( "sixdxyvsxy",
+		"driplet - triplet #Delta_{xy} vs x-y;x_{mid} [mm];y_{mid} [mm];<sqrt(#Deltax^{2}+#Deltay^{2})> [rad]",
+		110, -11, 11, 55, -5.5, 5.5, 0, 0.7 );
 
   TProfile sixdxvstx =
     TProfile( "sixdxvstx",
@@ -778,6 +784,16 @@ int main( int argc, char* argv[] )
     TH1I( "sixdslpy",
 	  "driplet slope y - triplet slope y;driplet slope y - triplet slope y;driplet-triplet pairs",
 	  100, -0.0025, 0.0025 );     
+
+  TProfile * sixdslpvsx = new
+    TProfile( "sixdslpvsx",
+		"driplet - triplet slope_{xy} vs x;x_{mid} [mm];<sqrt(#Delta#theta_{x}^{2}+#Delta#theta_{y}^{2})> [rad]",
+		110, -11, 11, 0, 0.1 );
+  TProfile2D * sixdslpvsxy = new
+    TProfile2D( "sixdslpvsxy",
+		"driplet - triplet slope_{xy} vs x-y;x_{mid} [mm];y_{mid} [mm];<sqrt(#Delta#theta_{x}^{2}+#Delta#theta_{y}^{2})> [rad]",
+		110, -11, 11, 55, -5.5, 5.5, 0, 0.1 );
+
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
@@ -809,13 +825,13 @@ int main( int argc, char* argv[] )
     double evsec = (evTLU - evTLU0) / fTLU;
 
     if( event_nr < 10 )
-      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "tele processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 100 && event_nr%10 == 0 )
-      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "tele processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr < 1000 && event_nr%100 == 0 )
-      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "tele processing  " << run << "." << event_nr << "  taken " << evsec << endl;
     else if( event_nr%1000 == 0 )
-      cout << "tele processing  " << event_nr << "  taken " << evsec << endl;
+      cout << "tele processing  " << run << "." << event_nr << "  taken " << evsec << endl;
 
     StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
 
@@ -1180,8 +1196,6 @@ int main( int argc, char* argv[] )
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // match triplets and driplets, measure offset
 
-    double zm = 0.5 * ( zz[3] + zz[5] ); // mid driplet
-
     for( unsigned int iA = 0; iA < triplets.size(); ++iA ) { // i = A = upstream
 
       double avxA = triplets[iA].xm;
@@ -1190,9 +1204,9 @@ int main( int argc, char* argv[] )
       double slxA = triplets[iA].sx;
       double slyA = triplets[iA].sy;
 
-      // triplet at mid:
+      // triplet at DUT:
 
-      double zA = zm - avzA; // z from mid of triplet to mid driplet
+      double zA = DUTz - avzA; // z from mid of triplet to mid driplet
       double xA = avxA + slxA * zA; // triplet at mid
       double yA = avyA + slyA * zA;
 
@@ -1204,9 +1218,9 @@ int main( int argc, char* argv[] )
 	double slxB = driplets[jB].sx;
 	double slyB = driplets[jB].sy;
 
-	// driplet at mid:
+	// driplet at DUT:
 
-	double zB = zm - avzB; // z from mid of triplet to mid
+	double zB = DUTz - avzB; // z from mid of triplet to mid
 	double xB = avxB + slxB * zB; // triplet at mid
 	double yB = avyB + slyB * zB;
 
@@ -1214,33 +1228,40 @@ int main( int argc, char* argv[] )
 
 	double dx = xB - xA;
 	double dy = yB - yA;
+	double dxy = sqrt( dx*dx + dy*dy );
+	double dslpx = slxB - slxA;
+	double dslpy = slyB - slyA;
+	double dslpxy = sqrt( dslpx*dslpx + dslpy*dslpy );
 
 	hsixdx.Fill( dx ); // for align fit
 	hsixdy.Fill( dy ); // for align fit
 	if( fabs(dy) < 0.1 ) {
 	  hsixdxc.Fill( dx );
-	  sixdxvsy.Fill( yB, dx );
+	  sixdxvsy.Fill( yA, dx );
 	  sixdxvstx.Fill( slxA, dx );
 	}
 	if( fabs(dx) < 0.1 ) {
 	  hsixdyc.Fill( dy );
-	  sixdyvsx.Fill( xB, dy );
+	  sixdyvsx.Fill( xA, dy );
 	  sixdyvsty.Fill( slyA, dy );
 	}
 
 	// compare slopes:
 
 	if( fabs(dy) < 0.1 && fabs(dx) < 0.1 ) {
-	  hsixdslpx.Fill( slxB - slxA );
-	  hsixdslpy.Fill( slyB - slyA ); // width: 0.3 mrad
+	  sixdxyvsxy->Fill( xA, yA, dxy );
+	  hsixdslpx.Fill( dslpx );
+	  hsixdslpy.Fill( dslpy ); // width: 0.3 mrad
+	  sixdslpvsx->Fill( xA, dslpxy );
+	  sixdslpvsxy->Fill( xA, yA, dslpxy );
 	}
 
 	// matched tri-dri => GBL
 
-	if( fabs(dy) < 0.1 &&
-	    fabs(dx) < 0.1 &&
-	    fabs( slxB - slxA ) < 0.001 &&
-	    fabs( slyB - slyA ) < 0.001 ) {
+	if( fabs(dy) < 0.5 &&
+	    fabs(dx) < 0.5 &&
+	    fabs( dslpx ) < 0.001 &&
+	    fabs( dslpy ) < 0.001 ) {
 
 	  
 
@@ -1354,11 +1375,11 @@ int main( int argc, char* argv[] )
 
     dxvsy[ipl].Fit( "pol1", "q", "", -midy[ipl], midy[ipl] );
     TF1 * fdxvsy = dxvsy[ipl].GetFunction( "pol1" );
-    cout << dxvsy[ipl].GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
+    cout << endl << dxvsy[ipl].GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
 
     dyvsx[ipl].Fit( "pol1", "q", "", -midx[ipl], midx[ipl] );
     TF1 * fdyvsx = dyvsx[ipl].GetFunction( "pol1" );
-    cout << dyvsx[ipl].GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
+    cout << endl << dyvsx[ipl].GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
 
     if( aligniteration ) {
       rotx[ipl] += fdxvsy->GetParameter(1);
@@ -1379,7 +1400,8 @@ int main( int argc, char* argv[] )
 	 << " plane " << ipl
 	 << " new zpos " << zz[2+3*itd] + f1->GetParameter(1)
 	 << endl;
-    alignz[ipl] += f1->GetParameter(1);
+    if( aligniteration )
+      alignz[ipl] += f1->GetParameter(1);
   }
 
   // driplet vs triplet:
@@ -1440,9 +1462,24 @@ int main( int argc, char* argv[] )
       aligny[ipl] += fgp0y->GetParameter(1);
     }
 
+    // x-y rotation from profiles:
+
+    sixdxvsy.Fit( "pol1", "q", "", -midy[2], midy[2] );
+    TF1 * fdxvsy = sixdxvsy.GetFunction( "pol1" );
+    cout << endl << sixdxvsy.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
+
+    sixdyvsx.Fit( "pol1", "q", "", -midx[2], midx[2] );
+    TF1 * fdyvsx = sixdyvsx.GetFunction( "pol1" );
+    cout << endl << sixdyvsx.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
+
+    for( int ipl = 3; ipl < 6; ++ipl ) {
+      rotx[ipl] += fdxvsy->GetParameter(1);
+      roty[ipl] -= fdyvsx->GetParameter(1); // sign
+    }
+
     // dz from dy vs ty:
 
-  }
+  } // aligniteration > 0
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // write alignment to file
