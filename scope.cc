@@ -2539,9 +2539,9 @@ int main( int argc, char* argv[] )
   TH2I * trixyHisto = new
     TH2I( "trixy", "triplets at z DUT;x [mm];y [mm];triplets",
 	  240, -12, 12, 120, -6, 6 );
-  TH1I trislpxHisto = TH1I( "trislpx", "triplet slope x;slope x [rad];triplets",
+  TH1I tritxHisto = TH1I( "tritx", "triplet slope x;slope x [rad];triplets",
 			    100, -0.005, 0.005 );
-  TH1I trislpyHisto = TH1I( "trislpy", "triplet slope y;slope y [rad];triplets",
+  TH1I trityHisto = TH1I( "trity", "triplet slope y;slope y [rad];triplets",
 			    100, -0.005, 0.005 );
 
   TH1I ttdxHisto = TH1I( "ttdx", "telescope triplets;triplets #Deltax [mm];triplet pairs",
@@ -3131,27 +3131,39 @@ int main( int argc, char* argv[] )
 	  150, 0, 150 );
   TH1I effclq1Histo =
     TH1I( "effclq1",
-	  "nearest cluster charge dxy > 0.1;DUT cluster charge [ke];dxy > 0.1 nearest cluster",
+	  "nearest cluster charge dxy > 0.1;DUT cluster charge [ke];dxy > 0.1 mm nearest cluster",
 	  150, 0, 150 );
   TH1I effclq2Histo =
     TH1I( "effclq2",
-	  "nearest cluster charge dxy > 0.2;DUT cluster charge [ke];dxy > 0.2 nearest cluster",
+	  "nearest cluster charge dxy > 0.2;DUT cluster charge [ke];dxy > 0.2 mm nearest cluster",
 	  150, 0, 150 );
   TH1I effclq3Histo =
     TH1I( "effclq3",
-	  "nearest cluster charge dxy > 0.3;DUT cluster charge [ke];dxy > 0.3 nearest cluster",
+	  "nearest cluster charge dxy > 0.3;DUT cluster charge [ke];dxy > 0.3 mm nearest cluster",
 	  150, 0, 150 );
   TH1I effclq4Histo =
     TH1I( "effclq4",
-	  "nearest cluster charge dxy > 0.4;DUT cluster charge [ke];dxy > 0.4 nearest cluster",
+	  "nearest cluster charge dxy > 0.4;DUT cluster charge [ke];dxy > 0.4 mm nearest cluster",
 	  150, 0, 150 );
   TH1I effclq5Histo =
     TH1I( "effclq5",
-	  "nearest cluster charge dxy > 0.5;DUT cluster charge [ke];dxy > 0.5 nearest cluster",
+	  "nearest cluster charge dxy > 0.5;DUT cluster charge [ke];dxy > 0.5 mm nearest cluster",
 	  150, 0, 150 );
   TH1I effclq6Histo =
     TH1I( "effclq6",
-	  "nearest cluster charge dxy > 0.6;DUT cluster charge [ke];dxy > 0.6 nearest cluster",
+	  "nearest cluster charge dxy > 0.6;DUT cluster charge [ke];dxy > 0.6 mm nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq7Histo =
+    TH1I( "effclq7",
+	  "nearest cluster charge dxy > 0.7;DUT cluster charge [ke];dxy > 0.7 mm nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq8Histo =
+    TH1I( "effclq8",
+	  "nearest cluster charge dxy > 0.8;DUT cluster charge [ke];dxy > 0.8 mm nearest cluster",
+	  150, 0, 150 );
+  TH1I effclq9Histo =
+    TH1I( "effclq9",
+	  "nearest cluster charge dxy > 0.9;DUT cluster charge [ke];dxy > 0.9 mm nearest cluster",
 	  150, 0, 150 );
 
   TH1I effclqrHisto =
@@ -3199,10 +3211,10 @@ int main( int argc, char* argv[] )
 	      "DUT efficiency vs triplets;triplets;efficiency",
 	      20, 0.5, 20.5, -1, 2 );
 
-  TProfile effvsndrilk =
-    TProfile( "effvsndrilk",
-	      "DUT efficiency vs linked driplets;linked driplets;efficiency",
-	      10, 0.5, 10.5, -1, 2 );
+  TProfile effvsndri =
+    TProfile( "effvsndri",
+	      "DUT efficiency vs driplets;driplets;efficiency",
+	      20, 0.5, 20.5, -1, 2 );
 
   TProfile2D * effvsxmym = new
     TProfile2D( "effvsxmym",
@@ -4158,8 +4170,8 @@ int main( int argc, char* argv[] )
       trixHisto.Fill( xA );
       triyHisto.Fill( yA );
       trixyHisto->Fill( xA, yA );
-      trislpxHisto.Fill( slx );
-      trislpyHisto.Fill( sly );
+      tritxHisto.Fill( slx );
+      trityHisto.Fill( sly );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // tri vs tri: isolation at DUT
@@ -4965,13 +4977,16 @@ int main( int argc, char* argv[] )
 	    if( dmin > 0.4 ) effclq4Histo.Fill( clQ0 );
 	    if( dmin > 0.5 ) effclq5Histo.Fill( clQ0 );
 	    if( dmin > 0.6 ) effclq6Histo.Fill( clQ0 );
+	    if( dmin > 0.7 ) effclq7Histo.Fill( clQ0 );
+	    if( dmin > 0.8 ) effclq8Histo.Fill( clQ0 );
+	    if( dmin > 0.9 ) effclq9Histo.Fill( clQ0 );
 	    effvst1.Fill( evsec, nm );
 	    effvst2.Fill( evsec, nm );
 	    effvst3.Fill( evsec, nm );
 	    effvst4.Fill( evsec, nm );
 	    effvsxt->Fill( evsec, x4, nm );
 	    effvsntri.Fill( triplets.size(), nm );
-	    effvsndrilk.Fill( ndrilk, nm );
+	    effvsndri.Fill( driplets.size(), nm );
 	    effvsxmym->Fill( xmod, ymod, nm );
 	    effvsxm.Fill( xmod, nm );
 	    effvstx.Fill( slx, nm );
