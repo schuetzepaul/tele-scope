@@ -19,6 +19,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TF1.h>
+#include <TSystem.h>
 
 #include <sstream> // stringstream
 #include <fstream> // filestream
@@ -321,13 +322,26 @@ int main( int argc, char* argv[] )
   double drng = 0.2; // wide spacing
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Create directory based on run number
+
+  stringstream run_number;
+  run_number << run;
+
+  // Directory will be made in the current working directory (cwd)
+  std::string outputDirectory = std::string(gSystem->WorkingDirectory())+"/run_"+run_number.str();
+
+  // Check first that it does not already exit
+  if(!gSystem->MakeDirectory(TString(outputDirectory)))
+    gSystem->MakeDirectory(TString(outputDirectory));
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // hot pixels:
 
   ostringstream hotFileName; // output string stream
 
   hotFileName << "hot_" << run << ".dat";
 
-  ifstream ihotFile( hotFileName.str() );
+  ifstream ihotFile( outputDirectory+"/"+hotFileName.str() );
 
   set <int> hotset[6];
 
@@ -409,7 +423,7 @@ int main( int argc, char* argv[] )
 
   alignFileName << "align_" << run << ".dat";
 
-  ifstream ialignFile( alignFileName.str() );
+  ifstream ialignFile( outputDirectory+"/"+alignFileName.str() );
 
   cout << endl;
   if( ialignFile.bad() || ! ialignFile.is_open() ) {
@@ -527,7 +541,7 @@ int main( int argc, char* argv[] )
 
   rootFileName << "tele" << run << ".root";
 
-  TFile* histoFile = new TFile( rootFileName.str(  ).c_str(  ), "RECREATE" );
+  TFile* histoFile = new TFile( (outputDirectory+"/"+rootFileName.str(  )).c_str(  ), "RECREATE" );
 
   // book histos:
  
@@ -1420,7 +1434,7 @@ int main( int argc, char* argv[] )
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // hot pixels:
 
-  ofstream hotFile( hotFileName.str() );
+  ofstream hotFile( outputDirectory+"/"+hotFileName.str() );
 
   hotFile << "# telescope hot pixel ist for run " << run << endl;
 
@@ -1624,7 +1638,7 @@ int main( int argc, char* argv[] )
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // write alignment to file
 
-  ofstream alignFile( alignFileName.str() );
+  ofstream alignFile( outputDirectory+"/"+alignFileName.str() );
 
   alignFile << "# telescope alignment for run " << run << endl;
   ++aligniteration;
