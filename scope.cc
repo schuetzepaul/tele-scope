@@ -184,7 +184,8 @@ int main( int argc, char* argv[] )
   int run = atoi( argv[argc-1] );
 
   cout << "run " << run << endl;
-
+  bool useMODasREF = false;
+  cout << "use MOD as reference plane" << useMODasREF << endl;
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // further arguments:
 
@@ -2170,10 +2171,17 @@ int main( int argc, char* argv[] )
   TH1I ndriHisto = TH1I( "ndri", "driplets;driplets;events", 51, -0.5, 50.5 );
 
   TH1I dddmin1Histo = TH1I( "dddmin1",
-			    "telescope driplets isolation;driplets min #Delta_{xy} [mm];driplet pairs",
+			    "telescope driplets isolation at ref;driplets min #Delta_{xy} [mm];driplet pairs",
 			    100, 0, 1 );
   TH1I dddmin2Histo = TH1I( "dddmin2",
-			    "telescope driplets isolation;driplets min #Delta_{xy} [mm];driplet pairs",
+			    "telescope driplets isolation at ref;driplets min #Delta_{xy} [mm];driplet pairs",
+			    150, 0, 15 );
+
+  TH1I dddmin1modHisto = TH1I( "dddmin1mod",
+			    "telescope driplets isolation at mod;driplets min #Delta_{xy} [mm];driplet pairs",
+			    100, 0, 1 );
+  TH1I dddmin2modHisto = TH1I( "dddmin2mod",
+			    "telescope driplets isolation at mod;driplets min #Delta_{xy} [mm];driplet pairs",
 			    150, 0, 15 );
 
   // REF vs driplets:
@@ -2341,10 +2349,13 @@ int main( int argc, char* argv[] )
 			   120, -6, 6 );
   TH1I modlkxHisto = TH1I( "modlkx",
 			   "linked driplet at MOD x;driplet x at MOD [mm];linked driplets",
-			   60, -4.5, 4.5 );
+			   480, -4.5, 36 );
   TH1I modlkyHisto = TH1I( "modlky",
 			   "linked driplet at MOD y;driplet y at MOD [mm];linked driplets",
-			   90, -4.5, 4.5 );
+			   180, -9, 9 );
+  TH2I modlkxvsyHisto = TH2I( "modlkxvsy",
+			      "linked driplet at MOD x vs y;driplet x at MOD [mm];driplet y at MOD [mm]",
+			      480, -4.5, 36 , 180, -9, 9);
 
   TH1I modlkcolHisto = TH1I( "modlkcol",
 			     "MOD linked col;MOD linked col;linked MOD cluster",
@@ -2352,6 +2363,19 @@ int main( int argc, char* argv[] )
   TH1I modlkrowHisto = TH1I( "modlkrow",
 			     "MOD linked row;MOD linked row;linked MOD cluster",
 			     80, 0, 80 );
+
+  TProfile modlkvst1 =
+    TProfile( "modlkvst1",
+	      "driplet-MOD links vs time;time [s];driplets with MOD links",
+	      300, 0, 300, -0.5, 1.5 );
+  TProfile modlkvst2 =
+    TProfile( "modlkvst2",
+	      "driplet-MOD links vs time;time [s];driplets with MOD links",
+	      150, 0, 1500, -0.5, 1.5 );
+  TProfile modlkvst3 =
+    TProfile( "modlkvst3",
+	      "driplet-MOD links vs time;time [s];driplets with MOD links",
+	      300, 0, 30000, -0.5, 1.5 );
 
   // DUT:
 
@@ -3557,6 +3581,7 @@ int main( int argc, char* argv[] )
     // make driplets 3+5-4:
 
     vector <triplet> driplets;
+    vector <triplet> dripletsmod;
 
     double driCut = 0.1; // [mm]
 
@@ -3650,20 +3675,21 @@ int main( int argc, char* argv[] )
     } // cl A
 
     ndriHisto.Fill( driplets.size() );
-
+    dripletsmod = driplets;
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // driplets vs REF:
 
     double xcutREF = 0.12;
     double ycutREF = 0.08;
     int nm = 0;
+    int nmmod = 0;
     int ndrilk = 0;
 
     const double cr = cos( REFrot );
     const double sr = sin( REFrot );
 
-    double xcutMOD = 0.30;
-    double ycutMOD = 0.20;
+    double xcutMOD = 0.18;
+    double ycutMOD = 0.12;
 
     for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // jB = downstream
 
@@ -3700,6 +3726,7 @@ int main( int argc, char* argv[] )
       dddmin1Histo.Fill( dddmin );
       dddmin2Histo.Fill( dddmin );
       driplets[jB].ttdmin = dddmin;
+
 
       // transform into REF system:
 
@@ -3792,6 +3819,30 @@ int main( int argc, char* argv[] )
       double xc = avx + slx * zc;
 
       double dzc = zc + avz - MODz; // from MOD z0 [-8,8] mm
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // dri vs dri: isolation at MOD
+      
+      dddmin = 99.9;
+      
+      for( unsigned int jj = 0; jj < dripletsmod.size(); ++jj ) {
+	
+	if( jj == jB ) continue;
+	
+	double zj = MODz - driplets[jj].zm;
+	double xj = dripletsmod[jj].xm + dripletsmod[jj].sx * zj; // triplet impact point on DUT
+	double yj = dripletsmod[jj].ym + dripletsmod[jj].sy * zj;
+	
+	double dx = xc - xj;
+	double dy = yc - yj;
+	double dd = sqrt( dx*dx + dy*dy );
+	if( dd < dddmin ) dddmin = dd;
+	
+      } // jj
+      
+      dddmin1modHisto.Fill( dddmin );
+      dddmin2modHisto.Fill( dddmin );
+      dripletsmod[jB].ttdmin = dddmin;
+
 
       // transform into MOD system: (passive).
       // large rotations don't commute: careful with order
@@ -3855,13 +3906,13 @@ int main( int argc, char* argv[] )
 
 	if( fabs( moddx ) < xcutMOD &&
 	    fabs( moddy ) < ycutMOD &&
-	    fabs( x4 ) < 3.9 && // fiducial at MOD
-	    fabs( y4 ) < 3.9 &&
 	    c->big == 0 ) {
 	  modnpxHisto.Fill( npx );
 	  modqHisto.Fill( q );
 	  modnpxvsxmym->Fill( xmod, ymod, npx );
 	  modqxvsxmym->Fill( xmod, ymod, qx );
+	  dripletsmod[jB].lk = 1; //store driplets that have match
+	  nmmod = 1; // we have a MOD-driplet match in this event
 	}
 
 	if( fabs( moddx ) < xcutMOD &&
@@ -3873,6 +3924,7 @@ int main( int argc, char* argv[] )
 	  modlkyHisto.Fill( y4 );
 	  modlkcolHisto.Fill( ccol );
 	  modlkrowHisto.Fill( crow );
+	  modlkxvsyHisto.Fill( x4, y4 );
 
 	} // MOD link x and y
 
@@ -3884,6 +3936,10 @@ int main( int argc, char* argv[] )
     reflkvst2.Fill( evsec, nm );
     reflkvst3.Fill( evsec, nm );
     ndrilkHisto.Fill( ndrilk );
+
+    modlkvst1.Fill( evsec, nmmod ); // Mod yield vs time
+    modlkvst2.Fill( evsec, nmmod );
+    modlkvst3.Fill( evsec, nmmod );
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // DUT:
@@ -4231,13 +4287,19 @@ int main( int argc, char* argv[] )
       double dddmin = 99.9; // driplet isolation at REF
       double sixdslp = 0.099; // [rad]
 
-      for( unsigned int jB = 0; jB < driplets.size(); ++jB ) { // j = B = downstream
+      vector <triplet> dripletsForEff;
+      dripletsForEff = driplets;
+      if (useMODasREF){
+	dripletsForEff = dripletsmod;
+      }
 
-	double avxB = driplets[jB].xm;
-	double avyB = driplets[jB].ym;
-	double avzB = driplets[jB].zm;
-	double slxB = driplets[jB].sx;
-	double slyB = driplets[jB].sy;
+      for( unsigned int jB = 0; jB < dripletsForEff.size(); ++jB ) { // j = B = downstream
+
+	double avxB = dripletsForEff[jB].xm;
+	double avyB = dripletsForEff[jB].ym;
+	double avzB = dripletsForEff[jB].zm;
+	double slxB = dripletsForEff[jB].sx;
+	double slyB = dripletsForEff[jB].sy;
 
 	// driplet at mid:
 
@@ -4272,14 +4334,14 @@ int main( int argc, char* argv[] )
 
 	if( fabs(dx) < sixcut && fabs(dy) < sixcut ) {
 	  sixxyHisto->Fill( xA, yA );
-	  if( driplets[jB].lk ) {
+	  if( dripletsForEff[jB].lk ) {
 	    lsixlk = 1;
-	    dddmin = driplets[jB].ttdmin;
+	    dddmin = dripletsForEff[jB].ttdmin;
 	    sixdslp = sqrt( pow( slxB - slx, 2 ) + pow( slyB - sly, 2 ) );
 	  }
 	}
 
-      } // driplets
+      } // dripletsForEff
 
       if( lsixlk && dddmin < 0.6 ) liso = 0; // require isolation at REF
 
@@ -5005,7 +5067,7 @@ int main( int argc, char* argv[] )
 	    effvst4.Fill( evsec, nm );
 	    effvsxt->Fill( evsec, x4, nm );
 	    effvsntri.Fill( triplets.size(), nm );
-	    effvsndri.Fill( driplets.size(), nm );
+	    effvsndri.Fill( dripletsForEff.size(), nm );
 	    effvsxmym->Fill( xmod, ymod, nm );
 	    effvsxm.Fill( xmod, nm );
 	    effvstx.Fill( slx, nm );
@@ -5563,6 +5625,8 @@ int main( int argc, char* argv[] )
 
   cout << endl << histoFile->GetName() << endl;
 
+  if(useMODasREF)  cout << "Using MOD for efficiency " << endl;
+  else cout << "Using REF for efficiency " << endl;
   cout << endl;
 
   return 0;
