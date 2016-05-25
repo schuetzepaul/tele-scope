@@ -16,21 +16,21 @@ ROOTGLIBS = $(shell $(ROOTSYS)/bin/root-config --glibs)
 CXXFLAGS = -std=c++11 -O2 -Wall -Wextra $(ROOTCFLAGS) -I$(EUDAQ)/main/include
 
 scope: scope.cc
-	g++ $(CXXFLAGS) scope.cc -o scope \
+	g++ $(CXXFLAGS) -o scope scope.cc \
 	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: scope'
 
 tele: tele.cc
-	g++ $(CXXFLAGS) tele.cc -o tele \
+	g++ $(CXXFLAGS) -o tele tele.cc \
 	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: tele'
 
 quad: quad.cc
-	g++ $(CXXFLAGS) quad.cc -o quad \
+	g++ $(CXXFLAGS) -I$(GBL)/include -o quad quad.cc \
 	-L$(GBL) -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: quad'
 
 evd: evd.cc
-	g++ $(CXXFLAGS) evd.cc -o evd \
+	g++ $(CXXFLAGS) -o evd evd.cc \
 	$(ROOTGLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: evd'
