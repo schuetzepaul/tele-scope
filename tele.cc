@@ -184,8 +184,8 @@ int main( int argc, char* argv[] )
   // further arguments:
 
   int lev = 999222111; // last event
-
   string geoFileName( "geo.dat" );
+  double mom = 4.8;
 
   for( int i = 1; i < argc; ++i ) {
 
@@ -195,7 +195,13 @@ int main( int argc, char* argv[] )
     if( !strcmp( argv[i], "-g" ) )
       geoFileName = argv[++i];
 
+    if( !strcmp( argv[i], "-p" ) )
+      mom = atof( argv[++i] ); // momentum
+
   } // argc
+
+  const double ang = sqrt( 0.005*0.005 + pow( 0.002*4.8/mom, 2 ) );
+  double f = 4.8/mom;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // geometry:
@@ -318,8 +324,8 @@ int main( int argc, char* argv[] )
   geoFile.close();
 
   // for profile plots:
-  //double drng = 0.1; // narrow spacing
-  double drng = 0.2; // wide spacing
+  //double drng = 0.1*f; // narrow spacing
+  double drng = 0.2*f; // wide spacing
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Create directory based on run number
@@ -513,7 +519,10 @@ int main( int argc, char* argv[] )
     DUTz = 60 + zz[2]; // Apr 2016, 24295 sixdxcsi 15.7 um
     //DUTz = 70 + zz[2]; // Apr 2016, 24295 sixdxcsi 16.2 um
 
-  // DUT Cu window in x: from sixdslpvsx
+  if( DUTz > zz[3] )
+    DUTz = 0.5 * ( zz[2] + zz[3] );
+
+  // DUT Cu window in x: from sixdtvsx
 
   double xminCu = -6.5;
   double xmaxCu =  6.5;
@@ -544,7 +553,16 @@ int main( int argc, char* argv[] )
   TFile* histoFile = new TFile( (outputDirectory+"/"+rootFileName.str(  )).c_str(  ), "RECREATE" );
 
   // book histos:
- 
+
+  TH1I hdtus = TH1I( "dtus", "time between events;time between events [us];events", 100, 0, 1000 );
+  TH1I hdtms = TH1I( "dtms", "time between events;time between events [ms];events", 100, 0, 1000 );
+
+  TH1I t1Histo = TH1I( "t1", "event time;event time [s];events", 100, 0, 1 );
+  TH1I t2Histo = TH1I( "t2", "event time;event time [s];events", 500, 0, 500 );
+  TH1I t3Histo = TH1I( "t3", "event time;event time [s];events", 150, 0, 1500 );
+  TH1I t4Histo = TH1I( "t4", "event time;event time [s];events", 600, 0, 6000 );
+  TH1I t5Histo = TH1I( "t5", "event time;event time [s];events", 600, 0, 60000 );
+
   TH1I hnpx[6];
   TH1I hcol0[6];
   TH1I hrow0[6];
@@ -564,6 +582,8 @@ int main( int argc, char* argv[] )
   TProfile dxvsy[6];
   TProfile dyvsx[6];
 
+  TProfile teleffx[6];
+
   for( int ipl = 0; ipl < 6; ++ipl ) {
 
     hnpx[ipl] = TH1I( Form( "npx%i", ipl ),
@@ -572,17 +592,17 @@ int main( int argc, char* argv[] )
 
     hcol0[ipl] = TH1I( Form( "allcol%i", ipl ),
 		      Form( "%i all col;col;%i all pixels", ipl, ipl ), 
-		      max( 52, nx[ipl]/4 ), 0, max( 52, nx[ipl]/4 ) );
+		      max( 52, nx[ipl]/4 ), 0, nx[ipl] );
     hrow0[ipl] = TH1I( Form( "allrow%i", ipl ),
 		      Form( "%i all row;row;%i all pixels", ipl, ipl ),
-		      max( 80, ny[ipl]/2 ), 0, max( 80, ny[ipl]/2 ) );
+		      max( 80, ny[ipl]/2 ), 0, ny[ipl] );
 
     hcol[ipl] = TH1I( Form( "col%i", ipl ),
 		      Form( "%i col;col;%i pixels", ipl, ipl ), 
-		      max( 52, nx[ipl]/4 ), 0, max( 52, nx[ipl]/4 ) );
+		      max( 52, nx[ipl]/4 ), 0, nx[ipl] );
     hrow[ipl] = TH1I( Form( "row%i", ipl ),
 		      Form( "%i row;row;%i pixels", ipl, ipl ),
-		      max( 80, ny[ipl]/2 ), 0, max( 80, ny[ipl]/2 ) );
+		      max( 80, ny[ipl]/2 ), 0, ny[ipl] );
 
     hncl[ipl] = TH1I( Form( "ncl%i", ipl ),
 		      Form( "plane %i cluster per event;cluster;plane %i events", ipl, ipl ),
@@ -597,18 +617,23 @@ int main( int argc, char* argv[] )
 		       Form( "%i cluster size y;rows/cluster;%i clusters", ipl, ipl ),
 		       21, -0.5, 20.5 );
 
+    hmindxy[ipl] = TH1I( Form( "mindxy%i", ipl ),
+			 Form( "%i cluster isolation;distance to next cluster [mm];%i clusters",
+			       ipl, ipl ),
+			 100, 0, 3 );
+
     hdx[ipl] = TH1I( Form( "dx%im", ipl ),
 		     Form( "%i-m dx;%i-m dx [mm];cluster pairs", ipl, ipl ),
-		     100, -1, 1 );
+		     100, -f, f );
     hdy[ipl] = TH1I( Form( "dy%im", ipl ),
 		     Form( "%i-m dy;%i-m dy [mm];cluster pairs", ipl, ipl ),
-		     100, -1, 1 );
+		     100, -f, f );
     hdxc[ipl] = TH1I( Form( "dxc%im", ipl ),
 		     Form( "%i-m dx;%i-m dx [mm];cluster pairs", ipl, ipl ),
-		     100, -1, 1 );
+		     100, -f, f );
     hdyc[ipl] = TH1I( Form( "dyc%im", ipl ),
 		     Form( "%i-m dy;%i-m dy [mm];cluster pairs", ipl, ipl ),
-		     100, -1, 1 );
+		     100, -f, f );
 
     dxvsy[ipl] = TProfile( Form( "dx%imvsy", ipl ),
 			   Form( "%i-m dx vs y;y [mm];<%i-m dx> [mm]", ipl, ipl ),
@@ -616,6 +641,10 @@ int main( int argc, char* argv[] )
     dyvsx[ipl] = TProfile( Form( "dy%imvsx", ipl ),
 			   Form( "%i-m dy vs x;x [mm];<%i-m dy> [mm]", ipl, ipl ),
 			   100, -midx[ipl], midx[ipl], -drng, drng );
+
+    teleffx[ipl] = TProfile( Form( "eff%ivsx", ipl ),
+			     Form( "plane %i efficiency;x [mm];plane %i efficiency", ipl, ipl ),
+			     100, -midx[ipl], midx[ipl], -1, 2 );
 
   } // planes
 
