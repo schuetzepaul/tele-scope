@@ -1,6 +1,8 @@
 
-# user: set path to eudaq in EUDAQ, e.g.
-# export EUDAQ=/home/YOU/eudaq
+# user:
+# set path to eudaq and GBL:
+# export EUDAQ=/home/YOURID/eudaq
+# export GBL=/home/YOURID/GBL/V01-17-00/cpp/lib/
 
 ROOTCFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
 
@@ -22,6 +24,11 @@ tele: tele.cc
 	g++ $(CXXFLAGS) tele.cc -o tele \
 	$(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: tele'
+
+quad: quad.cc
+	g++ $(CXXFLAGS) quad.cc -o quad \
+	-L$(GBL) -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
+	@echo 'done: quad'
 
 evd: evd.cc
 	g++ $(CXXFLAGS) evd.cc -o evd \
