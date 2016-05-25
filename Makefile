@@ -27,7 +27,7 @@ tele: tele.cc
 
 quad: quad.cc
 	g++ $(CXXFLAGS) -I$(GBL)/include -o quad quad.cc \
-	-L$(GBL) -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
+	-L$(GBL)/lib -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: quad'
 
 evd: evd.cc
