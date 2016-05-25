@@ -70,6 +70,17 @@ test beam pixel telescope analysis based on eudaq only
 * for quad you need GBL:
   ```
   svn co https://svnsrv.desy.de/desy/GeneralBrokenLines/
+  cd GeneralBrokenLines
+  cd trunk
+  cd cpp
+  mkdir build
+  cd build
+  cmake ..
+  emacs CMakeCache.txt
+  CMAKE_CXX_FLAGS:STRING=-std=c++11
+  make
+  make install
+  export GBL=/home/YOURID/GeneralBrokenLines/trunk/cpp
   ```
 
 
