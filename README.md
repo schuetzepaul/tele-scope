@@ -67,6 +67,12 @@ test beam pixel telescope analysis based on eudaq only
   +#include "../api/api.h"	
   ```
 
+* for quad you need GBL:
+  ```
+  svn co https://svnsrv.desy.de/desy/GeneralBrokenLines/
+  ```
+
+
 ## tele-scope
 * ceckout the tele-scope package
   ```
