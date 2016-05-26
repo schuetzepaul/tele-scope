@@ -229,6 +229,15 @@ TMatrixD Jac5( double ds ) // for GBL
 }
 
 //------------------------------------------------------------------------------
+bool isFiducial( double x, double y)
+{
+  bool ffiducial = true;
+  if(y < -(8.1-0.2-0.06) || y > (8.1-0.2-0.06)
+     || x < -(32.4-0.3-0.06) || x > (32.4-0.3-0.06)) ffiducial = false;
+  return ffiducial;
+}
+
+//------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
   cout << "main " << argv[0] << " called with " << argc << " arguments" << endl;
@@ -1556,6 +1565,9 @@ int main( int argc, char* argv[] )
 	  double xavg3D = (3*xC - xA)/2; // extrapolate
 	  double yavg3D = (3*yC - yA)/2; // 
 
+	  bool fiducial = isFiducial(xavg3D, yavg3D);
+	  if(!fiducial)continue;
+	  
 	  int nm[99] = {0};
 
 	  for( vector<cluster>::iterator cD = cl[D].begin(); cD != cl[D].end(); ++cD ) {
@@ -1686,6 +1698,9 @@ int main( int argc, char* argv[] )
 
 	  double xavg3A = (3*xB - xD)/2; // extrapolate
 	  double yavg3A = (3*yB - yD)/2; // 
+
+	  bool fiducial = isFiducial(xavg3A, yavg3A);
+	  if(!fiducial) continue;
 
 	  int nm[99] = {0};
 
@@ -1877,6 +1892,9 @@ int main( int argc, char* argv[] )
 	  double xavg2B = 0.5*(xA + xC); // interpolate
 	  double yavg2B = 0.5*(yA + yC); // equidistant
 
+	  bool fiducial = isFiducial(xavg2B, yavg2B);
+	  if(!fiducial) continue;
+
 	  // efficiency of B:
 
 	  int nm[99] = {0};
@@ -2004,6 +2022,9 @@ int main( int argc, char* argv[] )
 
 	  double xavg2C = 0.5*(xB + xD); // equidistant
 	  double yavg2C = 0.5*(yB + yD);
+
+	  bool fiducial = isFiducial(xavg2C, yavg2C);
+	  if(!fiducial) continue;
 
 	  // efficiency of C vs ADB:
 
