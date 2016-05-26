@@ -9,6 +9,7 @@
 
 #include <sstream> // stringstream
 #include <fstream> // filestream
+#include <iomanip>
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
@@ -2590,16 +2591,14 @@ int main( int argc, char* argv[] )
   cout << "quad  tracks " << n4 << endl;
   cout << "mille tracks " << nmille << endl;
 
-  cout << endl;
-  cout << "effB upper ROCs "
-       << effBvsx1.GetMean(2) << endl;
-  cout << "effB lower ROCs "
-       << effBvsx0.GetMean(2) << endl;
 
-  cout << "effC upper ROCs "
-       << effCvsx1.GetMean(2) << endl;
-  cout << "effC lower ROCs "
-       << effCvsx0.GetMean(2) << endl;
+  cout << "Efficiencies:" << endl;
+  cout << "Mod\tTotal\t\tupper\t\tlower" << setprecision(6) << endl;
+  cout << "A\t" << effAvsw.GetBinContent(14) << "\t" << effAvsx1.GetMean(2) << "\t" << effAvsx0.GetMean(2) << endl;
+  cout << "B\t" << effBvsw.GetBinContent(14) << "\t" << effBvsx1.GetMean(2) << "\t" << effBvsx0.GetMean(2) << endl;
+  cout << "C\t" << effCvsw.GetBinContent(14) << "\t" << effCvsx1.GetMean(2) << "\t" << effCvsx0.GetMean(2) << endl;
+  cout << "D\t" << effDvsw.GetBinContent(14) << "\t" << effDvsx1.GetMean(2) << "\t" << effDvsx0.GetMean(2) << endl;
+  
 
   cout << endl << histoFile->GetName() << endl << endl;
 
