@@ -233,8 +233,8 @@ TMatrixD Jac5( double ds ) // for GBL
 bool isFiducial( double x, double y)
 {
   bool ffiducial = true;
-  if(y < -(8.1-0.2-0.06) || y > (8.1-0.2-0.06)
-     || x < -(32.4-0.3-0.06) || x > (32.4-0.3-0.06)) ffiducial = false;
+  if(y < -(8.1-0.3-0.06) || y > (8.1-0.3-0.06)
+     || x < -(32.4-0.45-0.06) || x > (32.4-0.45-0.06)) ffiducial = false;
   return ffiducial;
 }
 
