@@ -9,6 +9,7 @@
 
 #include <sstream> // stringstream
 #include <fstream> // filestream
+#include <iomanip>
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
@@ -226,6 +227,15 @@ TMatrixD Jac5( double ds ) // for GBL
   jac[3][1] = ds; // x = xp * ds
   jac[4][2] = ds; // y = yp * ds
   return jac;
+}
+
+//------------------------------------------------------------------------------
+bool isFiducial( double x, double y)
+{
+  bool ffiducial = true;
+  if(y < -(8.1-0.2-0.06) || y > (8.1-0.2-0.06)
+     || x < -(32.4-0.3-0.06) || x > (32.4-0.3-0.06)) ffiducial = false;
+  return ffiducial;
 }
 
 //------------------------------------------------------------------------------
@@ -1556,6 +1566,9 @@ int main( int argc, char* argv[] )
 	  double xavg3D = (3*xC - xA)/2; // extrapolate
 	  double yavg3D = (3*yC - yA)/2; // 
 
+	  bool fiducial = isFiducial(xavg3D, yavg3D);
+	  if(!fiducial)continue;
+	  
 	  int nm[99] = {0};
 
 	  for( vector<cluster>::iterator cD = cl[D].begin(); cD != cl[D].end(); ++cD ) {
@@ -1686,6 +1699,9 @@ int main( int argc, char* argv[] )
 
 	  double xavg3A = (3*xB - xD)/2; // extrapolate
 	  double yavg3A = (3*yB - yD)/2; // 
+
+	  bool fiducial = isFiducial(xavg3A, yavg3A);
+	  if(!fiducial) continue;
 
 	  int nm[99] = {0};
 
@@ -1877,6 +1893,9 @@ int main( int argc, char* argv[] )
 	  double xavg2B = 0.5*(xA + xC); // interpolate
 	  double yavg2B = 0.5*(yA + yC); // equidistant
 
+	  bool fiducial = isFiducial(xavg2B, yavg2B);
+	  if(!fiducial) continue;
+
 	  // efficiency of B:
 
 	  int nm[99] = {0};
@@ -2004,6 +2023,9 @@ int main( int argc, char* argv[] )
 
 	  double xavg2C = 0.5*(xB + xD); // equidistant
 	  double yavg2C = 0.5*(yB + yD);
+
+	  bool fiducial = isFiducial(xavg2C, yavg2C);
+	  if(!fiducial) continue;
 
 	  // efficiency of C vs ADB:
 
@@ -2569,16 +2591,14 @@ int main( int argc, char* argv[] )
   cout << "quad  tracks " << n4 << endl;
   cout << "mille tracks " << nmille << endl;
 
-  cout << endl;
-  cout << "effB upper ROCs "
-       << effBvsx1.GetMean(2) << endl;
-  cout << "effB lower ROCs "
-       << effBvsx0.GetMean(2) << endl;
 
-  cout << "effC upper ROCs "
-       << effCvsx1.GetMean(2) << endl;
-  cout << "effC lower ROCs "
-       << effCvsx0.GetMean(2) << endl;
+  cout << "Efficiencies:" << endl;
+  cout << "Mod\tTotal\t\tupper\t\tlower" << setprecision(6) << endl;
+  cout << "A\t" << effAvsw.GetBinContent(14) << "\t" << effAvsx1.GetMean(2) << "\t" << effAvsx0.GetMean(2) << endl;
+  cout << "B\t" << effBvsw.GetBinContent(14) << "\t" << effBvsx1.GetMean(2) << "\t" << effBvsx0.GetMean(2) << endl;
+  cout << "C\t" << effCvsw.GetBinContent(14) << "\t" << effCvsx1.GetMean(2) << "\t" << effCvsx0.GetMean(2) << endl;
+  cout << "D\t" << effDvsw.GetBinContent(14) << "\t" << effDvsx1.GetMean(2) << "\t" << effDvsx0.GetMean(2) << endl;
+  
 
   cout << endl << histoFile->GetName() << endl << endl;
 
