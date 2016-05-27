@@ -1566,7 +1566,11 @@ int main( int argc, char* argv[] )
 	  double xavg3D = (3*xC - xA)/2; // extrapolate
 	  double yavg3D = (3*yC - yA)/2; // 
 
-	  bool fiducial = isFiducial(xavg3D, yavg3D);
+	  // Transform to local coordinate system
+	  double yavg3Dlocal = (yavg3D-xavg3D*fy[D]/(1-ty[D]))/(1-ty[D]+fx[D]*fy[D]/(1-ty[D]));
+	  double xavg3Dlocal = (xavg3D+yavg3Dlocal*fx[D])/(1-tx[D]);
+
+	  bool fiducial = isFiducial(xavg3Dlocal, yavg3Dlocal);
 	  if(!fiducial)continue;
 	  
 	  int nm[99] = {0};
@@ -1595,13 +1599,13 @@ int main( int argc, char* argv[] )
 	    effDivst2.Fill( event_nr, nm[14] );
 	    effDivst10.Fill( event_nr, nm[14] );
 	  }
-	  if( yavg3D < 0 )
-	    effDvsx0.Fill( xavg3D, nm[14] );
+	  if( yavg3Dlocal < 0 )
+	    effDvsx0.Fill( xavg3Dlocal, nm[14] );
 	  else
-	    effDvsx1.Fill( xavg3D, nm[14] );
-	  effDvsy.Fill( yavg3D, nm[14] );
-	  effDmap1->Fill( xavg3D, yavg3D, nm[14] );
-	  effDmap4->Fill( xavg3D, yavg3D, nm[14] );
+	    effDvsx1.Fill( xavg3Dlocal, nm[14] );
+	  effDvsy.Fill( yavg3Dlocal, nm[14] );
+	  effDmap1->Fill( xavg3Dlocal, yavg3Dlocal, nm[14] );
+	  effDmap4->Fill( xavg3Dlocal, yavg3Dlocal, nm[14] );
 	  for( int iw = 1; iw < 99; ++ iw )
 	    effDvsw.Fill( iw*0.050+0.005, nm[iw] );
 
@@ -1700,7 +1704,11 @@ int main( int argc, char* argv[] )
 	  double xavg3A = (3*xB - xD)/2; // extrapolate
 	  double yavg3A = (3*yB - yD)/2; // 
 
-	  bool fiducial = isFiducial(xavg3A, yavg3A);
+	  // Transform to local coordinate system
+	  double yavg3Alocal = (yavg3A-xavg3A*fy[A]/(1-ty[A]))/(1-ty[A]+fx[A]*fy[A]/(1-ty[A]));
+	  double xavg3Alocal = (xavg3A+yavg3Alocal*fx[A])/(1-tx[A]);
+
+	  bool fiducial = isFiducial(xavg3Alocal, yavg3Alocal);
 	  if(!fiducial) continue;
 
 	  int nm[99] = {0};
@@ -1734,13 +1742,13 @@ int main( int argc, char* argv[] )
 	    effAivst10.Fill( event_nr, nm[14] );
 	  } // iso
 
-	  if( yavg3A < 0 )
-	    effAvsx0.Fill( xavg3A, nm[14] );
+	  if( yavg3Alocal < 0 )
+	    effAvsx0.Fill( xavg3Alocal, nm[14] );
 	  else
-	    effAvsx1.Fill( xavg3A, nm[14] );
-	  effAvsy.Fill( yavg3A, nm[14] );
-	  effAmap1->Fill( xavg3A, yavg3A, nm[14] );
-	  effAmap4->Fill( xavg3A, yavg3A, nm[14] );
+	    effAvsx1.Fill( xavg3Alocal, nm[14] );
+	  effAvsy.Fill( yavg3Alocal, nm[14] );
+	  effAmap1->Fill( xavg3Alocal, yavg3Alocal, nm[14] );
+	  effAmap4->Fill( xavg3Alocal, yavg3Alocal, nm[14] );
 	  for( int iw = 1; iw < 99; ++ iw )
 	    effAvsw.Fill( iw*0.050+0.005, nm[iw] );
 
@@ -1893,7 +1901,11 @@ int main( int argc, char* argv[] )
 	  double xavg2B = 0.5*(xA + xC); // interpolate
 	  double yavg2B = 0.5*(yA + yC); // equidistant
 
-	  bool fiducial = isFiducial(xavg2B, yavg2B);
+	  // Transform to local coordinate system
+	  double yavg2Blocal = (yavg2B-xavg2B*fy[B]/(1-ty[B]))/(1-ty[B]+fx[B]*fy[B]/(1-ty[B]));
+	  double xavg2Blocal = (xavg2B+yavg2Blocal*fx[B])/(1-tx[B]);
+
+	  bool fiducial = isFiducial(xavg2Blocal, yavg2Blocal);
 	  if(!fiducial) continue;
 
 	  // efficiency of B:
@@ -1937,13 +1949,13 @@ int main( int argc, char* argv[] )
 	    effBivst10.Fill( event_nr, nm[14] );
 	  } // iso
 
-	  if( yavg2B < 0 )
-	    effBvsx0.Fill( xavg2B, nm[14] );
+	  if( yavg2Blocal < 0 )
+	    effBvsx0.Fill( xavg2Blocal, nm[14] );
 	  else
-	    effBvsx1.Fill( xavg2B, nm[14] );
-	  effBvsy.Fill( yavg2B, nm[14] );
-	  effBmap1->Fill( xavg2B, yavg2B, nm[14] );
-	  effBmap4->Fill( xavg2B, yavg2B, nm[14] );
+	    effBvsx1.Fill( xavg2Blocal, nm[14] );
+	  effBvsy.Fill( yavg2Blocal, nm[14] );
+	  effBmap1->Fill( xavg2Blocal, yavg2Blocal, nm[14] );
+	  effBmap4->Fill( xavg2Blocal, yavg2Blocal, nm[14] );
 	  for( int iw = 1; iw < 41; ++ iw )
 	    effBvsw.Fill( iw*0.050+0.005, nm[iw] );
 
@@ -2024,7 +2036,11 @@ int main( int argc, char* argv[] )
 	  double xavg2C = 0.5*(xB + xD); // equidistant
 	  double yavg2C = 0.5*(yB + yD);
 
-	  bool fiducial = isFiducial(xavg2C, yavg2C);
+	  // Transform to local coordinate system
+	  double yavg2Clocal = (yavg2C-xavg2C*fy[C]/(1-ty[C]))/(1-ty[C]+fx[C]*fy[C]/(1-ty[C]));
+	  double xavg2Clocal = (xavg2C+yavg2Clocal*fx[C])/(1-tx[C]);
+	  
+	  bool fiducial = isFiducial(xavg2Clocal, yavg2Clocal);
 	  if(!fiducial) continue;
 
 	  // efficiency of C vs ADB:
@@ -2248,13 +2264,13 @@ int main( int argc, char* argv[] )
 	    effCivst2.Fill( event_nr, nm[14] );
 	    effCivst10.Fill( event_nr, nm[14] );
 	  }
-	  if( yavg2C < 0 )
-	    effCvsx0.Fill( xavg2C, nm[14] );
+	  if( yavg2Clocal < 0 )
+	    effCvsx0.Fill( xavg2Clocal, nm[14] );
 	  else
-	    effCvsx1.Fill( xavg2C, nm[14] );
-	  effCvsy.Fill( yavg2C, nm[14] );
-	  effCmap1->Fill( xavg2C, yavg2C, nm[14] );
-	  effCmap4->Fill( xavg2C, yavg2C, nm[14] );
+	    effCvsx1.Fill( xavg2Clocal, nm[14] );
+	  effCvsy.Fill( yavg2Clocal, nm[14] );
+	  effCmap1->Fill( xavg2Clocal, yavg2Clocal, nm[14] );
+	  effCmap4->Fill( xavg2Clocal, yavg2Clocal, nm[14] );
 	  for( int iw = 1; iw < 41; ++ iw )
 	    effCvsw.Fill( iw*0.050+0.005, nm[iw] );
 
