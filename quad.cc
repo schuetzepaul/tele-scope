@@ -474,95 +474,24 @@ int main( int argc, char* argv[] )
   string gainFileName[4];
   double ke[4];
 
-  if( run > 70 ) {
+  const int A = 0;
+  const int B = 1;
+  const int C = 2;
+  const int D = 3;
 
-    gainFileName[0] = "D4028/D4028-tb24-gaincal.dat"; // Jul 2015
-    ke[0] = 0.046; // small Vcal -> ke
+  if( run >= 435 ) { // 2016 May
 
-    gainFileName[1] = "D4035/D4035-tb24-gaincal.dat"; // Jul 2015
-    ke[1] = 0.050; // small Vcal -> ke
+    gainFileName[A] = "D4122-tb24-gaincal.dat";
+    ke[0] = 0.0434; // small Vcal -> ke at 26.4 ke with tilt and turn
 
-    gainFileName[2] = "D4030/D4030-tb24-gaincal.dat"; // Jul 2015
-    ke[2] = 0.049; // small Vcal -> ke
+    gainFileName[B] = "D4139-tb24-gaincal.dat";
+    ke[1] = 0.0437; // small Vcal -> ke
 
-    gainFileName[3] = "D4023/D4023-tb24-gaincal.dat"; // Jul 2015
-    ke[3] = 0.050; // small Vcal -> ke
+    gainFileName[C] = "D4294-tb24-gaincal.dat";
+    ke[2] = 0.0428; // small Vcal -> ke
 
-  }
-
-  if( run > 80 ) { // ventilation
-
-    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
-    ke[0] = 0.048; // small Vcal -> ke
-
-    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
-    ke[1] = 0.053; // small Vcal -> ke
-
-    gainFileName[2] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
-    ke[2] = 0.049; // small Vcal -> ke
-
-    gainFileName[3] = "D4023/D4023-vent-gaincal.dat"; // Jul 2015
-    ke[3] = 0.050; // small Vcal -> ke
-
-  }
-
-  if( run >= 164 ) { // ventilation, new module
-
-    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
-    ke[0] = 0.045; // small Vcal -> ke
-
-    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
-    ke[1] = 0.0485; // small Vcal -> ke
-
-    gainFileName[2] = "D4043/D4043-tb-gaincal.dat"; // Aug 2015
-    ke[2] = 0.043; // small Vcal -> ke
-
-    gainFileName[3] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
-    ke[3] = 0.045; // small Vcal -> ke
-
-  }
-
-  if( run >= 174 ) { // Wed 11.8.2015
-
-    ke[0] = 0.0423; // small Vcal -> ke, tilted peak 26.35
-
-    ke[1] = 0.0455; // small Vcal -> ke
-
-    ke[2] = 0.0416; // small Vcal -> ke
-
-    ke[3] = 0.0440; // small Vcal -> ke
-
-  }
-
-  if( run >= 178 ) { // ventilation, rearranged
-
-    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
-    ke[0] = 0.045; // small Vcal -> ke
-
-    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
-    ke[1] = 0.0485; // small Vcal -> ke
-
-    gainFileName[2] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
-    ke[2] = 0.045; // small Vcal -> ke
-
-    gainFileName[3] = "D4043/D4043-tb-gaincal.dat"; // Aug 2015
-    ke[3] = 0.043; // small Vcal -> ke
-
-  }
-
-  if( run >= 300 ) { // 2016 May
-
-    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // A
-    ke[0] = 0.045; // small Vcal -> ke
-
-    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
-    ke[1] = 0.0485; // small Vcal -> ke
-
-    gainFileName[2] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
-    ke[2] = 0.045; // small Vcal -> ke
-
-    gainFileName[3] = "D4043/D4043-tb-gaincal.dat"; // Aug 2015
-    ke[3] = 0.043; // small Vcal -> ke
+    gainFileName[D] = "D4329-tb24-gaincal.dat";
+    ke[3] = 0.0399; // small Vcal -> ke
 
   }
 
@@ -1361,11 +1290,6 @@ int main( int argc, char* argv[] )
     int mAB = 0;
     int mCB = 0;
     int mDB = 0;
-
-    const int A = 0;
-    const int B = 1;
-    const int C = 2;
-    const int D = 3;
 
     for( vector<cluster>::iterator cB = cl[B].begin(); cB != cl[B].end(); ++cB ) {
 
