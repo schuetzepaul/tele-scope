@@ -481,17 +481,33 @@ int main( int argc, char* argv[] )
 
   if( run >= 435 ) { // 2016 May
 
-    gainFileName[A] = "D4122-tb24-gaincal.dat";
+    gainFileName[A] = "gaincal/D4122-tb24-gaincal.dat";
     ke[0] = 0.0434; // small Vcal -> ke at 26.4 ke with tilt and turn
 
-    gainFileName[B] = "D4139-tb24-gaincal.dat";
+    gainFileName[B] = "gaincal/D4139-tb24-gaincal.dat";
     ke[1] = 0.0437; // small Vcal -> ke
 
-    gainFileName[C] = "D4294-tb24-gaincal.dat";
+    gainFileName[C] = "gaincal/D4294-tb24-gaincal.dat";
     ke[2] = 0.0428; // small Vcal -> ke
 
-    gainFileName[D] = "D4329-tb24-gaincal.dat";
+    gainFileName[D] = "gaincal/D4329-tb24-gaincal.dat";
     ke[3] = 0.0399; // small Vcal -> ke
+
+  }
+
+  if( run >= 476 ) { // Mon 30.5.2016 swap modules A-B, C-D
+
+    gainFileName[A] = "gaincal/D4139-tb24-gaincal.dat";
+    ke[A] = 0.0437; // small Vcal -> ke
+
+    gainFileName[B] = "gaincal/D4122-tb24-gaincal.dat";
+    ke[B] = 0.0434; // small Vcal -> ke at 26.4 ke with tilt and turn
+
+    gainFileName[C] = "gaincal/D4329-tb24-gaincal.dat";
+    ke[C] = 0.0399; // small Vcal -> ke
+
+    gainFileName[D] = "gaincal/D4294-tb24-gaincal.dat";
+    ke[C] = 0.0428; // small Vcal -> ke
 
   }
 
