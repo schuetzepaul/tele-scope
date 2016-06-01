@@ -230,6 +230,10 @@ TMatrixD Jac5( double ds ) // for GBL
 }
 
 //------------------------------------------------------------------------------
+Double_t landau_gauss_peak(TH1* h);
+
+
+//------------------------------------------------------------------------------
 bool isFiducial( double x, double y)
 {
   bool ffiducial = true;
@@ -541,7 +545,7 @@ int main( int argc, char* argv[] )
   double qR = 36; // [ke]
 
   string gainFileName[4];
-  double ke[4];
+  double ke[4] = {-1., -1., -1., -1.};
 
   const int A = 0;
   const int B = 1;
@@ -570,7 +574,32 @@ int main( int argc, char* argv[] )
 
   ostringstream conversionFileName; // output string stream
 
+  conversionFileName << "conversion_" << run << ".dat";
+
+  ifstream conversionFile( conversionFileName.str() );
+
+  cout << endl;
+  if( conversionFile.bad() || ! conversionFile.is_open() ) {
+    cout << "no " << conversionFileName.str() << ", will bootstrap" << endl;
+    cout << endl;
+  }else{
+    int modNr;
+    double keVal;
+    while(conversionFile >> modNr >> keVal){
+      keAll[modNr] = keVal;
+      for(int mod = 0; mod < 4; mod++){
+	if(modNr == modName[mod]) ke[mod] = keVal;
+      }
+    }
   }
+  for(int mod = 0; mod < 4; mod++){
+    if(ke[mod] < 0.) ke[mod] = 0.045;
+  }
+  cout << "Conversion factors:" << endl;
+  for(int mod = 0; mod < 4; mod++){
+    cout << modName[mod] << ":\t" << ke[mod] << endl;
+  }
+  
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // gain parameters for mod roc col row:
@@ -2637,10 +2666,41 @@ int main( int argc, char* argv[] )
   if( aligniteration == 1 )
     cout << "need one more align iteration: please run again!" << endl;
 
+  
+  // Correct conversion factors
+
+  if( aligniteration > 1 ){
+    ofstream conversionFileOut( conversionFileName.str() );
+
+    double landau_peak[4];
+    double correction[4];
+
+    landau_peak[0] = landau_gauss_peak(&hclq0A3);
+    landau_peak[1] = landau_gauss_peak(&hclq0B4);
+    landau_peak[2] = landau_gauss_peak(&hclq0C4);
+    landau_peak[3] = landau_gauss_peak(&hclq0D3);
+    
+    cout << endl;
+    for(int mod = 0; mod < 4; mod++){
+      correction[mod] = 22./landau_peak[mod];
+      if(!conversionCorrectionSupressed){
+	if(correction[mod] > 0.)keAll[modName[mod]] = ke[mod]*correction[mod];
+	cout << "Corrected ke[" << modName[mod] << "] by factor " << correction[mod] << endl;
+      }else{
+	cout << "Conversion Factor is not corrected by choice of user." << endl;
+      }
+    }
+    for(map<int,double>::iterator it=keAll.begin(); it!=keAll.end(); ++it){
+      conversionFileOut << it->first << "\t" << it->second << endl;
+    }
+  }else{
+    cout << "Will apply conversion factor correction at next iteration." << endl;
+  }
+
   cout << endl;
   cout << "quad  tracks " << n4 << endl;
   cout << "mille tracks " << nmille << endl;
-
+  cout << endl;
 
   cout << "Efficiencies:" << endl;
   cout << "Mod\tTotal\t\tupper\t\tlower" << setprecision(6) << endl;
@@ -2653,4 +2713,87 @@ int main( int argc, char* argv[] )
   cout << endl << histoFile->GetName() << endl << endl;
 
   return 0;
+}
+
+
+Double_t fitLandauGauss( Double_t *x, Double_t *par ) {
+
+  static int nn=0;
+  nn++;
+  static double xbin = 1;
+  static double b1 = 0;
+  if( nn == 1 ) { b1 = x[0]; }
+  if( nn == 2 ) { xbin = x[0] - b1; } // bin width needed for normalization
+
+  // Landau:
+  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  Double_t mpshift  = -0.22278298;       // Landau maximum location
+
+  // MP shift correction:
+  double mpc = par[0] - mpshift * par[1]; //most probable value (peak pos)
+
+  //Fit parameters:
+  //par[0] = Most Probable (MP, location) parameter of Landau density
+  //par[1] = Width (scale) parameter of Landau density
+  //par[2] = Total area (integral -inf to inf, normalization constant)
+  //par[3] = Gaussian smearing
+
+  // Control constants
+  Double_t np = 100.0;      // number of convolution steps
+  Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+
+  // Range of convolution integral
+  double xlow = x[0] - sc * par[3];
+  double xupp = x[0] + sc * par[3];
+
+  double step = (xupp-xlow) / np;
+
+  // Convolution integral of Landau and Gaussian by sum
+
+  double sum = 0;
+  double xx;
+  double fland;
+
+  for( int i = 1; i <= np/2; i++ ) {
+
+    xx = xlow + ( i - 0.5 ) * step;
+    fland = TMath::Landau( xx, mpc, par[1] ) / par[1];
+    sum += fland * TMath::Gaus( x[0], xx, par[3] );
+
+    xx = xupp - ( i - 0.5 ) * step;
+    fland = TMath::Landau( xx, mpc, par[1] ) / par[1];
+    sum += fland * TMath::Gaus( x[0], xx, par[3] );
+  }
+
+  return( par[2] * invsq2pi * xbin * step * sum / par[3] );
+}
+
+Double_t landau_gauss_peak(TH1* h) {
+
+  double aa = h->GetEntries();//normalization
+
+  // find peak:
+  int ipk = h->GetMaximumBin();
+  double xpk = h->GetBinCenter(ipk);
+  double sm = xpk / 9; // sigma
+  double ns = sm; // noise
+
+  // fit range:
+  int ib0 = h->FindBin(10);
+  int ib9 = h->FindBin(40);
+  double x0 = h->GetBinLowEdge(ib0);
+  double x9 = h->GetBinLowEdge(ib9) + h->GetBinWidth(ib9);
+
+  // create a TF1 with the range from x0 to x9 and 4 parameters
+  TF1 *fitFcn = new TF1( "fitFcn", fitLandauGauss, x0, x9, 4 );
+
+  // set start values:
+  fitFcn->SetParameter( 0, xpk ); // peak position, defined above
+  fitFcn->SetParameter( 1, sm ); // width
+  fitFcn->SetParameter( 2, aa ); // area
+  fitFcn->SetParameter( 3, ns ); // noise
+
+  h->Fit("fitFcn", "R Q", "ep" );// R = range from fitFcn
+  TF1 *fit = h->GetFunction("fitFcn");
+  return fit->GetParameter(0);
 }
