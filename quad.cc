@@ -36,10 +36,12 @@ struct pixel {
   int adc;
   double cal;
   bool big;
+  int roc;
 };
 
 struct cluster {
   vector <pixel> vpix;
+  int roc;
   int size;
   int sumA; // DP
   double charge;
@@ -168,6 +170,9 @@ vector<cluster> getClus()
     int maxx = 0;
     int miny = 999;
     int maxy = 0;
+    bool sameRoc = true;
+    int prevRoc = 0;
+    int npx = 0;
 
     for( vector<pixel>::iterator p = c.vpix.begin();  p != c.vpix.end();  ++p ) {
       c.sumA += p->adc; // Aout
@@ -182,6 +187,15 @@ vector<cluster> getClus()
       if( p->col < minx ) minx = p->col;
       if( p->row > maxy ) maxy = p->row;
       if( p->row < miny ) miny = p->row;
+      if( npx > 0 && prevRoc != p->roc) sameRoc = false;
+      prevRoc = p->roc;
+      npx++;
+    }
+
+    if(sameRoc){
+      c.roc = prevRoc;
+    }else{
+      c.roc = -1;
     }
 
     //cout << "(cluster with " << c.vpix.size() << " pixels)" << endl;
@@ -730,6 +744,8 @@ int main( int argc, char* argv[] )
   TH1D hsiz[4];
   TH1D hclq[4];
   TH1D hclq0[4];
+  TH1D hclq0r[4][16];
+  TH1D hclq0g[4];
   TH1D hncol[4];
   TH1D hnrow[4];
 
@@ -769,7 +785,15 @@ int main( int argc, char* argv[] )
 		      Form("%c cluster charge;cluster charge [ke];%c clusters",modtos,modtos),
 		      100, 0, 100 );
     hclq0[mod] = TH1D( Form("clq0%c",modtos),
-		      Form("%c normalized cluster charge;norm. cluster charge [ke];%c clusters",modtos,modtos),
+		       Form("%c normalized cluster charge;norm. cluster charge [ke];%c clusters",modtos,modtos),
+		      100, 0, 100 );
+    for( int roc = 0; roc < 16; ++roc ) {    
+      hclq0r[mod][roc] = TH1D( Form("clq0%c%d",modtos,roc),
+			       Form("%c, ROC %d, normalized cluster charge;norm. cluster charge [ke];%c clusters",modtos,roc,modtos),
+			       100, 0, 100 );
+    }
+    hclq0g[mod] = TH1D( Form("clq0%cg",modtos),
+		       Form("%c, between ROCs, normalized cluster charge;norm. cluster charge [ke];%c clusters",modtos,modtos),
 		      100, 0, 100 );
     hncol[mod]= TH1D( Form("ncol%c",modtos), 
 		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
@@ -1317,6 +1341,7 @@ int main( int argc, char* argv[] )
 	// fill pixel block for clustering
 	pb[npx].col = x;
 	pb[npx].row = y;
+	pb[npx].roc = roc;
 	pb[npx].adc = adc;
 	pb[npx].cal = cal;
 	pb[npx].big = 0;
@@ -1396,7 +1421,11 @@ int main( int argc, char* argv[] )
 	hclq0[mod].Fill( cA->charge*ke[mod]*norm );
 	hncol[mod].Fill( cA->ncol );
 	hnrow[mod].Fill( cA->nrow );
-
+	if(cA->roc == -1){
+	  hclq0g[mod].Fill( cA->charge*ke[mod]*norm );
+	}else{
+	  hclq0r[mod][cA->roc].Fill( cA->charge*ke[mod]*norm );
+	}
       }
 
     } // planes = mod
