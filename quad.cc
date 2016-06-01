@@ -238,6 +238,66 @@ bool isFiducial( double x, double y)
   return ffiducial;
 }
 
+
+//------------------------------------------------------------------------------
+int searchRunlist(int runnr, double &momentum, int *modName, bool &conversionCorrectionSuppress){
+
+  ifstream runlistFile( "runlist-quad.dat" );
+
+  cout << endl;
+  if( runlistFile.bad() || ! runlistFile.is_open() ) {
+    cout << "runlist-quad.dat could not be found." << endl;
+    return -1;
+  }
+  else {
+
+    cout << "Reading runlist." << endl;
+
+    int currentRunnr;
+    double currentMomentum;
+    int currentModNames[4];
+    int currentConversionCorrectionSuppress;
+    
+    while( ! runlistFile.eof() ) {
+
+      string line;
+      getline( runlistFile, line );
+      
+      if( line.empty() ) continue;
+      if( line.at(0) == '#' ) continue;
+
+      stringstream thisline(line);
+      
+      thisline >> currentRunnr >> currentMomentum;
+      for(int mod = 0; mod < 4; mod++){
+	thisline >> currentModNames[mod];
+      }
+      thisline >> currentConversionCorrectionSuppress;
+      
+      if(!(currentRunnr && currentModNames[0] && currentModNames[1] && currentModNames[2] && currentModNames[3])){
+	continue; // No correct data in runlist
+      }
+      
+      if(currentRunnr == runnr){
+	cout << "Found entry in runlist:" << endl;
+	cout << line << endl;
+	momentum = currentMomentum;
+	for(int mod = 0; mod < 4; mod++){
+	  modName[mod] = currentModNames[mod];
+	}
+	conversionCorrectionSuppress = currentConversionCorrectionSuppress;
+	runlistFile.close();
+	return 1;
+      }
+      
+    }
+    cout << "Run " << runnr << " not found in runlist-quad.dat. Please add it." << endl;
+    runlistFile.close();
+    return -2;
+  }
+}
+
+
 //------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
@@ -252,6 +312,16 @@ int main( int argc, char* argv[] )
 
   string runnum( argv[argc-1] );
   int run = atoi( argv[argc-1] );
+
+  // Searching for entry in runlist
+  
+  double p;
+  int modName[4];
+  bool conversionCorrectionSupressed = false;
+  
+  if(searchRunlist(run, p, modName, conversionCorrectionSupressed) < 0){
+    exit(0);
+  }
 
   cout << "run " << run << endl;
   FileReader * reader;
@@ -270,15 +340,14 @@ int main( int argc, char* argv[] )
 
   int lev = 999222111; // last event
 
-  double p = 5.2; // [GeV]
-
   for( int i = 1; i < argc; ++i ) {
 
     if( !strcmp( argv[i], "-l" ) )
       lev = atoi( argv[++i] );
 
-    if( !strcmp( argv[i], "-p" ) )
-      p = atof( argv[++i] ); // momentum
+    // Suppress conversion factor correction
+    if( !strcmp( argv[i], "-c" ) )
+      conversionCorrectionSupressed = true;
 
   } // argc
 
@@ -479,19 +548,27 @@ int main( int argc, char* argv[] )
   const int C = 2;
   const int D = 3;
 
+  // Get gaincal files
+
   if( run >= 435 ) { // 2016 May
+    
+    stringstream gainstream;
+    for(int mod = 0; mod < 4; mod++){
+      gainstream << "gaincal/D" << modName[mod] << "-tb24-gaincal.dat";
+      gainFileName[mod] = gainstream.str();
+      gainstream.str("");
+    }
+  }
+  
+  
 
-    gainFileName[A] = "D4122-tb24-gaincal.dat";
-    ke[0] = 0.0434; // small Vcal -> ke at 26.4 ke with tilt and turn
+  // Get ke (conversion small Vcal -> e-)
 
-    gainFileName[B] = "D4139-tb24-gaincal.dat";
-    ke[1] = 0.0437; // small Vcal -> ke
+  double norm = 1*TMath::Cos(0.3368485)*TMath::Cos(0.4852015);
 
-    gainFileName[C] = "D4294-tb24-gaincal.dat";
-    ke[2] = 0.0428; // small Vcal -> ke
+  map<int, double> keAll;
 
-    gainFileName[D] = "D4329-tb24-gaincal.dat";
-    ke[3] = 0.0399; // small Vcal -> ke
+  ostringstream conversionFileName; // output string stream
 
   }
 
