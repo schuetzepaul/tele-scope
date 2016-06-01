@@ -700,6 +700,7 @@ int main( int argc, char* argv[] )
   TH1D hnpx[4];
   TH1D hsiz[4];
   TH1D hclq[4];
+  TH1D hclq0[4];
   TH1D hncol[4];
   TH1D hnrow[4];
 
@@ -737,6 +738,9 @@ int main( int argc, char* argv[] )
 		      51, -0.5, 50.5 );
     hclq[mod] = TH1D( Form("clq%c",modtos),
 		      Form("%c cluster charge;cluster charge [ke];%c clusters",modtos,modtos),
+		      100, 0, 100 );
+    hclq0[mod] = TH1D( Form("clq0%c",modtos),
+		      Form("%c normalized cluster charge;norm. cluster charge [ke];%c clusters",modtos,modtos),
 		      100, 0, 100 );
     hncol[mod]= TH1D( Form("ncol%c",modtos), 
 		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
@@ -850,6 +854,8 @@ int main( int argc, char* argv[] )
   TH1D hsizD3( "clszD3", "D cluster size;pixels/cluster;D3 clusters",
 	       51, -0.5, 50.5 );
   TH1D hclqD3( "clqD3", "D cluster charge;cluster charge [ke];D3 clusters",
+	       100, 0, 100 );
+  TH1D hclq0D3( "clq0D3", "normalized D cluster charge;norm. cluster charge [ke];D3 clusters",
 	       100, 0, 100 );
   TH1D hncolD3( "ncolD3", "D cluster size;columns/cluster;D3 clusters",
 		21, -0.5, 20.5 );
@@ -970,6 +976,8 @@ int main( int argc, char* argv[] )
 	       51, -0.5, 50.5 );
   TH1D hclqA3( "clqA3", "A cluster charge;cluster charge [ke];A3 clusters",
 	       100, 0, 100 );
+  TH1D hclq0A3( "clq0A3", "normalized A cluster charge;norm. cluster charge [ke];A3 clusters",
+	       100, 0, 100 );
   TH1D hncolA3( "ncolA3", "A cluster size;columns/cluster;A3 clusters",
 		21, -0.5, 20.5 );
   TH1D hnrowA3( "nrowA3", "A cluster size;rows/cluster;A3 clusters",
@@ -1029,6 +1037,8 @@ int main( int argc, char* argv[] )
   TH1D hsizB4( "clszB4", "B cluster size;pixels/cluster;B4 clusters",
 	       51, -0.5, 50.5 );
   TH1D hclqB4( "clqB4", "B cluster charge;cluster charge [ke];B4 clusters",
+	       100, 0, 100 );
+  TH1D hclq0B4( "clq0B4", "normalized B cluster charge;norm. cluster charge [ke];B4 clusters",
 	       100, 0, 100 );
   TH1D hncolB4( "ncolB4", "B cluster size;columns/cluster;B4 clusters",
 		21, -0.5, 20.5 );
@@ -1102,6 +1112,8 @@ int main( int argc, char* argv[] )
   TH1D hsizC4( "clszC4", "C cluster size;pixels/cluster;C4 clusters",
 	       51, -0.5, 50.5 );
   TH1D hclqC4( "clqC4", "C cluster charge;cluster charge [ke];C4 clusters",
+	       100, 0, 100 );
+  TH1D hclq0C4( "clq0C4", "normalized C cluster charge;norm. cluster charge [ke];C4 clusters",
 	       100, 0, 100 );
   TH1D hncolC4( "ncolC4", "C cluster size;columns/cluster;C4 clusters",
 		21, -0.5, 20.5 );
@@ -1352,6 +1364,7 @@ int main( int argc, char* argv[] )
 
 	hsiz[mod].Fill( cA->size );
 	hclq[mod].Fill( cA->charge*ke[mod] );
+	hclq0[mod].Fill( cA->charge*ke[mod]*norm );
 	hncol[mod].Fill( cA->ncol );
 	hnrow[mod].Fill( cA->nrow );
 
@@ -1590,6 +1603,15 @@ int main( int argc, char* argv[] )
 	      if( abs( dx4 ) < iw*0.050 && abs( dy4 ) < iw*0.050 ) // for eff
 		nm[iw] = 1;
 	    
+	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
+		cA->big == 0 && cC->big == 0 && cD->big == 0 ) {
+	      hsizD3.Fill( cD->size );
+	      hclqD3.Fill( cD->charge*ke[D] );
+	      hclq0D3.Fill( cD->charge*ke[D]*norm );
+	      hncolD3.Fill( cD->ncol );
+	      hnrowD3.Fill( cD->nrow );
+	    }
+
 	  } // cl D
 
 	  effDvst1.Fill( event_nr, nm[14] );
@@ -1729,6 +1751,15 @@ int main( int argc, char* argv[] )
 	    for( int iw = 1; iw < 99; ++ iw )
 	      if( abs( dx4 ) < iw*0.050 && abs( dy4 ) < iw*0.050 ) // for eff
 		nm[iw] = 1;
+	    
+	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
+		cA->big == 0 && cD->big == 0 && cB->big == 0 ) {
+	      hsizA3.Fill( cA->size );
+	      hclqA3.Fill( cA->charge*ke[A] );
+	      hclq0A3.Fill( cA->charge*ke[A]*norm );
+	      hncolA3.Fill( cA->ncol );
+	      hnrowA3.Fill( cA->nrow );
+	    }
 
 	  } // cl A
 
@@ -1933,6 +1964,7 @@ int main( int argc, char* argv[] )
 		cA->big == 0 && cC->big == 0 && cB->big == 0 ) {
 	      hsizB4.Fill( cB->size );
 	      hclqB4.Fill( cB->charge*ke[B] );
+	      hclq0B4.Fill( cB->charge*ke[B]*norm );
 	      hncolB4.Fill( cB->ncol );
 	      hnrowB4.Fill( cB->nrow );
 	    }
@@ -2105,6 +2137,7 @@ int main( int argc, char* argv[] )
 	    if( cB->big == 0 && cD->big == 0 && cC->big == 0 ) {
 	      hsizC4.Fill( cC->size );
 	      hclqC4.Fill( cC->charge*ke[C] );
+	      hclq0C4.Fill( cC->charge*ke[C]*norm );
 	      hncolC4.Fill( cC->ncol );
 	      hnrowC4.Fill( cC->nrow );
 	      hminxC4.Fill( (minx-1)%2 ); 
