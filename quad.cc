@@ -559,7 +559,13 @@ int main( int argc, char* argv[] )
   double qR = 36; // [ke]
 
   string gainFileName[4];
-  double ke[4] = {-1., -1., -1., -1.};
+  double ke[4][16];
+  for(int mod = 0; mod < 4; mod++){
+    for(int roc = 0; roc < 16; roc++){
+      ke[mod][roc] = -1.;
+    }
+  }
+
 
   const int A = 0;
   const int B = 1;
@@ -584,8 +590,6 @@ int main( int argc, char* argv[] )
 
   double norm = 1*TMath::Cos(0.3368485)*TMath::Cos(0.4852015);
 
-  map<int, double> keAll;
-
   ostringstream conversionFileName; // output string stream
 
   conversionFileName << "conversion_" << run << ".dat";
@@ -598,21 +602,25 @@ int main( int argc, char* argv[] )
     cout << endl;
   }else{
     int modNr;
+    int rocNr;
     double keVal;
-    while(conversionFile >> modNr >> keVal){
-      keAll[modNr] = keVal;
-      for(int mod = 0; mod < 4; mod++){
-	if(modNr == modName[mod]) ke[mod] = keVal;
-      }
+    while(conversionFile >> modNr >> rocNr >> keVal){
+      ke[modNr][rocNr] = keVal;
     }
   }
   for(int mod = 0; mod < 4; mod++){
-    if(ke[mod] < 0.) ke[mod] = 0.045;
+    for(int roc = 0; roc < 16; roc++){
+      if(ke[mod][roc] < 0.) ke[mod][roc] = 0.045;
+    }
   }
-  cout << "Conversion factors:" << endl;
+  cout << "Roc-wise conversion factors:";
   for(int mod = 0; mod < 4; mod++){
-    cout << modName[mod] << ":\t" << ke[mod] << endl;
+    cout << endl << modName[mod] << ":\t";
+    for(int roc = 0; roc < 16; roc++){
+      cout << setprecision(4) << ke[mod][roc] << " ";
+    }
   }
+  cout << endl;
   
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1333,10 +1341,10 @@ int main( int argc, char* argv[] )
 	  double a3 = p3[mod][roc][col][row];
 	  double a4 = p4[mod][roc][col][row];
 	  double a5 = p5[mod][roc][col][row];
-	  cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ); // [Vcal]
+	  cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ) * ke[mod][roc]; // [ke]
 	}
 	
-	hpxq[mod].Fill( cal*ke[mod] );
+	hpxq[mod].Fill( cal );
 
 	// fill pixel block for clustering
 	pb[npx].col = x;
@@ -1417,14 +1425,14 @@ int main( int argc, char* argv[] )
       for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
 
 	hsiz[mod].Fill( cA->size );
-	hclq[mod].Fill( cA->charge*ke[mod] );
-	hclq0[mod].Fill( cA->charge*ke[mod]*norm );
+	hclq[mod].Fill( cA->charge );
+	hclq0[mod].Fill( cA->charge*norm );
 	hncol[mod].Fill( cA->ncol );
 	hnrow[mod].Fill( cA->nrow );
 	if(cA->roc == -1){
-	  hclq0g[mod].Fill( cA->charge*ke[mod]*norm );
+	  hclq0g[mod].Fill( cA->charge*norm );
 	}else{
-	  hclq0r[mod][cA->roc].Fill( cA->charge*ke[mod]*norm );
+	  hclq0r[mod][cA->roc].Fill( cA->charge*norm );
 	}
       }
 
@@ -1559,7 +1567,7 @@ int main( int argc, char* argv[] )
       double xA = xm - ym*fx[A] - tx[A]*xm;
       double yA = ym + xm*fy[A] - ty[A]*ym;
 
-      double qA = cA->charge*ke[A];
+      double qA = cA->charge;
       bool lqA = 1;
       if(      qA < qL ) lqA = 0;
       else if( qA > qR ) lqA = 0;
@@ -1571,7 +1579,7 @@ int main( int argc, char* argv[] )
 	double xC = xm - ym*fx[C] - tx[C]*xm;
 	double yC = ym + xm*fy[C] - ty[C]*ym;
 
-	double qC = cC->charge*ke[C];
+	double qC = cC->charge;
 	bool lqC = 1;
 	if(      qC < 17 ) lqC = 0;
 	else if( qC > 30 ) lqC = 0;
@@ -1591,7 +1599,7 @@ int main( int argc, char* argv[] )
 	  double xB = xm - ym*fx[B] - tx[B]*xm;
 	  double yB = ym + xm*fy[B] - ty[B]*ym;
 
-	  double qB = cB->charge*ke[B];
+	  double qB = cB->charge;
 	  bool lqB = 1;
 	  if(      qB < 17 ) lqB = 0;
 	  else if( qB > 30 ) lqB = 0;
@@ -1664,8 +1672,8 @@ int main( int argc, char* argv[] )
 	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
 		cA->big == 0 && cC->big == 0 && cD->big == 0 ) {
 	      hsizD3.Fill( cD->size );
-	      hclqD3.Fill( cD->charge*ke[D] );
-	      hclq0D3.Fill( cD->charge*ke[D]*norm );
+	      hclqD3.Fill( cD->charge );
+	      hclq0D3.Fill( cD->charge*norm );
 	      hncolD3.Fill( cD->ncol );
 	      hnrowD3.Fill( cD->nrow );
 	    }
@@ -1708,7 +1716,7 @@ int main( int argc, char* argv[] )
       double xB = xm - ym*fx[B] - tx[B]*xm;
       double yB = ym + xm*fy[B] - ty[B]*ym;
 
-      double qB = cB->charge*ke[B];
+      double qB = cB->charge;
       bool lqB = 1;
       if(      qB < qL ) lqB = 0;
       else if( qB > qR ) lqB = 0;
@@ -1720,7 +1728,7 @@ int main( int argc, char* argv[] )
 	double xD = xm - ym*fx[D] - tx[D]*xm;
 	double yD = ym + xm*fy[D] - ty[D]*ym;
 
-	double qD = cD->charge*ke[D];
+	double qD = cD->charge;
 	bool lqD = 1;
 	if(      qD < qL ) lqD = 0;
 	else if( qD > qR ) lqD = 0;
@@ -1740,7 +1748,7 @@ int main( int argc, char* argv[] )
 	  double xC = xm - ym*fx[C] - tx[C]*xm;
 	  double yC = ym + xm*fy[C] - ty[C]*ym;
 
-	  double qC = cC->charge*ke[C];
+	  double qC = cC->charge;
 	  bool lqC = 1;
 	  if(      qC < 17 ) lqC = 0;
 	  else if( qC > 30 ) lqC = 0;
@@ -1813,8 +1821,8 @@ int main( int argc, char* argv[] )
 	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
 		cA->big == 0 && cD->big == 0 && cB->big == 0 ) {
 	      hsizA3.Fill( cA->size );
-	      hclqA3.Fill( cA->charge*ke[A] );
-	      hclq0A3.Fill( cA->charge*ke[A]*norm );
+	      hclqA3.Fill( cA->charge );
+	      hclq0A3.Fill( cA->charge*norm );
 	      hncolA3.Fill( cA->ncol );
 	      hnrowA3.Fill( cA->nrow );
 	    }
@@ -1883,7 +1891,7 @@ int main( int argc, char* argv[] )
       derivA[0][5] = 0.0;
       derivA[1][5] = ym; // dresidy/dty
 
-      double qA = cA->charge*ke[A];
+      double qA = cA->charge;
       bool lqA = 1;
       if(      qA < qL ) lqA = 0;
       else if( qA > qR ) lqA = 0;
@@ -1915,7 +1923,7 @@ int main( int argc, char* argv[] )
 	derivD[0][5] = 0.0;
 	derivD[1][5] = ym; // dresidy/dty
 
-	double qD = cD->charge*ke[D];
+	double qD = cD->charge;
 	bool lqD = 1;
 	if(      qD < qL ) lqD = 0;
 	else if( qD > qR ) lqD = 0;
@@ -2021,8 +2029,8 @@ int main( int argc, char* argv[] )
 	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
 		cA->big == 0 && cC->big == 0 && cB->big == 0 ) {
 	      hsizB4.Fill( cB->size );
-	      hclqB4.Fill( cB->charge*ke[B] );
-	      hclq0B4.Fill( cB->charge*ke[B]*norm );
+	      hclqB4.Fill( cB->charge );
+	      hclq0B4.Fill( cB->charge*norm );
 	      hncolB4.Fill( cB->ncol );
 	      hnrowB4.Fill( cB->nrow );
 	    }
@@ -2085,7 +2093,7 @@ int main( int argc, char* argv[] )
 	  derivB[0][5] = 0.0;
 	  derivB[1][5] = ym; // dresidy/dty
 
-	  double qB = cB->charge*ke[B];
+	  double qB = cB->charge;
 	  bool lqB = 1;
 	  if(      qB < qL ) lqB = 0;
 	  else if( qB > qR ) lqB = 0;
@@ -2165,7 +2173,7 @@ int main( int argc, char* argv[] )
 	    derivC[0][5] = 0.0;
 	    derivC[1][5] = ym; // dresidy/dty
 
-	    double qC = cC->charge*ke[C];
+	    double qC = cC->charge;
 	    bool lqC = 1;
 	    if(      qC < qL ) lqC = 0;
 	    else if( qC > qR ) lqC = 0;
@@ -2194,8 +2202,8 @@ int main( int argc, char* argv[] )
 
 	    if( cB->big == 0 && cD->big == 0 && cC->big == 0 ) {
 	      hsizC4.Fill( cC->size );
-	      hclqC4.Fill( cC->charge*ke[C] );
-	      hclq0C4.Fill( cC->charge*ke[C]*norm );
+	      hclqC4.Fill( cC->charge );
+	      hclq0C4.Fill( cC->charge*norm );
 	      hncolC4.Fill( cC->ncol );
 	      hnrowC4.Fill( cC->nrow );
 	      hminxC4.Fill( (minx-1)%2 ); 
@@ -2701,32 +2709,31 @@ int main( int argc, char* argv[] )
   if( aligniteration > 1 ){
     ofstream conversionFileOut( conversionFileName.str() );
 
-    double landau_peak[4];
-    double correction[4];
+    double landau_peak[4][16];
+    double correction[4][16];
 
-    landau_peak[0] = landau_gauss_peak(&hclq0A3);
-    landau_peak[1] = landau_gauss_peak(&hclq0B4);
-    landau_peak[2] = landau_gauss_peak(&hclq0C4);
-    landau_peak[3] = landau_gauss_peak(&hclq0D3);
-    
-    cout << endl;
+    cout << "\nLandau peaks [ke]:";
     for(int mod = 0; mod < 4; mod++){
-      correction[mod] = 22./landau_peak[mod];
-      if(!conversionCorrectionSupressed){
-	if(correction[mod] > 0.)keAll[modName[mod]] = ke[mod]*correction[mod];
-	cout << "Corrected ke[" << modName[mod] << "] by factor " << correction[mod] << endl;
-      }else{
-	cout << "Conversion Factor is not corrected by choice of user." << endl;
+      cout << endl << modName[mod] << ":\t";
+      for(int roc = 0; roc < 16; roc++){
+	landau_peak[mod][roc] = landau_gauss_peak(&hclq0r[mod][roc]);
+	correction[mod][roc] = 22./landau_peak[mod][roc];
+	if(!conversionCorrectionSupressed){
+	  if(correction[mod][roc] > 0.)ke[mod][roc] *= correction[mod][roc];
+	  conversionFileOut << mod << "\t" << roc << "\t" << ke[mod][roc] << endl;
+	}
+	cout << landau_peak[mod][roc] << " ";
       }
     }
-    for(map<int,double>::iterator it=keAll.begin(); it!=keAll.end(); ++it){
-      conversionFileOut << it->first << "\t" << it->second << endl;
-    }
+    conversionFileOut.close();
   }else{
-    cout << "Will apply conversion factor correction at next iteration." << endl;
+    cout << "\nWill apply conversion factor correction at next iteration." << endl;
+  }
+  if(conversionCorrectionSupressed){
+    cout << "\nNo conversion correction wanted." << endl;
   }
 
-  cout << endl;
+  cout << endl << endl;
   cout << "quad  tracks " << n4 << endl;
   cout << "mille tracks " << nmille << endl;
   cout << endl;
