@@ -756,6 +756,8 @@ int main( int argc, char* argv[] )
   TH1D hclq0g[4];
   TH1D hncol[4];
   TH1D hnrow[4];
+  TH1D heffRoc[4];
+  TProfile effvsRoc[4];
 
   TH1D hncl[4];
   for( int mod = 0; mod < 4; ++mod ) {
@@ -809,6 +811,12 @@ int main( int argc, char* argv[] )
     hnrow[mod]= TH1D( Form("nrow%c",modtos),
 		      Form("%c cluster size;rows/cluster;%c clusters",modtos,modtos),
 		      21, -0.5, 20.5 );
+    heffRoc[mod]= TH1D( Form("effRoc%c",modtos),
+			Form("eff%c per ROC;efficiency;ROCs",modtos),
+			25, 0.995, 1.0);
+    effvsRoc[mod]= TProfile( Form("eff%cvsRoc",modtos),
+			     Form("eff%c vs ROC;ROC;eff %c",modtos,modtos),
+			     16,-0.5,15.5, -1, 2);
 
   } // module planes
 
@@ -1652,7 +1660,10 @@ int main( int argc, char* argv[] )
 
 	  bool fiducial = isFiducial(xavg3Dlocal, yavg3Dlocal);
 	  if(!fiducial)continue;
-	  
+
+	  int roc = fmod(xavg3Dlocal+32.4,8.1);
+	  if (yavg3Dlocal > 0.) roc = 15 - roc;
+
 	  int nm[99] = {0};
 
 	  for( vector<cluster>::iterator cD = cl[D].begin(); cD != cl[D].end(); ++cD ) {
@@ -1697,6 +1708,7 @@ int main( int argc, char* argv[] )
 	  effDmap4->Fill( xavg3Dlocal, yavg3Dlocal, nm[14] );
 	  for( int iw = 1; iw < 99; ++ iw )
 	    effDvsw.Fill( iw*0.050+0.005, nm[iw] );
+	  effvsRoc[3].Fill((double)roc, nm[14]);
 
 	} // cl B
 
@@ -1800,6 +1812,9 @@ int main( int argc, char* argv[] )
 	  bool fiducial = isFiducial(xavg3Alocal, yavg3Alocal);
 	  if(!fiducial) continue;
 
+	  int roc = fmod(xavg3Alocal+32.4,8.1);
+	  if (yavg3Alocal > 0.) roc = 15 - roc;
+
 	  int nm[99] = {0};
 
 	  for( vector<cluster>::iterator cA = cl[A].begin(); cA != cl[A].end(); ++cA ) {
@@ -1849,6 +1864,7 @@ int main( int argc, char* argv[] )
 	  effAmap4->Fill( xavg3Alocal, yavg3Alocal, nm[14] );
 	  for( int iw = 1; iw < 99; ++ iw )
 	    effAvsw.Fill( iw*0.050+0.005, nm[iw] );
+	  effvsRoc[0].Fill(roc, nm[14]);
 
 	} // cl C
 
@@ -2006,6 +2022,9 @@ int main( int argc, char* argv[] )
 	  bool fiducial = isFiducial(xavg2Blocal, yavg2Blocal);
 	  if(!fiducial) continue;
 
+	  int roc = fmod(xavg2Blocal+32.4,8.1);
+	  if (yavg2Blocal > 0.) roc = 15 - roc;
+
 	  // efficiency of B:
 
 	  int nm[99] = {0};
@@ -2057,6 +2076,8 @@ int main( int argc, char* argv[] )
 	  effBmap4->Fill( xavg2Blocal, yavg2Blocal, nm[14] );
 	  for( int iw = 1; iw < 41; ++ iw )
 	    effBvsw.Fill( iw*0.050+0.005, nm[iw] );
+	  effvsRoc[1].Fill(roc, nm[14]);
+
 
 	} // cl C
 
@@ -2141,6 +2162,9 @@ int main( int argc, char* argv[] )
 	  
 	  bool fiducial = isFiducial(xavg2Clocal, yavg2Clocal);
 	  if(!fiducial) continue;
+
+	  int roc = fmod(xavg2Clocal+32.4,8.1);
+	  if (yavg2Clocal > 0.) roc = 15 - roc;
 
 	  // efficiency of C vs ADB:
 
@@ -2373,6 +2397,8 @@ int main( int argc, char* argv[] )
 	  effCmap4->Fill( xavg2Clocal, yavg2Clocal, nm[14] );
 	  for( int iw = 1; iw < 41; ++ iw )
 	    effCvsw.Fill( iw*0.050+0.005, nm[iw] );
+	  effvsRoc[2].Fill(roc, nm[14]);
+
 
 	} // cl B
 
@@ -2387,6 +2413,14 @@ int main( int argc, char* argv[] )
   } while( reader->NextEvent() && event_nr < lev );
 
   cout << endl << "events " << event_nr << endl;
+
+  // Analyze efficiency plots:
+  
+  for(int mod = 0; mod < 4; mod++){
+    for(int roc = 0; roc < 16; roc++){
+      heffRoc[mod].Fill(effvsRoc[mod].GetBinContent(roc+1));
+    }
+  }
 
   histoFile->Write();
   histoFile->Close();
