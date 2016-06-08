@@ -1663,6 +1663,8 @@ int main( int argc, char* argv[] )
 	  // Transform to local coordinate system
 	  double yavg3Dlocal = (yavg3D-xavg3D*fy[D]/(1-ty[D]))/(1-ty[D]+fx[D]*fy[D]/(1-ty[D]));
 	  double xavg3Dlocal = (xavg3D+yavg3Dlocal*fx[D])/(1-tx[D]);
+	  yavg3Dlocal += aligny[D];
+	  xavg3Dlocal += alignx[D];
 
 	  bool fiducial = isFiducial(xavg3Dlocal, yavg3Dlocal);
 	  if(!fiducial)continue;
@@ -1814,6 +1816,8 @@ int main( int argc, char* argv[] )
 	  // Transform to local coordinate system
 	  double yavg3Alocal = (yavg3A-xavg3A*fy[A]/(1-ty[A]))/(1-ty[A]+fx[A]*fy[A]/(1-ty[A]));
 	  double xavg3Alocal = (xavg3A+yavg3Alocal*fx[A])/(1-tx[A]);
+	  yavg3Alocal += aligny[A];
+	  xavg3Alocal += alignx[A];
 
 	  bool fiducial = isFiducial(xavg3Alocal, yavg3Alocal);
 	  if(!fiducial) continue;
@@ -2024,6 +2028,8 @@ int main( int argc, char* argv[] )
 	  // Transform to local coordinate system
 	  double yavg2Blocal = (yavg2B-xavg2B*fy[B]/(1-ty[B]))/(1-ty[B]+fx[B]*fy[B]/(1-ty[B]));
 	  double xavg2Blocal = (xavg2B+yavg2Blocal*fx[B])/(1-tx[B]);
+	  yavg2Blocal += aligny[B];
+	  xavg2Blocal += alignx[B];
 
 	  bool fiducial = isFiducial(xavg2Blocal, yavg2Blocal);
 	  if(!fiducial) continue;
@@ -2165,7 +2171,9 @@ int main( int argc, char* argv[] )
 	  // Transform to local coordinate system
 	  double yavg2Clocal = (yavg2C-xavg2C*fy[C]/(1-ty[C]))/(1-ty[C]+fx[C]*fy[C]/(1-ty[C]));
 	  double xavg2Clocal = (xavg2C+yavg2Clocal*fx[C])/(1-tx[C]);
-	  
+	  yavg2Clocal += aligny[C];
+	  xavg2Clocal += alignx[C];
+
 	  bool fiducial = isFiducial(xavg2Clocal, yavg2Clocal);
 	  if(!fiducial) continue;
 
