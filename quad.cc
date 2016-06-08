@@ -258,7 +258,7 @@ bool isFiducial( double x, double y)
 
 
 //------------------------------------------------------------------------------
-int searchRunlist(int runnr, double &momentum, int *modName, bool &conversionCorrectionSuppress){
+int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed){
 
   ifstream runlistFile( "runlist-quad.dat" );
 
@@ -274,9 +274,11 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &conversionCor
     int currentRunnr;
     double currentMomentum;
     int currentModNames[4];
-    int currentConversionCorrectionSuppress;
+    int currentCCSuppressed = 0;
     
     while( ! runlistFile.eof() ) {
+
+      currentCCSuppressed = 0;
 
       string line;
       getline( runlistFile, line );
@@ -290,7 +292,7 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &conversionCor
       for(int mod = 0; mod < 4; mod++){
 	thisline >> currentModNames[mod];
       }
-      thisline >> currentConversionCorrectionSuppress;
+      thisline >> currentCCSuppressed;
       
       if(!(currentRunnr && currentModNames[0] && currentModNames[1] && currentModNames[2] && currentModNames[3])){
 	continue; // No correct data in runlist
@@ -303,7 +305,7 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &conversionCor
 	for(int mod = 0; mod < 4; mod++){
 	  modName[mod] = currentModNames[mod];
 	}
-	conversionCorrectionSuppress = currentConversionCorrectionSuppress;
+	CCSuppressed = currentCCSuppressed;
 	runlistFile.close();
 	return 1;
       }
@@ -335,9 +337,9 @@ int main( int argc, char* argv[] )
   
   double p;
   int modName[4];
-  bool conversionCorrectionSupressed = false;
+  bool CCSupressed = false;
   
-  if(searchRunlist(run, p, modName, conversionCorrectionSupressed) < 0){
+  if(searchRunlist(run, p, modName, CCSupressed) < 0){
     exit(0);
   }
 
@@ -365,7 +367,7 @@ int main( int argc, char* argv[] )
 
     // Suppress conversion factor correction
     if( !strcmp( argv[i], "-c" ) )
-      conversionCorrectionSupressed = true;
+      CCSupressed = true;
 
   } // argc
 
@@ -2749,21 +2751,25 @@ int main( int argc, char* argv[] )
     cout << "\nLandau peaks [ke]:";
     for(int mod = 0; mod < 4; mod++){
       cout << endl << modName[mod] << ":\t";
-      for(int roc = 0; roc < 16; roc++){
-	landau_peak[mod][roc] = landau_gauss_peak(&hclq0r[mod][roc]);
-	correction[mod][roc] = 22./landau_peak[mod][roc];
-	if(!conversionCorrectionSupressed){
-	  if(correction[mod][roc] > 0.)ke[mod][roc] *= correction[mod][roc];
-	  conversionFileOut << mod << "\t" << roc << "\t" << ke[mod][roc] << endl;
+      if(haveGain[mod]){
+	for(int roc = 0; roc < 16; roc++){
+	  landau_peak[mod][roc] = landau_gauss_peak(&hclq0r[mod][roc]);
+	  correction[mod][roc] = 22./landau_peak[mod][roc];
+	  if(!CCSupressed){
+	    if(correction[mod][roc] > 0.)ke[mod][roc] *= correction[mod][roc];
+	    conversionFileOut << mod << "\t" << roc << "\t" << ke[mod][roc] << endl;
+	  }
+	  cout << landau_peak[mod][roc] << " ";
 	}
-	cout << landau_peak[mod][roc] << " ";
+      }else{
+	cout << "No gain file available.";
       }
     }
     conversionFileOut.close();
   }else{
     cout << "\nWill apply conversion factor correction at next iteration." << endl;
   }
-  if(conversionCorrectionSupressed){
+  if(CCSupressed){
     cout << "\nNo conversion correction wanted." << endl;
   }
 
