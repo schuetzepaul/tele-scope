@@ -338,6 +338,7 @@ int main( int argc, char* argv[] )
   double p;
   int modName[4];
   bool CCSupressed = false;
+  bool writeEfficiency = false;
   
   if(searchRunlist(run, p, modName, CCSupressed) < 0){
     exit(0);
@@ -368,6 +369,9 @@ int main( int argc, char* argv[] )
     // Suppress conversion factor correction
     if( !strcmp( argv[i], "-c" ) )
       CCSupressed = true;
+
+    if( !strcmp( argv[i], "-e" ) )
+      writeEfficiency = true;
 
   } // argc
 
@@ -2784,7 +2788,15 @@ int main( int argc, char* argv[] )
   cout << "B\t" << effBvsw.GetBinContent(14) << "\t" << effBvsx1.GetMean(2) << "\t" << effBvsx0.GetMean(2) << endl;
   cout << "C\t" << effCvsw.GetBinContent(14) << "\t" << effCvsx1.GetMean(2) << "\t" << effCvsx0.GetMean(2) << endl;
   cout << "D\t" << effDvsw.GetBinContent(14) << "\t" << effDvsx1.GetMean(2) << "\t" << effDvsx0.GetMean(2) << endl;
+
+  if(writeEfficiency){
+    ofstream effout;
+    effout.open("efficiencies.dat", std::ofstream::out | std::ofstream::app);
   
+    effout << run << "\t" << effAvsw.GetBinContent(14) << "\t" << effBvsw.GetBinContent(14) << "\t" << effCvsw.GetBinContent(14) << "\t" << effDvsw.GetBinContent(14) << endl;
+
+    effout.close();
+  }
 
   cout << endl << histoFile->GetName() << endl << endl;
 
