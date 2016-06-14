@@ -752,6 +752,7 @@ int main( int argc, char* argv[] )
  
   TH1D hcol[4];
   TH1D hrow[4];
+  TH1D hpxdig[4];
   TH1D hpxq[4];
   TH2D * hmap[4];
   TH1D hnpx[4];
@@ -788,6 +789,9 @@ int main( int argc, char* argv[] )
     hpxq[mod] = TH1D( Form("pxq%c",modtos),
 		      Form("%c pixel charge;pixel q [ke];%c pixels",modtos,modtos),
 		      100, 0, 25 );
+    hpxdig[mod] = TH1D( Form("pxdig%c",modtos),
+		      Form("%c pixel pulse height;pixel PH [ADC counts];%c pixels",modtos,modtos),
+		      256, 0, 255 );
     hmap[mod] = new  TH2D( Form("pxmap%c",modtos),
 			   Form("%c pixel map;column;row;%c pixels",modtos,modtos),
 			   416, -0.5, 415.5, 160, -0.5, 159.5 );
@@ -1358,6 +1362,7 @@ int main( int argc, char* argv[] )
 	  cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ) * ke[mod][roc]; // [ke]
 	}
 	
+	hpxdig[mod].Fill( adc );
 	hpxq[mod].Fill( cal );
 
 	// fill pixel block for clustering
