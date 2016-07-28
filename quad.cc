@@ -251,8 +251,11 @@ Double_t landau_gauss_peak(TH1* h);
 bool isFiducial( double x, double y)
 {
   bool ffiducial = true;
-  if(y < -(8.1-0.3-0.06) || y > (8.1-0.3-0.06)
-     || x < -(32.4-0.45-0.06) || x > (32.4-0.45-0.06)) ffiducial = false;
+  
+  double addBorder = 0.5;
+  
+  if(y < -(8.1-0.3-0.06-addBorder) || y > (8.1-0.3-0.06-addBorder)
+     || x < -(32.4-0.45-0.06-addBorder) || x > (32.4-0.45-0.06-addBorder)) ffiducial = false;
   return ffiducial;
 }
 
