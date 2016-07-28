@@ -317,6 +317,47 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed)
   }
 }
 
+//------------------------------------------------------------------------------
+int getShifts(int runnr, int * shifts){
+  
+  ifstream shiftFile( "shiftParameters.dat" );
+
+  if(shiftFile.bad() || !shiftFile.is_open() ){
+    cout << "Shift file could not be found!" << endl;
+    return -1;
+  }
+  else{
+    
+    int currentRunnr;
+
+    while( !shiftFile.eof() ) {
+      
+      string line;
+      getline(shiftFile, line);
+
+      if(line.empty()) continue;
+      if(line.at(0) == '#') continue;
+
+      stringstream thisline(line);
+
+      thisline >> currentRunnr;
+      for(int mod = 0; mod < 4; mod++){
+	thisline >> shifts[mod];
+      }
+      
+      if(currentRunnr == runnr){
+	cout << "Found following shifts for this run: " << endl << line <<  endl;
+	return 1;
+      }
+
+    }
+    cout << "Run " << runnr << " not found." << endl;
+    shiftFile.close();
+    return -2;
+  }
+
+}
+
 
 //------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
@@ -628,6 +669,16 @@ int main( int argc, char* argv[] )
   }
   cout << endl;
   
+  // Shifts for pixel charge:
+
+  int shifts[4] = {0,0,0,0};
+
+  if(getShifts(run, shifts) == -2){
+    for(int mod=0; mod < 4; mod++){
+      shifts[mod] = 0;
+    }
+  }
+
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // gain parameters for mod roc col row:
@@ -1327,7 +1378,11 @@ int main( int argc, char* argv[] )
 	xm = plane.GetX(ipix); // global column 0..415
 	ym = plane.GetY(ipix); // global row 0..159
 	adc = plane.GetPixel(ipix); // ADC 0..255
-	
+
+	// Shift adc to known threshold
+
+	adc += shifts[mod];
+
 	hcol[mod].Fill( xm );
 	hrow[mod].Fill( ym );
 	hmap[mod]->Fill( xm, ym );
