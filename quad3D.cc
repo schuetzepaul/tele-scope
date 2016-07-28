@@ -54,6 +54,10 @@ struct cluster {
 
 pixel pb[66560]; // global declaration: vector of pixels with hit
 int fNHit; // global
+double tilt = 19.3;
+double turn = 27.7;
+double pi = 4*atan(1);
+double wt = 180/pi;
 
 //------------------------------------------------------------------------------
 // inverse decorrelated Weibull PH -> large Vcal DAC
@@ -228,6 +232,36 @@ vector<cluster> getClus()
 }
 
 //------------------------------------------------------------------------------
+
+vector <double>  global2Local3D ( double x, double y, double z, double mod, double phi = 0 )
+{
+  // Function converts global coordinates to local module coordinates
+  double costilt = cos(tilt/wt);
+  double sintilt = sin(tilt/wt);
+  double costurn = cos(turn/wt);
+  double sinturn = sin(turn/wt);
+  double cosphi  = cos(phi/wt);
+  double sinphi  = sin(phi/wt);
+  // inverse phi rotation
+  double x3 = cosphi*x - sinphi*z;
+  double y3 = y;
+  double z3 = sinphi*x + cosphi*z;
+  // inverse Z translation
+  z3 += 48 - 32*mod;
+  // inverse omega turn
+  double x2 = costurn*x3 - sinturn*z3;
+  double y2 = y3;
+  double z2 = sinturn*x3 + costurn*z3;
+  // inverse alpha tilt
+  double x1 = x2;
+  double y1 = costilt*y2 - sintilt*z2;
+  double z1 = sintilt*y2 + costilt*z2;
+  // return local coordinates
+  return {x1,y1,z1};
+} 
+
+//------------------------------------------------------------------------------
+
 TMatrixD Jac5( double ds ) // for GBL
 {
   /*
@@ -1488,10 +1522,6 @@ int main( int argc, char* argv[] )
 
     ++event_nr;
 
-
-    double pi = 4*atan(1);
-    double wt = 180/pi;
-
     // define transformed global for all 4 modules coordinates globally
     double xglobal[4][100];
     double yglobal[4][100];
@@ -1503,11 +1533,9 @@ int main( int argc, char* argv[] )
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // local to global:
 
-    double tilt = 19.3;
     double costilt = cos(tilt/wt);
     double sintilt = sin(tilt/wt);
 
-    double turn = 27.7;
     double costurn = cos(turn/wt);
     double sinturn = sin(turn/wt);
 
@@ -1564,45 +1592,33 @@ int main( int argc, char* argv[] )
         xglobal[mod][clusternumber] = x3;
         yglobal[mod][clusternumber] = y3;
         zglobal[mod][clusternumber] = z3;
+
+
         ++clusternumber;
       } // clusters
     }
 
     /*Re-transformation from global to local coordinates
       July 27, 2016*/
-
     for (int mod = 0; mod < 4; mod++) {
       int clusternumber = 0;
-      for ( vector <cluster>::iterator c = cl[mod].begin(); c != cl[mod].end(); ++c) {
+      for ( vector <cluster>::iterator c = cl[mod].begin(); c != cl[mod].end(); ++c){
         // now, take as input the global variables and transform them back
         double xgl = xglobal[mod][clusternumber];
         double ygl = yglobal[mod][clusternumber];
         double zgl = zglobal[mod][clusternumber];
 
-        // inverse phi rotation
-        double x3 = cosphi*xgl - sinphi*zgl;
-        double y3 = ygl;
-        double z3 = sinphi*xgl + cosphi*zgl;
+        vector <double> local = global2Local3D(xgl,ygl,zgl,mod,0);
 
-        // inverse Z translation
-        z3 += 48 - 32*mod;
-
-        // inverse omega turn
-        double x2 = costurn*x3 - sinturn*z3;
-        double y2 = y3;
-        double z2 = sinturn*x3 + costurn*z3;
-
-        // inverse alpha tilt
-        double x1 = x2;
-        double y1 = costilt*y2 - sintilt*z2;
-        double z1 = sintilt*y2 + costilt*z2;
-
-        //        cout << xlocal [mod] << " " << ylocal [mod] << " " << zlocal [mod] << endl;
+        double xlo = local[0];
+        double ylo = local[1];
+        double zlo = local[2];
 
         // plotting of local coordinates
-        hxzlocal->Fill( x1, -z1 );
-        hzylocal->Fill( -z1, y1 );
-        hxylocal[mod]->Fill(x1, y1);
+        hxzlocal->Fill( xlo, -zlo );
+        hzylocal->Fill( -zlo, ylo );
+        hxylocal[mod]->Fill(xlo, ylo);
+
         ++clusternumber;
       }
     }
