@@ -261,7 +261,7 @@ bool isFiducial( double x, double y)
 
 
 //------------------------------------------------------------------------------
-int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed){
+int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed, int &alignmentRun, double &turn){
 
   ifstream runlistFile( "runlist-quad.dat" );
 
@@ -278,6 +278,8 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed)
     double currentMomentum;
     int currentModNames[4];
     int currentCCSuppressed = 0;
+    double currentTurn;
+    alignmentRun = 0;
     
     while( ! runlistFile.eof() ) {
 
@@ -295,7 +297,7 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed)
       for(int mod = 0; mod < 4; mod++){
 	thisline >> currentModNames[mod];
       }
-      thisline >> currentCCSuppressed;
+      thisline >> currentCCSuppressed >> alignmentRun >> currentTurn;
       
       if(!(currentRunnr && currentModNames[0] && currentModNames[1] && currentModNames[2] && currentModNames[3])){
 	continue; // No correct data in runlist
@@ -308,7 +310,9 @@ int searchRunlist(int runnr, double &momentum, int *modName, bool &CCSuppressed)
 	for(int mod = 0; mod < 4; mod++){
 	  modName[mod] = currentModNames[mod];
 	}
+	if(alignmentRun == 0) alignmentRun = runnr;
 	CCSuppressed = currentCCSuppressed;
+	turn = currentTurn;
 	runlistFile.close();
 	return 1;
       }
@@ -377,14 +381,19 @@ int main( int argc, char* argv[] )
   string runnum( argv[argc-1] );
   int run = atoi( argv[argc-1] );
 
+  int alignmentRun;
+
   // Searching for entry in runlist
   
   double p;
   int modName[4];
   bool CCSupressed = false;
+  int conversionRun = 0;
   bool writeEfficiency = false;
+  bool fitSupressed = false;
+  double turnTable = 0;
   
-  if(searchRunlist(run, p, modName, CCSupressed) < 0){
+  if(searchRunlist(run, p, modName, CCSupressed, alignmentRun, turnTable) < 0){
     exit(0);
   }
 
@@ -638,11 +647,26 @@ int main( int argc, char* argv[] )
 
   // Get ke (conversion small Vcal -> e-)
 
-  double norm = 1*TMath::Cos(0.3368485)*TMath::Cos(0.4852015);
+  double turn = 27.8;
+  if(run > 2000 && run < 2155) turn = 0;
+  turn += turnTable;
+
+  double tilt = 19.3;
+
+  double norm = 1*TMath::Cos(TMath::Pi()*tilt/180.)*TMath::Cos(TMath::Pi()*turn/180.);
+
 
   ostringstream conversionFileName; // output string stream
 
-  conversionFileName << "conversion_" << run << ".dat";
+  if(!conversionRun && CCSupressed){
+    conversionRun = alignmentRun;
+  }
+
+  if(alignmentRun == run){
+    conversionFileName << "conversions/conversion_" << run << ".dat";
+  }else{
+    conversionFileName << "conversions/conversion_" << conversionRun << ".dat";    
+  }
 
   ifstream conversionFile( conversionFileName.str() );
 
@@ -2505,6 +2529,8 @@ int main( int argc, char* argv[] )
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // alignment fits:
 
+  if(alignmentRun == run){
+
   double nb, ne, nm;
 
   // A:
@@ -2813,11 +2839,17 @@ int main( int argc, char* argv[] )
 
   if( aligniteration == 1 )
     cout << "need one more align iteration: please run again!" << endl;
+  }else{
+    cout << "No alignment needed - taken from run " << alignmentRun << endl;
+  }
 
   
   // Correct conversion factors
 
-  if( aligniteration > 1 ){
+  if(fitSupressed){
+    cout << "Skipping landau fits." << endl;
+  }else{
+
     ofstream conversionFileOut( conversionFileName.str() );
 
     double landau_peak[4][16];
@@ -2830,7 +2862,7 @@ int main( int argc, char* argv[] )
 	for(int roc = 0; roc < 16; roc++){
 	  landau_peak[mod][roc] = landau_gauss_peak(&hclq0r[mod][roc]);
 	  correction[mod][roc] = 22./landau_peak[mod][roc];
-	  if(!CCSupressed){
+	  if(!CCSupressed || conversionRun == run){
 	    if(correction[mod][roc] > 0.)ke[mod][roc] *= correction[mod][roc];
 	    conversionFileOut << mod << "\t" << roc << "\t" << ke[mod][roc] << endl;
 	  }
@@ -2841,12 +2873,13 @@ int main( int argc, char* argv[] )
       }
     }
     conversionFileOut.close();
-  }else{
-    cout << "\nWill apply conversion factor correction at next iteration." << endl;
   }
-  if(CCSupressed){
-    cout << "\nNo conversion correction wanted." << endl;
-  }
+}else{
+  cout << "\nWill apply conversion factor correction at next iteration." << endl;
+ }
+if(CCSupressed){
+  cout << "\nNo conversion correction wanted." << endl;
+ }
 
   cout << endl << endl;
   cout << "quad  tracks " << n4 << endl;
