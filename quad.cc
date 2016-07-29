@@ -568,13 +568,19 @@ int main( int argc, char* argv[] )
 
   // pair matching cuts:
 
-  double bicutx = 5E-3*dz; // [mm]
-  double bicuty = 5E-3*dz; // [mm]
+  //  double bicutx = 5E-3*dz; // [mm]
+  //  double bicuty = 5E-3*dz; // [mm]
+
+  double bicutx = 150E-3*dz; // [mm]
+  double bicuty = 20E-3*dz; // [mm]
 
   // triplet linking cuts:
 
-  double tricutx = 0.06; // [mm]
-  double tricuty = 0.06; // [mm]
+  //  double tricutx = 0.06; // [mm]
+  //  double tricuty = 0.06; // [mm]
+
+  double tricutx = 1.; // [mm]
+  double tricuty = 0.15; // [mm]
 
   if( tricutx < 3*dz*tetSi ) {
     tricutx = 3*dz*tetSi;
@@ -586,6 +592,9 @@ int main( int argc, char* argv[] )
   TVectorD wscatSi(2);
   wscatSi[0] = 1.0 / ( tetSi * tetSi ); // weight
   wscatSi[1] = 1.0 / ( tetSi * tetSi );
+
+  double chCutLow = 12;
+  double chCutHigh = 30;
 
   // global labels for Pede:
 
@@ -833,7 +842,7 @@ int main( int argc, char* argv[] )
 
   ostringstream fname; // output string stream
 
-  fname << "quad-" << run << ".root";
+  fname << "histograms/quad-" << run << ".root";
 
   TFile* histoFile = new TFile( fname.str(  ).c_str(  ), "RECREATE" );
 
@@ -1793,6 +1802,9 @@ int main( int argc, char* argv[] )
 	      hclq0D3.Fill( cD->charge*norm );
 	      hncolD3.Fill( cD->ncol );
 	      hnrowD3.Fill( cD->nrow );
+	      if(cD->charge*norm > chCutLow && cD->charge*norm < chCutHigh){
+		hncolqf4[3].Fill(cD->ncol);
+	      }
 	    }
 
 	  } // cl D
@@ -1948,6 +1960,10 @@ int main( int argc, char* argv[] )
 	      hclq0A3.Fill( cA->charge*norm );
 	      hncolA3.Fill( cA->ncol );
 	      hnrowA3.Fill( cA->nrow );
+	      if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
+		hncolqf4[0].Fill(cA->ncol);
+	      }
+
 	    }
 
 	  } // cl A
@@ -2162,6 +2178,9 @@ int main( int argc, char* argv[] )
 	      hclq0B4.Fill( cB->charge*norm );
 	      hncolB4.Fill( cB->ncol );
 	      hnrowB4.Fill( cB->nrow );
+	      if(cB->charge*norm > chCutLow && cB->charge*norm < chCutHigh){
+		hncolqf4[1].Fill(cB->ncol);
+	      }
 	    }
 
 	  } // cl B
@@ -2344,6 +2363,9 @@ int main( int argc, char* argv[] )
 	      hnrowC4.Fill( cC->nrow );
 	      hminxC4.Fill( (minx-1)%2 ); 
 	      hmaxxC4.Fill( (maxx-1)%2 ); 
+	      if(cC->charge*norm > chCutLow && cC->charge*norm < chCutHigh){
+		hncolqf4[2].Fill(cC->ncol);
+	      }
 	    }
 
 	    // we have a quad track !
@@ -2976,7 +2998,9 @@ Double_t landau_gauss_peak(TH1* h) {
   double aa = h->GetEntries();//normalization
 
   // find peak:
+  h->GetXaxis()->SetRange(7, 50);
   int ipk = h->GetMaximumBin();
+  h->GetXaxis()->UnZoom();
   double xpk = h->GetBinCenter(ipk);
   double sm = xpk / 9; // sigma
   double ns = sm; // noise
