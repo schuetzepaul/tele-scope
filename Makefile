@@ -30,6 +30,11 @@ quad: quad.cc
 	-L$(GBL)/lib -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
 	@echo 'done: quad'
 
+quad3D: quad3D.cc
+	g++ $(CXXFLAGS) -I$(GBL)/include -o quad3D quad3D.cc \
+	-L$(GBL)/lib -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
+	@echo 'done: quad3D'
+
 evd: evd.cc
 	g++ $(CXXFLAGS) -o evd evd.cc \
 	$(ROOTGLIBS) -L$(EUDAQ)/lib -lEUDAQ
