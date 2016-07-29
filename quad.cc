@@ -3024,15 +3024,14 @@ int main( int argc, char* argv[] )
       }else{
 	cout << "No gain file available.";
       }
+    
+      conversionFileOut.close();
     }
-    conversionFileOut.close();
   }
-}else{
-  cout << "\nWill apply conversion factor correction at next iteration." << endl;
- }
-if(CCSupressed){
-  cout << "\nNo conversion correction wanted." << endl;
- }
+
+  if(CCSupressed){
+    cout << "\nNo conversion correction wanted." << endl;
+  }
 
   cout << endl << endl;
   cout << "quad  tracks " << n4 << endl;
