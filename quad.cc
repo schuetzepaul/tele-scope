@@ -860,8 +860,11 @@ int main( int argc, char* argv[] )
   TH1D hclq0r[4][16];
   TH1D hclq0g[4];
   TH1D hncol[4];
+  TH1D hncolq[4];
+  TH1D hncolqf4[4];
   TH1D hnrow[4];
   TH1D heffRoc[4];
+  TProfile ncolvsclq[4];
   TProfile effvsRoc[4];
 
   TH1D hncl[4];
@@ -916,12 +919,21 @@ int main( int argc, char* argv[] )
     hncol[mod]= TH1D( Form("ncol%c",modtos), 
 		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
 		      21, -0.5, 20.5 );
+    hncolq[mod]= TH1D( Form("ncolq%c",modtos), 
+		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
+		      21, -0.5, 20.5 );
+    hncolqf4[mod]= TH1D( Form("ncolqf4%c",modtos), 
+		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
+		      21, -0.5, 20.5 );
     hnrow[mod]= TH1D( Form("nrow%c",modtos),
 		      Form("%c cluster size;rows/cluster;%c clusters",modtos,modtos),
 		      21, -0.5, 20.5 );
     heffRoc[mod]= TH1D( Form("effRoc%c",modtos),
 			Form("eff%c per ROC;efficiency;ROCs",modtos),
 			25, 0.995, 1.0);
+    ncolvsclq[mod]= TProfile( Form("ncolvsclq%c",modtos),
+			     Form("ncol%c vs norm cluster charge;cluster charge [ke];ncol %c",modtos,modtos),
+			     100,0,100);
     effvsRoc[mod]= TProfile( Form("eff%cvsRoc",modtos),
 			     Form("eff%c vs ROC;ROC;eff %c",modtos,modtos),
 			     16,-0.5,15.5, -1, 2);
@@ -1550,10 +1562,14 @@ int main( int argc, char* argv[] )
 	hclq0[mod].Fill( cA->charge*norm );
 	hncol[mod].Fill( cA->ncol );
 	hnrow[mod].Fill( cA->nrow );
+	ncolvsclq[mod].Fill( cA->charge*norm, cA->ncol );
 	if(cA->roc == -1){
 	  hclq0g[mod].Fill( cA->charge*norm );
 	}else{
 	  hclq0r[mod][cA->roc].Fill( cA->charge*norm );
+	}
+	if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
+	  hncolq[mod].Fill( cA->ncol );
 	}
       }
 
