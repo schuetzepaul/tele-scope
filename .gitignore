@@ -5,5 +5,14 @@ hot*
 geo*
 scope
 tele
+quad
+*~
+*.d
+*.so
+*.plt
+*.bin
+
+conversions/
+batch_output/
 
 *.pdf
