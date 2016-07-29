@@ -421,10 +421,21 @@ int main( int argc, char* argv[] )
 
     // Suppress conversion factor correction
     if( !strcmp( argv[i], "-c" ) )
-      CCSupressed = true;
+      {
+	if( strchr( argv[++i], '-') == NULL){
+	  conversionRun = atoi( argv[i] );
+	  cout << "Conversion factors taken from run " << conversionRun << endl;
+	}else{
+	  --i;
+	}
+	CCSupressed = true;
+      }
 
     if( !strcmp( argv[i], "-e" ) )
       writeEfficiency = true;
+
+    if( !strcmp( argv[i], "-f" ) )
+      fitSupressed = true;
 
   } // argc
 
@@ -453,7 +464,7 @@ int main( int argc, char* argv[] )
 
   ostringstream alignFileName; // output string stream
 
-  alignFileName << "align_" << run << ".dat";
+  alignFileName << "alignment/align_" << run << ".dat";
 
   ifstream ialignFile( alignFileName.str() );
 
