@@ -200,7 +200,7 @@ vector<cluster> getClus()
 
     //cout << "(cluster with " << c.vpix.size() << " pixels)" << endl;
 
-    if( (!c.charge) == 0 ) {
+    if( ! c.charge == 0 ) {
       c.col /= sumQ;
       c.row /= sumQ;
     }
@@ -223,7 +223,7 @@ vector<cluster> getClus()
 
   // nothing left, return clusters
 
-  delete[] gone;
+  delete gone;
   return v;
 }
 
@@ -842,9 +842,6 @@ int main( int argc, char* argv[] )
   TH1D hncol[4];
   TH1D hnrow[4];
   TH1D heffRoc[4];
-
-  TH2D * hxy[4];
-  TH2D * hxylocal[4];
   TProfile effvsRoc[4];
 
   TH1D hncl[4];
@@ -907,40 +904,9 @@ int main( int argc, char* argv[] )
 			25, 0.995, 1.0);
     effvsRoc[mod]= TProfile( Form("eff%cvsRoc",modtos),
 			     Form("eff%c vs ROC;ROC;eff %c",modtos,modtos),
-                             16,-0.5,15.5, -1, 2);
+			     16,-0.5,15.5, -1, 2);
 
-    hxy[mod] = new
-      TH2D( Form( "xy%c", modtos ),
-            Form( "back view;x [mm];y [mm];%c clusters", modtos ),
-            432, -32.4, 32.4, 162, -8.1, 8.1 );
-
-    hxylocal[mod] = new
-      TH2D( Form( "xy%c_LOCAL", modtos ),
-            Form( "back view;x [mm];y [mm];%c clusters LOCAL", modtos ),
-            432, -32.4, 32.4, 162, -8.1, 8.1 );
-
-
-    
   } // module planes
-
-
-
-  TH2D * hzy = new
-    TH2D( "zy", "side view (beam from right: A B C D) ;-z [mm];y [mm];clusters",
-          1400, -70.0, 70.0, 162, -8.1, 8.1 );
-
-  TH2D * hxz = new
-    TH2D( "xz", "top view (beam downwards: A B C D);x [mm];-z [mm];clusters",
-          800, -40, 40, 1400, -70.0, 70.0 );
-
-  TH2D * hzylocal = new
-    TH2D( "zy_local", "side view (beam from right: A B C D) ;-z [mm];y [mm];clusters",
-          1400, -70.0, 70.0, 162, -8.1, 8.1 );
-
-  TH2D * hxzlocal = new
-    TH2D( "xz_local", "top view (beam downwards: A B C D);x [mm];-z [mm];clusters",
-          800, -40, 40, 1400, -70.0, 70.0 );
-
 
   TH2D hxxAB( "xxAB", "A vs B;col B;col A;clusters",
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
@@ -1019,7 +985,7 @@ int main( int argc, char* argv[] )
 
   TProfile dxvsxACB( "dxvsxACB",
 		     "ACB dx vs x;x [mm];ACB <dx>",
-	     216, -32.4, 32.4, -1, 1 );
+		     216, -32.4, 32.4, -1, 1 );
   TProfile dxvsyACB( "dxvsyACB",
 		     "ACB dx vs y;y [mm];ACB <dx>",
 		     81, -8.1, 8.1, -1, 1 );
@@ -1574,125 +1540,6 @@ int main( int argc, char* argv[] )
     } // planes = mod
 
     ++event_nr;
-
-
-    double pi = 4*atan(1);
-    double wt = 180/pi;
-
-    // define transformed global for all 4 modules coordinates globally
-    double xglobal[4][100];
-    double yglobal[4][100];
-    double zglobal[4][100];
-
-    /* Daniel's new code
-       2016-07-26
-       3D transformation local to global*/
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // local to global:
-
-    double tilt = 19.3;
-    double costilt = cos(tilt/wt);
-    double sintilt = sin(tilt/wt);
-
-    double turn = 27.7;
-    double costurn = cos(turn/wt);
-    double sinturn = sin(turn/wt);
-
-    double phi = 0;
-    //    if( run >= 2187 ) phi = -6;
-
-    double cosphi = cos(phi/wt);
-    double sinphi = sin(phi/wt);
-
-    for( int mod = 0; mod < 4; ++mod ){
-      int clusternumber = 0;
-
-      for( vector<cluster>::iterator c = cl[mod].begin(); c != cl[mod].end(); ++c ) {
-        // pixel (0,0) is top left
-        // right handed coordinate system:
-        // x to the right
-        // y is up
-        // z at you (along beam)
-
-        // passive change of coordinate system (hits remain in space):
-
-        double xm = c->col*0.15 - 32.325;
-        double ym =-c->row*0.10 +  8.050; // invert
-        double zm = 0;
-
-        // tilt around local x:
-
-        double x1 = xm;
-        double y1 = costilt*ym + sintilt*zm;
-        double z1 =-sintilt*ym + costilt*zm;
-
-        // turn around y:
-
-        double x2 = costurn*x1 + sinturn*z1;
-        double y2 = y1;
-        double z2 =-sinturn*x1 + costurn*z1;
-
-        hxy[mod]->Fill( x2, y2 ); // front view
-
-        // spread along z:
-
-        z2 += -48 + 32*mod; // -48  -16  16  48
-
-        // rotate plate around y :
-
-        double x3 = cosphi*x2 + sinphi*z2;
-        double y3 = y2;
-        double z3 =-sinphi*x2 + cosphi*z2;
-
-        hxz->Fill( x3,-z3 ); // top view
-        hzy->Fill( -z3, y3 ); // side view
-
-        // fill the global variables
-        xglobal[mod][clusternumber] = x3;
-        yglobal[mod][clusternumber] = y3;
-        zglobal[mod][clusternumber] = z3;
-        ++clusternumber;
-      } // clusters
-    }
-
-    /*Re-transformation from global to local coordinates
-      July 27, 2016*/
-
-    for (int mod = 0; mod < 4; mod++) {
-      int clusternumber = 0;
-      for ( vector <cluster>::iterator c = cl[mod].begin(); c != cl[mod].end(); ++c) {
-        // now, take as input the global variables and transform them back
-        double xgl = xglobal[mod][clusternumber];
-        double ygl = yglobal[mod][clusternumber];
-        double zgl = zglobal[mod][clusternumber];
-
-        // inverse phi rotation
-        double x3 = cosphi*xgl - sinphi*zgl;
-        double y3 = ygl;
-        double z3 = sinphi*xgl + cosphi*zgl;
-
-        // inverse Z translation
-        z3 += 48 - 32*mod;
-
-        // inverse omega turn
-        double x2 = costurn*x3 - sinturn*z3;
-        double y2 = y3;
-        double z2 = sinturn*x3 + costurn*z3;
-
-        // inverse alpha tilt
-        double x1 = x2;
-        double y1 = costilt*y2 - sintilt*z2;
-        double z1 = sintilt*y2 + costilt*z2;
-
-        //        cout << xlocal [mod] << " " << ylocal [mod] << " " << zlocal [mod] << endl;
-
-        // plotting of local coordinates
-        hxzlocal->Fill( x1, -z1 );
-        hzylocal->Fill( -z1, y1 );
-        hxylocal[mod]->Fill(x1, y1);
-        ++clusternumber;
-      }
-    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // A-B cluster correlations:
