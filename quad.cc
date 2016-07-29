@@ -843,7 +843,16 @@ int main( int argc, char* argv[] )
   TH1D hnrow[4];
   TH1D heffRoc[4];
   TProfile effvsRoc[4];
-
+  TProfile effvsStack[4];
+  TProfile effvsStackPrev[4];
+  TH1D hstack0[4];
+  TH1D hstack1[4];
+  TH1D hstacksum[4];
+  TH1D hstackdiff[4];
+  TH1D hstackdt[4];
+  TH1D htcountdt[4];
+  TProfile hnpxvsstack[4];
+  
   TH1D hncl[4];
   for( int mod = 0; mod < 4; ++mod ) {
     char modtos;
@@ -905,6 +914,34 @@ int main( int argc, char* argv[] )
     effvsRoc[mod]= TProfile( Form("eff%cvsRoc",modtos),
 			     Form("eff%c vs ROC;ROC;eff %c",modtos,modtos),
 			     16,-0.5,15.5, -1, 2);
+    effvsStack[mod]= TProfile( Form("eff%cvsStack",modtos),
+			     Form("eff%c vs Stack;Stack Counter;eff %c",modtos,modtos),
+			     16,-0.5,15.5, -1, 2);
+    effvsStackPrev[mod]= TProfile( Form("eff%cvsStackPrev",modtos),
+			     Form("eff%c vs prev. Stack;Prev Stack Counter;eff %c",modtos,modtos),
+			     16,-0.5,15.5, -1, 2);
+    hstack0[mod] = TH1D( Form("stack0%c", modtos),
+		      Form("%c stack counter core 0;stack counter;%c events", modtos, modtos), 
+		      32, 0, 32 );
+    hstack1[mod] = TH1D( Form("stack1%c", modtos),
+		      Form("%c stack counter core 1;stack counter;%c events", modtos, modtos), 
+		      32, 0, 32 );
+    hstacksum[mod] = TH1D( Form("stacksum%c", modtos),
+		      Form("%c stack counter core 0 + core 1;stack counter;%c events", modtos, modtos), 
+		      32, 0, 32 );
+    hstackdiff[mod] = TH1D( Form("stackdiff%c", modtos),
+		      Form("%c stack counter core 0 - core 1;stack counter;%c events", modtos, modtos), 
+		      32, -16, 16 );
+    hstackdt[mod] = TH1D( Form("stackdt%c", modtos),
+		      Form("%c stack counter core 0 - prev. stack counter core 0;d(stack counter);%c events", modtos, modtos), 
+		      32, -16, 16 );
+    htcountdt[mod] = TH1D( Form("tcountdt%c", modtos),
+		      Form("%c trigger count core 0 - prev. stack counter core 0;d(trigger count);%c events", modtos, modtos), 
+		      32, -16, 16 );
+    hnpxvsstack[mod]= TProfile( Form("npxvsstack%c",modtos),
+			     Form("npx %c vs prev. stack core 0;stack count;pixel %c",modtos,modtos),
+			     32,-0.5,31.5, -1, 50);
+    
 
   } // module planes
 
@@ -1039,8 +1076,12 @@ int main( int argc, char* argv[] )
   TProfile effDvsx0( "effDvsx0", "effD vs lower x;lower ACBplet x [mm];eff D",
 		     216, -32.4, 32.4, -1, 2 );
   TProfile effDvsx1( "effDvsx1", "effD vs upper x;upper ACBplet x [mm];eff D",
+		     216, -32.4, 32.4, -1, 2 ); 
+  TProfile effDvsx0SC( "effDvsx0SC", "effD vs lower x, SC>0;lower ACBplet x [mm];eff D",
 		     216, -32.4, 32.4, -1, 2 );
-  TProfile effDvsy( "effDvsy", "effD vs y;ACBplet y [mm];eff D",
+  TProfile effDvsx1SC( "effDvsx1SC", "effD vs upper x, SC>0;upper ACBplet x [mm];eff D",
+		     216, -32.4, 32.4, -1, 2 );
+ TProfile effDvsy( "effDvsy", "effD vs y;ACBplet y [mm];eff D",
 		    81, -8.1, 8.1, -1, 2 );
 
   TProfile effDvsw( "effDvsw", "effD vs window;link window [mm];eff D",
@@ -1112,6 +1153,10 @@ int main( int argc, char* argv[] )
   TProfile effAvsx0( "effAvsx0", "effA vs lower x;lower BDCplet x [mm];eff A",
 		     216, -32.4, 32.4, -1, 2 );
   TProfile effAvsx1( "effAvsx1", "effA vs upper x;upper BDCplet x [mm];eff A",
+		     216, -32.4, 32.4, -1, 2 );
+  TProfile effAvsx0SC( "effAvsx0SC", "effA vs lower x, SC>0;lower BDCplet x [mm];eff A",
+		     216, -32.4, 32.4, -1, 2 );
+  TProfile effAvsx1SC( "effAvsx1SC", "effA vs upper x, SC>0;upper BDCplet x [mm];eff A",
 		     216, -32.4, 32.4, -1, 2 );
   TProfile effAvsy( "effAvsy", "effA vs y;BDCplet y [mm];eff A",
 		    81, -8.1, 8.1, -1, 2 );
@@ -1208,6 +1253,10 @@ int main( int argc, char* argv[] )
 		     216, -32.4, 32.4, -1, 2 );
   TProfile effBvsx1( "effBvsx1", "effB vs upper x;upper ADCplet x [mm];eff B",
 		     216, -32.4, 32.4, -1, 2 );
+  TProfile effBvsx0SC( "effBvsx0SC", "effB vs lower x, SC>0;lower ADCplet x [mm];eff B",
+		     216, -32.4, 32.4, -1, 2 );
+  TProfile effBvsx1SC( "effBvsx1SC", "effB vs upper x, SC>0;upper ADCplet x [mm];eff B",
+		     216, -32.4, 32.4, -1, 2 );
   TProfile effBvsy( "effBvsy", "effB vs y;ADCplet y [mm];eff B",
 		    81, -8.1, 8.1, -1, 2 );
   TProfile effBvst1( "effBvst1", "effB vs time;trigger;eff B",
@@ -1287,6 +1336,10 @@ int main( int argc, char* argv[] )
 		     216, -32.4, 32.4, -1, 2 );
   TProfile effCvsx1( "effCvsx1", "effC vs upper x;upper ADBplet x [mm];eff C",
 		     216, -32.4, 32.4, -1, 2 );
+  TProfile effCvsx0SC( "effCvsx0SC", "effC vs lower x, SC>0;lower ADBplet x [mm];eff C",
+		     216, -32.4, 32.4, -1, 2 );
+  TProfile effCvsx1SC( "effCvsx1SC", "effC vs upper x, SC>0;upper ADBplet x [mm];eff C",
+		     216, -32.4, 32.4, -1, 2 );
   TProfile effCvsy( "effCvsy", "effC vs y;ADBplet y [mm];eff C",
 		    81, -8.1, 8.1, -1, 2 );
   TProfile effCvst1( "effCvst1", "effC vs time;trigger;eff C",
@@ -1354,6 +1407,24 @@ int main( int argc, char* argv[] )
   int n4 = 0;
   int nmille = 0;
 
+  unsigned stackPrev[4][2];
+  unsigned stack[4][2];
+  for(int imod=0; imod<4; imod++){
+    for(int jcore=0; jcore<2; jcore++){
+      stackPrev[imod][jcore] = 0;
+      stack[imod][jcore] = 0;
+    }
+  }
+
+  bool tokenPass[4][2];
+  bool pkamReset[4][2];
+  bool stackFull[4][2];
+  unsigned triggerCount[4][2];
+  unsigned triggerCountPrev[4][2];
+  unsigned dataID[4][2];
+  bool autoReset[4][2];
+  
+
   do {
     // Get next event:
     DetectorEvent evt = reader->GetDetectorEvent();
@@ -1393,7 +1464,77 @@ int main( int argc, char* argv[] )
       if( plane.ID() == 7 ) mod = 2; // DUT
       if( plane.ID() == 8 ) mod = 3; // REF
 
+      // Read stack counter
+    
+      for(int jcore=0; jcore<2; jcore++){
+	stackPrev[mod][jcore] = stack[mod][jcore];
+	stack[mod][jcore] = plane.GetStackCounter(jcore);
+      }
+      hstack0[mod].Fill( stack[mod][0] );
+      hstack1[mod].Fill( stack[mod][1] );
+      hstacksum[mod].Fill( stack[mod][0] + stack[mod][1] );
+      hstackdiff[mod].Fill( (int)stack[mod][0] - (int)stack[mod][1] );
+      hstackdt[mod].Fill( (int)stack[mod][0] - (int)stackPrev[mod][0] );
+      htcountdt[mod].Fill( (int)triggerCount[mod][0] - (int)triggerCountPrev[mod][0] );
+
+      // Read token pass
+      
+      for(int jcore=0; jcore<2; jcore++){
+	tokenPass[mod][jcore] = plane.GetTokenPass(jcore);
+	if(tokenPass[mod][jcore] == false)
+	  cout << "WE HAVE NO TOKEN!" << endl;
+      }
+
+      // Read PKAM reset
+
+      for(int jcore=0; jcore<2; jcore++){
+	pkamReset[mod][jcore] = plane.GetPKAMReset(jcore);
+	if(pkamReset[mod][jcore] == true)
+	  cout << "WE HAVE A PKAM!" << endl;
+      }
+
+      // Read stack full
+
+      for(int jcore=0; jcore<2; jcore++){
+	stackFull[mod][jcore] = plane.GetStackFull(jcore);
+	if(stackFull[mod][jcore] == true)
+	  cout << "Stack is full." << endl;
+      }
+
+      // Read trigger count
+
+      for(int jcore=0; jcore<2; jcore++){
+	triggerCountPrev[mod][jcore] = triggerCount[mod][jcore];
+	triggerCount[mod][jcore] = plane.GetTriggerCount(jcore);
+      }
+      if(triggerCount[mod][0] != triggerCount[mod][1])
+	cout << "Trigger counts differ." << endl;
+
+      // Read dataID
+
+      for(int jcore=0; jcore<2; jcore++){
+	dataID[mod][jcore] = plane.GetDataID(jcore);
+      }
+      if(dataID[mod][0] != dataID[mod][1])
+	//	cout << "Data IDs differ." << endl;
+
+      // Read AutoReset
+
+      for(int jcore=0; jcore<2; jcore++){
+	autoReset[mod][jcore] = plane.GetAutoReset(jcore);
+	if(autoReset[mod][jcore] == true)
+	  cout << "We have a Auto Reset!" << endl;
+      }
+
+      /*
+      if(!(event_nr%10000)){
+	cout << "Trigger counts: " << triggerCount[mod][0] << "  " << triggerCount[mod][1] << endl; 
+	cout << "Data IDs: " << dataID[mod][0] << "  " << dataID[mod][1] << endl; 
+      }
+      */
+
       int npx = 0;
+      int npx0 = 0;
 
       for( size_t ipix = 0; ipix < pxl.size(); ++ipix) {
 
@@ -1429,6 +1570,7 @@ int main( int argc, char* argv[] )
 	  roc = 15 - roc; // 15..8
 	  col = 51 - col; // 51..0
 	  row = 159 - ym; // 79..0
+	  npx0++;
 	}
 
 	cal = adc;
@@ -1510,6 +1652,8 @@ int main( int argc, char* argv[] )
       } // pix
       
       hnpx[mod].Fill(npx);
+
+      hnpxvsstack[mod].Fill(stackPrev[mod][0], npx - npx0);
 
       if( ldb ) cout << endl;
 
@@ -1794,10 +1938,17 @@ int main( int argc, char* argv[] )
 	    effDivst2.Fill( event_nr, nm[14] );
 	    effDivst10.Fill( event_nr, nm[14] );
 	  }
-	  if( yavg3Dlocal < 0 )
-	    effDvsx0.Fill( xavg3Dlocal, nm[14] );
-	  else
-	    effDvsx1.Fill( xavg3Dlocal, nm[14] );
+	  if( yavg3Dlocal < 0 ){
+	    if( stackPrev[D][0] ) effDvsx0SC.Fill( xavg3Dlocal, nm[14] );
+	    else effDvsx0.Fill( xavg3Dlocal, nm[14] );
+	    effvsStackPrev[3].Fill( (double)stackPrev[D][0], nm[14] );
+	    effvsStack[3].Fill( (double)stack[D][0], nm[14] );
+	  }else{
+	    if( stackPrev[D][1] ) effDvsx1SC.Fill( xavg3Dlocal, nm[14] );
+	    else effDvsx1.Fill( xavg3Dlocal, nm[14] );
+	    effvsStackPrev[3].Fill( (double)stackPrev[D][1], nm[14] );
+	    effvsStack[3].Fill( (double)stack[D][1], nm[14] );
+	  }
 	  effDvsy.Fill( yavg3Dlocal, nm[14] );
 	  effDmap1->Fill( xavg3Dlocal, yavg3Dlocal, nm[14] );
 	  effDmap4->Fill( xavg3Dlocal, yavg3Dlocal, nm[14] );
@@ -1929,6 +2080,7 @@ int main( int argc, char* argv[] )
 	    for( int iw = 1; iw < 99; ++ iw )
 	      if( abs( dx4 ) < iw*0.050 && abs( dy4 ) < iw*0.050 ) // for eff
 		nm[iw] = 1;
+
 	    
 	    if( abs( dx4 ) < tricutx && abs( dy4 ) < tricuty  &&
 		cA->big == 0 && cD->big == 0 && cB->big == 0 ) {
@@ -1951,11 +2103,17 @@ int main( int argc, char* argv[] )
 	    effAivst8.Fill( event_nr, nm[14] );
 	    effAivst10.Fill( event_nr, nm[14] );
 	  } // iso
-
-	  if( yavg3Alocal < 0 )
-	    effAvsx0.Fill( xavg3Alocal, nm[14] );
-	  else
-	    effAvsx1.Fill( xavg3Alocal, nm[14] );
+	  if( yavg3Alocal < 0 ){
+	    if( stackPrev[A][0] ) effAvsx0SC.Fill( xavg3Alocal, nm[14] );
+	    else effAvsx0.Fill( xavg3Alocal, nm[14] );
+	    effvsStackPrev[0].Fill( (double)stackPrev[A][0], nm[14] );
+	    effvsStack[0].Fill( (double)stack[A][0], nm[14] );
+	  }else{
+	    if( stackPrev[A][1] ) effAvsx1SC.Fill( xavg3Alocal, nm[14] );
+	    else effAvsx1.Fill( xavg3Alocal, nm[14] );
+	    effvsStackPrev[0].Fill( (double)stackPrev[A][1], nm[14] );
+	    effvsStack[0].Fill( (double)stack[A][1], nm[14] );
+	  }
 	  effAvsy.Fill( yavg3Alocal, nm[14] );
 	  effAmap1->Fill( xavg3Alocal, yavg3Alocal, nm[14] );
 	  effAmap4->Fill( xavg3Alocal, yavg3Alocal, nm[14] );
@@ -2166,10 +2324,17 @@ int main( int argc, char* argv[] )
 	    effBivst10.Fill( event_nr, nm[14] );
 	  } // iso
 
-	  if( yavg2Blocal < 0 )
-	    effBvsx0.Fill( xavg2Blocal, nm[14] );
-	  else
-	    effBvsx1.Fill( xavg2Blocal, nm[14] );
+	  if( yavg2Blocal < 0 ){
+	    if( stackPrev[B][0] ) effBvsx0SC.Fill( xavg2Blocal, nm[14] );
+	    else effBvsx0.Fill( xavg2Blocal, nm[14] );
+	    effvsStackPrev[1].Fill( (double)stackPrev[B][0], nm[14] );
+	    effvsStack[1].Fill( (double)stack[B][0], nm[14] );
+	  }else{
+	    if( stackPrev[B][1] ) effBvsx1SC.Fill( xavg2Blocal, nm[14] );
+	    else effBvsx1.Fill( xavg2Blocal, nm[14] );
+	    effvsStackPrev[1].Fill( (double)stackPrev[B][1], nm[14] );
+	    effvsStack[1].Fill( (double)stack[B][1], nm[14] );
+	  }
 	  effBvsy.Fill( yavg2Blocal, nm[14] );
 	  effBmap1->Fill( xavg2Blocal, yavg2Blocal, nm[14] );
 	  effBmap4->Fill( xavg2Blocal, yavg2Blocal, nm[14] );
@@ -2489,10 +2654,18 @@ int main( int argc, char* argv[] )
 	    effCivst2.Fill( event_nr, nm[14] );
 	    effCivst10.Fill( event_nr, nm[14] );
 	  }
-	  if( yavg2Clocal < 0 )
-	    effCvsx0.Fill( xavg2Clocal, nm[14] );
-	  else
-	    effCvsx1.Fill( xavg2Clocal, nm[14] );
+
+	  if( yavg2Clocal < 0 ){
+	    if( stackPrev[C][0] ) effCvsx0SC.Fill( xavg2Clocal, nm[14] );
+	    else effCvsx0.Fill( xavg2Clocal, nm[14] );
+	    effvsStackPrev[2].Fill( (double)stackPrev[C][0], nm[14] );
+	    effvsStack[2].Fill( (double)stack[C][0], nm[14] );
+	  }else{
+	    if( stackPrev[C][1] ) effCvsx1SC.Fill( xavg2Clocal, nm[14] );
+	    else effCvsx1.Fill( xavg2Clocal, nm[14] );
+	    effvsStackPrev[2].Fill( (double)stackPrev[C][1], nm[14] );
+	    effvsStack[2].Fill( (double)stack[C][1], nm[14] );
+	  }
 	  effCvsy.Fill( yavg2Clocal, nm[14] );
 	  effCmap1->Fill( xavg2Clocal, yavg2Clocal, nm[14] );
 	  effCmap4->Fill( xavg2Clocal, yavg2Clocal, nm[14] );
