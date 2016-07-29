@@ -244,6 +244,22 @@ TMatrixD Jac5( double ds ) // for GBL
 }
 
 //------------------------------------------------------------------------------
+TMatrixD Jac5( double ds, double bfield, double p, double incAngle ) // for GBL
+{
+  /*
+    B-field
+    track = 
+    q/p, x', y', x, y
+    0,   1,  2,  3, 4
+  */
+  TMatrixD jac(5, 5);
+  jac.UnitMatrix();
+  jac[3][1] = ds; // x = xp * ds
+  jac[4][2] = ds; // y = yp * ds
+  return jac;
+}
+
+//------------------------------------------------------------------------------
 Double_t landau_gauss_peak(TH1* h);
 
 
@@ -2580,314 +2596,316 @@ int main( int argc, char* argv[] )
 
   if(alignmentRun == run){
 
-  double nb, ne, nm;
+    double nb, ne, nm;
 
-  // A:
+    // A:
 
-  nb = hdxAB.GetNbinsX();
-  ne = hdxAB.GetSumOfWeights();
-  nm = hdxAB.GetMaximum();
-  cout << endl << hdxAB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+    nb = hdxAB.GetNbinsX();
+    ne = hdxAB.GetSumOfWeights();
+    nm = hdxAB.GetMaximum();
+    cout << endl << hdxAB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
 
-  if( nm/(ne/nb) > 2 ) {
+    if( nm/(ne/nb) > 2 ) {
 
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdxAB.GetBinCenter( hdxAB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdxAB.GetBinContent(1) ); // BG
-    hdxAB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  alignx[0] = " << alignx[0] + fgp0->GetParameter(1)
-	 << endl;
-    alignx[0] += fgp0->GetParameter(1);
-
-    // turn from profile:
-
-    if( aligniteration ) {
-
-      dxvsyAB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsy = dxvsyAB.GetFunction( "pol1" );
-      cout << endl << dxvsyAB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
-      fx[0] += fdxvsy->GetParameter(1); // same sign
-
-      dxvsxAB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsx = dxvsxAB.GetFunction( "pol1" );
-      cout << endl << dxvsxAB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
-      tx[0] += fdxvsx->GetParameter(1); // same sign
-
-    }
-
-  }
-
-  nb = hdyAB.GetNbinsX();
-  ne = hdyAB.GetSumOfWeights();
-  nm = hdyAB.GetMaximum();
-
-  cout << endl << hdyAB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
-
-  if( nm/(ne/nb) > 2 ) {
-
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdyAB.GetBinCenter( hdyAB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdyAB.GetBinContent(1) ); // BG
-    hdyAB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  aligny[0] = " << aligny[0] + fgp0->GetParameter(1)
-	 << endl;
-    aligny[0] += fgp0->GetParameter(1);
-
-    // x-y rotation from profile:
-
-    if( aligniteration ) {
-
-      dyvsxAB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdyvsx = dyvsxAB.GetFunction( "pol1" );
-      cout << endl << dyvsxAB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
-      fy[0] -= fdyvsx->GetParameter(1); // opposite sign
-
-      dyvsyAB.Fit( "pol1", "q", "", -7.5, 7.5 );
-      TF1 * fdyvsy = dyvsyAB.GetFunction( "pol1" );
-      cout << endl << dyvsyAB.GetTitle()
-	   << " slope " << fdyvsy->GetParameter(1)
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdxAB.GetBinCenter( hdxAB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdxAB.GetBinContent(1) ); // BG
+      hdxAB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  alignx[0] = " << alignx[0] + fgp0->GetParameter(1)
 	   << endl;
-      ty[0] += fdyvsy->GetParameter(1); // same sign
+      alignx[0] += fgp0->GetParameter(1);
+
+      // turn from profile:
+
+      if( aligniteration ) {
+
+	dxvsyAB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsy = dxvsyAB.GetFunction( "pol1" );
+	cout << endl << dxvsyAB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
+	fx[0] += fdxvsy->GetParameter(1); // same sign
+
+	dxvsxAB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsx = dxvsxAB.GetFunction( "pol1" );
+	cout << endl << dxvsxAB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
+	tx[0] += fdxvsx->GetParameter(1); // same sign
+
+      }
 
     }
 
-  } // nm
+    nb = hdyAB.GetNbinsX();
+    ne = hdyAB.GetSumOfWeights();
+    nm = hdyAB.GetMaximum();
 
-  // C:
+    cout << endl << hdyAB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
 
-  nb = hdxCB.GetNbinsX();
-  ne = hdxCB.GetSumOfWeights();
-  nm = hdxCB.GetMaximum();
+    if( nm/(ne/nb) > 2 ) {
 
-  cout << endl << hdxCB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
-
-  if( nm/(ne/nb) > 2 ) {
-
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdxCB.GetBinCenter( hdxCB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdxCB.GetBinContent(1) ); // BG
-    hdxCB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  alignx[2] = " << alignx[2] + fgp0->GetParameter(1)
-	 << endl;
-    alignx[2] += fgp0->GetParameter(1);
-
-    // turn from profile:
-
-    if( aligniteration ) {
-
-      dxvsyCB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsy = dxvsyCB.GetFunction( "pol1" );
-      cout << endl << dxvsyCB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
-      fx[2] += fdxvsy->GetParameter(1); // same sign
-
-      dxvsxCB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsx = dxvsxCB.GetFunction( "pol1" );
-      cout << endl << dxvsxCB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
-      tx[2] += fdxvsx->GetParameter(1); // same sign
-
-    }
-
-  } // nm
-
-  nb = hdyCB.GetNbinsX();
-  ne = hdyCB.GetSumOfWeights();
-  nm = hdyCB.GetMaximum();
-
-  cout << endl << hdyCB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
-
-  if( nm/(ne/nb) > 2 ) {
-
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdyCB.GetBinCenter( hdyCB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdyCB.GetBinContent(1) ); // BG
-    hdyCB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  aligny[2] = " << aligny[2] + fgp0->GetParameter(1)
-	 << endl;
-    aligny[2] += fgp0->GetParameter(1);
-
-    // x-y rotation from profile:
-
-    if( aligniteration ) {
-
-      dyvsxCB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdyvsx = dyvsxCB.GetFunction( "pol1" );
-      cout << endl << dyvsxCB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
-      fy[2] -= fdyvsx->GetParameter(1); // opposite sign
-
-      dyvsyCB.Fit( "pol1", "q", "", -7.5, 7.5 );
-      TF1 * fdyvsy = dyvsyCB.GetFunction( "pol1" );
-      cout << endl << dyvsyCB.GetTitle()
-	   << " slope " << fdyvsy->GetParameter(1)
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdyAB.GetBinCenter( hdyAB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdyAB.GetBinContent(1) ); // BG
+      hdyAB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  aligny[0] = " << aligny[0] + fgp0->GetParameter(1)
 	   << endl;
-      ty[2] += fdyvsy->GetParameter(1); // same sign
+      aligny[0] += fgp0->GetParameter(1);
 
-    }
+      // x-y rotation from profile:
 
-  } // nm
+      if( aligniteration ) {
 
-  // D:
+	dyvsxAB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdyvsx = dyvsxAB.GetFunction( "pol1" );
+	cout << endl << dyvsxAB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
+	fy[0] -= fdyvsx->GetParameter(1); // opposite sign
 
-  nb = hdxDB.GetNbinsX();
-  ne = hdxDB.GetSumOfWeights();
-  nm = hdxDB.GetMaximum();
+	dyvsyAB.Fit( "pol1", "q", "", -7.5, 7.5 );
+	TF1 * fdyvsy = dyvsyAB.GetFunction( "pol1" );
+	cout << endl << dyvsyAB.GetTitle()
+	     << " slope " << fdyvsy->GetParameter(1)
+	     << endl;
+	ty[0] += fdyvsy->GetParameter(1); // same sign
 
-  cout << endl << hdxDB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+      }
 
-  if( nm/(ne/nb) > 2 ) {
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdxDB.GetBinCenter( hdxDB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdxDB.GetBinContent(1) ); // BG
-    hdxDB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  alignx[3] = " << alignx[3] + fgp0->GetParameter(1)
-	 << endl;
-    alignx[3] += fgp0->GetParameter(1);
+    } // nm
 
-    // turn from profile:
+    // C:
 
-    if( aligniteration ) {
+    nb = hdxCB.GetNbinsX();
+    ne = hdxCB.GetSumOfWeights();
+    nm = hdxCB.GetMaximum();
 
-      dxvsyDB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsy = dxvsyDB.GetFunction( "pol1" );
-      cout << endl << dxvsyDB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
-      fx[3] += fdxvsy->GetParameter(1); // same sign
+    cout << endl << hdxCB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
 
-      dxvsxDB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdxvsx = dxvsxDB.GetFunction( "pol1" );
-      cout << endl << dxvsxDB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
-      tx[3] += fdxvsx->GetParameter(1); // same sign
+    if( nm/(ne/nb) > 2 ) {
 
-    }
-
-  } // nm
-
-  nb = hdyDB.GetNbinsX();
-  ne = hdyDB.GetSumOfWeights();
-  nm = hdyDB.GetMaximum();
-
-  cout << endl << hdyDB.GetTitle() << endl
-       << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
-       << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
-
-  if( nm/(ne/nb) > 2 ) {
-    TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
-    fgp0->SetParameter( 0, nm ); // amplitude
-    fgp0->SetParameter( 1, hdyDB.GetBinCenter( hdyDB.GetMaximumBin() ) );
-    fgp0->SetParameter( 2, 0.05 ); // sigma
-    fgp0->SetParameter( 3, hdyDB.GetBinContent(1) ); // BG
-    hdyDB.Fit( "fgp0", "q" );
-    cout << "  Fit Gauss + BG:"
-	 << endl << "  A " << fgp0->GetParameter(0)
-	 << endl << "  m " << fgp0->GetParameter(1)
-	 << endl << "  s " << fgp0->GetParameter(2)
-	 << endl << "  B " << fgp0->GetParameter(3)
-	 << endl << "  aligny[3] = " << aligny[3] + fgp0->GetParameter(1)
-	 << endl;
-    aligny[3] += fgp0->GetParameter(1);
-
-    // x-y rotation from profile:
-
-    if( aligniteration ) {
-
-      dyvsxDB.Fit( "pol1", "q", "", -25, 25 );
-      TF1 * fdyvsx = dyvsxDB.GetFunction( "pol1" );
-      cout << endl << dyvsxDB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
-      fy[3] -= fdyvsx->GetParameter(1); // opposite sign
-
-      dyvsyDB.Fit( "pol1", "q", "", -7.5, 7.5 );
-      TF1 * fdyvsy = dyvsyDB.GetFunction( "pol1" );
-      cout << endl << dyvsyDB.GetTitle()
-	   << " slope " << fdyvsy->GetParameter(1)
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdxCB.GetBinCenter( hdxCB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdxCB.GetBinContent(1) ); // BG
+      hdxCB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  alignx[2] = " << alignx[2] + fgp0->GetParameter(1)
 	   << endl;
-      ty[3] += fdyvsy->GetParameter(1); // same sign
+      alignx[2] += fgp0->GetParameter(1);
 
-    }
+      // turn from profile:
 
-  } // nm
+      if( aligniteration ) {
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // write alignment to file:
+	dxvsyCB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsy = dxvsyCB.GetFunction( "pol1" );
+	cout << endl << dxvsyCB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
+	fx[2] += fdxvsy->GetParameter(1); // same sign
 
-  ofstream alignFile( alignFileName.str() );
+	dxvsxCB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsx = dxvsxCB.GetFunction( "pol1" );
+	cout << endl << dxvsxCB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
+	tx[2] += fdxvsx->GetParameter(1); // same sign
 
-  alignFile << "# modules alignment for run " << run << endl;
-  ++aligniteration;
-  alignFile << "iteration " << aligniteration << endl;
+      }
 
-  cout << endl << "align iteration " << aligniteration << endl;
+    } // nm
 
-  for( int ipl = 0; ipl < 4; ++ipl ) {
-    alignFile << endl;
-    alignFile << "plane " << ipl << endl;
-    alignFile << "alignx " << alignx[ipl] << endl;
-    alignFile << "aligny " << aligny[ipl] << endl;
-    alignFile << "fx " << fx[ipl] << endl;
-    alignFile << "fy " << fy[ipl] << endl;
-    alignFile << "tx " << tx[ipl] << endl;
-    alignFile << "ty " << ty[ipl] << endl;
+    nb = hdyCB.GetNbinsX();
+    ne = hdyCB.GetSumOfWeights();
+    nm = hdyCB.GetMaximum();
 
-    cout << endl;
-    cout << "plane " << ipl << endl;
-    cout << "alignx " << alignx[ipl] << endl;
-    cout << "aligny " << aligny[ipl] << endl;
-    cout << "fx " << fx[ipl] << endl;
-    cout << "fy " << fy[ipl] << endl;
-    cout << "tx " << tx[ipl] << endl;
-    cout << "ty " << ty[ipl] << endl;
-  } // ipl
+    cout << endl << hdyCB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
 
-  alignFile.close();
+    if( nm/(ne/nb) > 2 ) {
 
-  cout << endl
-       << "written to " << alignFileName.str()
-       << endl;
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdyCB.GetBinCenter( hdyCB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdyCB.GetBinContent(1) ); // BG
+      hdyCB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  aligny[2] = " << aligny[2] + fgp0->GetParameter(1)
+	   << endl;
+      aligny[2] += fgp0->GetParameter(1);
 
-  if( aligniteration == 1 )
-    cout << "need one more align iteration: please run again!" << endl;
+      // x-y rotation from profile:
+
+      if( aligniteration ) {
+
+	dyvsxCB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdyvsx = dyvsxCB.GetFunction( "pol1" );
+	cout << endl << dyvsxCB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
+	fy[2] -= fdyvsx->GetParameter(1); // opposite sign
+
+	dyvsyCB.Fit( "pol1", "q", "", -7.5, 7.5 );
+	TF1 * fdyvsy = dyvsyCB.GetFunction( "pol1" );
+	cout << endl << dyvsyCB.GetTitle()
+	     << " slope " << fdyvsy->GetParameter(1)
+	     << endl;
+	ty[2] += fdyvsy->GetParameter(1); // same sign
+
+      }
+
+    } // nm
+
+    // D:
+
+    nb = hdxDB.GetNbinsX();
+    ne = hdxDB.GetSumOfWeights();
+    nm = hdxDB.GetMaximum();
+
+    cout << endl << hdxDB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+
+    if( nm/(ne/nb) > 2 ) {
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdxDB.GetBinCenter( hdxDB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdxDB.GetBinContent(1) ); // BG
+      hdxDB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  alignx[3] = " << alignx[3] + fgp0->GetParameter(1)
+	   << endl;
+      alignx[3] += fgp0->GetParameter(1);
+
+      // turn from profile:
+
+      if( aligniteration ) {
+
+	dxvsyDB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsy = dxvsyDB.GetFunction( "pol1" );
+	cout << endl << dxvsyDB.GetTitle() << " slope " << fdxvsy->GetParameter(1) << endl;
+	fx[3] += fdxvsy->GetParameter(1); // same sign
+
+	dxvsxDB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdxvsx = dxvsxDB.GetFunction( "pol1" );
+	cout << endl << dxvsxDB.GetTitle() << " slope " << fdxvsx->GetParameter(1) << endl;
+	tx[3] += fdxvsx->GetParameter(1); // same sign
+
+      }
+
+    } // nm
+
+    nb = hdyDB.GetNbinsX();
+    ne = hdyDB.GetSumOfWeights();
+    nm = hdyDB.GetMaximum();
+
+    cout << endl << hdyDB.GetTitle() << endl
+	 << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl
+	 << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+
+    if( nm/(ne/nb) > 2 ) {
+      TF1 * fgp0 = new TF1( "fgp0", "[0]*exp(-0.5*((x-[1])/[2])^2)+[3]", -1, 1 );
+      fgp0->SetParameter( 0, nm ); // amplitude
+      fgp0->SetParameter( 1, hdyDB.GetBinCenter( hdyDB.GetMaximumBin() ) );
+      fgp0->SetParameter( 2, 0.05 ); // sigma
+      fgp0->SetParameter( 3, hdyDB.GetBinContent(1) ); // BG
+      hdyDB.Fit( "fgp0", "q" );
+      cout << "  Fit Gauss + BG:"
+	   << endl << "  A " << fgp0->GetParameter(0)
+	   << endl << "  m " << fgp0->GetParameter(1)
+	   << endl << "  s " << fgp0->GetParameter(2)
+	   << endl << "  B " << fgp0->GetParameter(3)
+	   << endl << "  aligny[3] = " << aligny[3] + fgp0->GetParameter(1)
+	   << endl;
+      aligny[3] += fgp0->GetParameter(1);
+
+      // x-y rotation from profile:
+
+      if( aligniteration ) {
+
+	dyvsxDB.Fit( "pol1", "q", "", -25, 25 );
+	TF1 * fdyvsx = dyvsxDB.GetFunction( "pol1" );
+	cout << endl << dyvsxDB.GetTitle() << " slope " << fdyvsx->GetParameter(1) << endl;
+	fy[3] -= fdyvsx->GetParameter(1); // opposite sign
+
+	dyvsyDB.Fit( "pol1", "q", "", -7.5, 7.5 );
+	TF1 * fdyvsy = dyvsyDB.GetFunction( "pol1" );
+	cout << endl << dyvsyDB.GetTitle()
+	     << " slope " << fdyvsy->GetParameter(1)
+	     << endl;
+	ty[3] += fdyvsy->GetParameter(1); // same sign
+
+      }
+
+    } // nm
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // write alignment to file:
+
+    ofstream alignFile( alignFileName.str() );
+
+    alignFile << "# modules alignment for run " << run << endl;
+    ++aligniteration;
+    alignFile << "iteration " << aligniteration << endl;
+
+    cout << endl << "align iteration " << aligniteration << endl;
+
+    for( int ipl = 0; ipl < 4; ++ipl ) {
+      alignFile << endl;
+      alignFile << "plane " << ipl << endl;
+      alignFile << "alignx " << alignx[ipl] << endl;
+      alignFile << "aligny " << aligny[ipl] << endl;
+      alignFile << "fx " << fx[ipl] << endl;
+      alignFile << "fy " << fy[ipl] << endl;
+      alignFile << "tx " << tx[ipl] << endl;
+      alignFile << "ty " << ty[ipl] << endl;
+
+      cout << endl;
+      cout << "plane " << ipl << endl;
+      cout << "alignx " << alignx[ipl] << endl;
+      cout << "aligny " << aligny[ipl] << endl;
+      cout << "fx " << fx[ipl] << endl;
+      cout << "fy " << fy[ipl] << endl;
+      cout << "tx " << tx[ipl] << endl;
+      cout << "ty " << ty[ipl] << endl;
+    } // ipl
+
+    alignFile.close();
+
+  
+  
+    cout << endl
+	 << "written to " << alignFileName.str()
+	 << endl;
+
+    if( aligniteration == 1 )
+      cout << "need one more align iteration: please run again!" << endl;
   }else{
     cout << "No alignment needed - taken from run " << alignmentRun << endl;
   }
@@ -2923,12 +2941,9 @@ int main( int argc, char* argv[] )
     }
     conversionFileOut.close();
   }
-}else{
-  cout << "\nWill apply conversion factor correction at next iteration." << endl;
- }
-if(CCSupressed){
-  cout << "\nNo conversion correction wanted." << endl;
- }
+  if(CCSupressed){
+    cout << "\nNo conversion correction wanted." << endl;
+  }
 
   cout << endl << endl;
   cout << "quad  tracks " << n4 << endl;
