@@ -480,7 +480,11 @@ int main( int argc, char* argv[] )
 
   ostringstream alignFileName; // output string stream
 
-  alignFileName << "alignment/align_" << run << ".dat";
+  if(!alignmentRun){
+    alignFileName << "alignment/align_" << run << ".dat";
+  }else{
+    alignFileName << "alignment/align_" << alignmentRun << ".dat";
+  }
 
   ifstream ialignFile( alignFileName.str() );
 
@@ -609,8 +613,10 @@ int main( int argc, char* argv[] )
   wscatSi[0] = 1.0 / ( tetSi * tetSi ); // weight
   wscatSi[1] = 1.0 / ( tetSi * tetSi );
 
-  double chCutLow = 12;
-  double chCutHigh = 30;
+  double chCutLow = 14;
+  double chCutHigh = 40;
+  //double chCutLow = 16;
+  //double chCutHigh = 25;
 
   // global labels for Pede:
 
@@ -962,8 +968,8 @@ int main( int argc, char* argv[] )
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
   TH1D hdxAB( "dxAB", "Ax-Bx;x-x [mm];cluster pairs", 200, -5, 5 );
   TH1D hdyAB( "dyAB", "Ay-By;y-y [mm];cluster pairs", 200, -5, 5 );
-  TH1D hdxcAB( "dxcAB", "Ax-Bx;x-x [mm];cluster pairs", 200, -1, 1 );
-  TH1D hdycAB( "dycAB", "Ay-By;y-y [mm];cluster pairs", 200, -1, 1 );
+  TH1D hdxcAB( "dxcAB", "Ax-Bx;x-x [mm];cluster pairs", 200, -2, 2 );
+  TH1D hdycAB( "dycAB", "Ay-By;y-y [mm];cluster pairs", 200, -2, 2 );
   TProfile dxvsxAB( "dxvsxAB", "A-B dx vs x;x [mm];A-B <dx>",
 		    216, -32.4, 32.4, -1, 1 );
   TProfile dxvsyAB( "dxvsyAB", "A-B dx vs y;y [mm];A-B <dx>",
@@ -982,8 +988,8 @@ int main( int argc, char* argv[] )
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
   TH1D hdxCB( "dxCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -5, 5 );
   TH1D hdyCB( "dyCB", "Cy-By;y-y [mm];cluster pairs", 200, -5, 5 );
-  TH1D hdxcCB( "dxcCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -1, 1 );
-  TH1D hdycCB( "dycCB", "Cy-By;y-y [mm];cluster pairs", 200, -1, 1 );
+  TH1D hdxcCB( "dxcCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -2, 2 );
+  TH1D hdycCB( "dycCB", "Cy-By;y-y [mm];cluster pairs", 200, -2, 2 );
   TProfile dxvsxCB( "dxvsxCB", "C-B dx vs x;x [mm];C-B <dx>",
 		    216, -32.4, 32.4, -1, 1 );
   TProfile dxvsyCB( "dxvsyCB", "C-B dx vs y;y [mm];C-B <dx>",
@@ -1000,10 +1006,10 @@ int main( int argc, char* argv[] )
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
   TH2D hyyDB( "yyDB", "D vs B;row B;row D;clusters",
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
-  TH1D hdxDB( "dxDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxDB( "dxDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -10, 10 );
   TH1D hdyDB( "dyDB", "Dy-By;y-y [mm];cluster pairs", 200, -5, 5 );
-  TH1D hdxcDB( "dxcDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -1, 1 );
-  TH1D hdycDB( "dycDB", "Dy-By;y-y [mm];cluster pairs", 200, -1, 1 );
+  TH1D hdxcDB( "dxcDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -4, 4 );
+  TH1D hdycDB( "dycDB", "Dy-By;y-y [mm];cluster pairs", 200, -4, 4 );
   TProfile dxvsxDB( "dxvsxDB", "D-B dx vs x;x [mm];D-B <dx>",
 		    216, -32.4, 32.4, -1, 1 );
   TProfile dxvsyDB( "dxvsyDB", "D-B dx vs y;y [mm];D-B <dx>",
@@ -1020,16 +1026,16 @@ int main( int argc, char* argv[] )
 
   TH1D hdxACB( "dxACB", "ACB dx;x-x [mm];ACBs", 200, -1, 1 );
   TH1D hdyACB( "dyACB", "ACB dy;y-y [mm];ACBs", 200, -1, 1 );
-  TH1D hdxcACB( "dxcACB", "ACB dx;x-x [um];ACBs", 200, -200, 200 );
-  TH1D hdycACB( "dycACB", "ACB dy;y-y [um];ACBs", 200, -200, 200 );
+  TH1D hdxcACB( "dxcACB", "ACB dx;x-x [um];ACBs", 200, -700, 700 );
+  TH1D hdycACB( "dycACB", "ACB dy;y-y [um];ACBs", 200, -700, 700 );
   TH1D hdxciACB( "dxciACB", "ACB dx;x-x [um];isolated ACBs",
-		 200, -200, 200 );
+		 200, -700, 700 );
   TH1D hdyciACB( "dyciACB", "ACB dy;y-y [um];isolated ACBs",
-		 200, -200, 200 );
+		 200, -700, 700 );
   TH1D hdycfACB( "dycfACB", "ACB dy;y-y [um];inner ACBs",
-		 200, -200, 200 );
+		 200, -700, 700 );
   TH1D hdycfqACB( "dycfqACB", "ACB dy;y-y [um];Landau peak inner ACBs",
-		  200, -200, 200 );
+		  200, -700, 700 );
 
   TProfile dxvsxACB( "dxvsxACB",
 		     "ACB dx vs x;x [mm];ACB <dx>",
@@ -1196,6 +1202,7 @@ int main( int argc, char* argv[] )
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
   TH1D hdxDA( "dxDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -5, 5 );
   TH1D hdyDA( "dyDA", "Dy-Ay;y-y [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxDAwoa( "dxDAwoa", "Dx-Ax w/o alignment;x-x [mm];cluster pairs", 200, -20, 20 );
   TH1D hdxcDA( "dxcDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -1, 1 );
   TH1D hdycDA( "dycDA", "Dy-Ay;y-y [mm];cluster pairs", 200, -1, 1 );
   TProfile dxvsxDA( "dxvsxDA", "D-A dx vs x;x [mm];D-A <dx>",
@@ -2043,6 +2050,8 @@ int main( int argc, char* argv[] )
       double xA = xm - ym*fx[A] - tx[A]*xm;
       double yA = ym + xm*fy[A] - ty[A]*ym;
 
+      double xAwoa = cA->col*0.15 - 32.4;
+
       TMatrixD derivA( 2, 6 ); // -alignment derivatives x,y
 
       derivA[0][0] = 1.0; // -dresidx/dalignx
@@ -2075,6 +2084,8 @@ int main( int argc, char* argv[] )
 	double xD = xm - ym*fx[D] - tx[D]*xm;
 	double yD = ym + xm*fy[D] - ty[D]*ym;
 
+	double xDwoa = cD->col*0.15 - 32.4;
+
 	TMatrixD derivD( 2, 6 ); // alignment derivatives x,y
 
 	derivD[0][0] = 1.0; // dresidx/dalignx
@@ -2105,6 +2116,8 @@ int main( int argc, char* argv[] )
 
 	double dx2 = xD - xA;
 	double dy2 = yD - yA;
+	double dx2woa = xDwoa - xAwoa;
+	hdxDAwoa.Fill( dx2woa );
 	hdxDA.Fill( dx2 );
 	hdyDA.Fill( dy2 );
 	if( abs( dy2 ) < bicuty && cD->big == 0 && cA->big == 0 ) {
