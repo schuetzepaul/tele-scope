@@ -11,8 +11,14 @@ quad
 *.so
 *.plt
 *.bin
+efficiencies.dat
+shiftPar*
+quad3D
+data
+lcio
 
 conversions/
 batch_output/
+gaincal/
 
 *.pdf
