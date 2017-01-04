@@ -96,8 +96,8 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
 
   double minNcol = 10.;
   double maxNcol = 0.;
-  double minAlpha = 90.;
-  double maxAlpha = -90.;
+
+  bool doFits = false;
 
   for(int run = startrun; run <= stoprun; run++) {
 
@@ -110,7 +110,7 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
 
     fileName.Form("quad-%d.root",run);
     fileDir.Append(fileName);
-
+    cout << fileName << endl << endl << endl;
 
     TFile *source;
     if (!gSystem->AccessPathName( fileDir )) source = TFile::Open(fileDir);
@@ -119,7 +119,7 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
     //cout << "File: " << fileName << endl;
 
     TH1 *h;
-    gDirectory->GetObject("ncolqf4C",h);
+    gDirectory->GetObject("ncolqf4A",h);
     if(!h) continue;
     if(h->GetEntries() < 100){
       cout << "Only " << h->GetEntries() << " entries. Skip this." << endl;
@@ -129,10 +129,13 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
     Double_t ncol = h->GetMean();
     Double_t ncolRMS = h->GetRMS();
 
+    if(ncol > -0.1 && ncol < 0.1) continue;
+
+    //    if(alpha < 7.5 && alpha > 6.5) continue;
+
     // Collect statistics:
     nclusters += h->GetEntries();
-
-    ncolsBscan->Fill(alpha, Bfield, ncol, 1);
+    Double_t nentries = h->GetEntries();
 
     /*
     int bplot;
@@ -142,7 +145,8 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
     else if(Bfield <= 0.3) bplot=0;
     */
 
-    double alphacorr = 2.0;
+
+    double alphacorr = 2.1;
     int bplot;
     if(Bfield > 1.2){
       bplot=3;
@@ -158,15 +162,15 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
       alpha += alphacorr * 0.;
     }
 
-    gNcol[bplot]->SetPoint(gNcol[bplot]->GetN(),alpha,ncol);
-    gNcol[bplot]->SetPointError(gNcol[bplot]->GetN(),0.1,ncolRMS);
+    cout << "run" << run << "\t ncol " << ncol << "\t alpha " << alpha << "\tdatapoints " << nentries << endl;
+    ncolsBscan->Fill(alpha, Bfield, ncol, 1);
 
-    cout << "run" << run << "\t ncol " << ncol << "\t alpha " << alpha << endl;
+
+    gNcol[bplot]->SetPoint(gNcol[bplot]->GetN(),alpha,ncol);
+    //    gNcol[bplot]->SetPointError(gNcol[bplot]->GetN()-1,0.1,ncolRMS);
 
     if(ncol > maxNcol) maxNcol = ncol;
     if(ncol < minNcol) minNcol = ncol;
-    if(alpha > maxAlpha) maxAlpha = alpha;
-    if(alpha < minAlpha) minAlpha = alpha;
 
     nruns++;
     delete source;
@@ -175,27 +179,51 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
   cout << nruns << " runs analyzed with " << nclusters << " clusters in total." << endl;
 
   /*
+  double getx, gety;
+  for(int i = 0; i< 25; i++){
+    gNcol[2]->GetPoint(i,getx,gety);
+    cout << "i=" << i << "\tx=" << getx << "\ty=" << gety << endl;
+  }
+  */
+  /*    
   c1->cd();
   ncolsBscan->SetTitle("2D B alpha Scan;turn angle [#deg];B [T];columns per cluster");
   ncolsBscan->SetMarkerStyle(20);
   ncolsBscan->SetMarkerColor(1);
   ncolsBscan->Draw("colz");
   ncolsBscan->GetZaxis()->SetRangeUser(minNcol-0.02, maxNcol+0.02);
-  */
+  
   c2->cd();
+  */
 
   gNcol[0]->SetMarkerColor(kBlack);
   gNcol[1]->SetMarkerColor(kBlue);
   gNcol[2]->SetMarkerColor(kGreen);
   gNcol[3]->SetMarkerColor(kRed);
 
-  for(int b = 0; b < 4; b++){
-    gNcol[b]->SetTitle("B alpha scan;turn angle [#deg];columns per cluster");
+  // Get parabola fits
+
+  if(doFits){
+    for(int b = 0; b < 4; b++){
+      TF1 *f = new TF1("f", "[0] + [1] * (x - [2])* (x - [2])");
+      f->SetParameter(0,1.2);
+      f->SetParameter(1,0.002);
+      f->SetParameter(2,3.);
+      f->SetParameter(3,0.002);
+      f->SetParameter(4,3.);
+      gNcol[b]->Fit(f, "","", -6, 15);
+    
+    }
+  }
+
+  for(int b = 3; b >= 0; b--){
+    //    if(b==1)continue;
+    gNcol[b]->SetTitle("B alpha scan;incident angle [deg];columns per cluster");
     gNcol[b]->SetMarkerStyle(20);
-    if(b==0){
+    if(b==3){
       gNcol[b]->Draw("AP");
       gNcol[b]->GetYaxis()->SetRangeUser(minNcol-0.02, maxNcol+0.02);
-      gNcol[b]->GetXaxis()->SetLimits(minAlpha-1, maxAlpha+1);
+      //      gNcol[b]->GetXaxis()->SetRangeUser(-7,13);
     }
     else gNcol[b]->Draw("sameP");
   }
@@ -206,5 +234,7 @@ void ncolsB(const char* inputdir, int startrun, int stoprun) {
   leg->AddEntry(gNcol[2],"1050 A","p");
   leg->AddEntry(gNcol[3],"1400 A","p");
   leg->Draw();
+
+  
 
 }
