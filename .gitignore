@@ -17,6 +17,7 @@ quad3D
 data
 lcio
 
+macro/ncolsB.C
 conversions/
 batch_output/
 gaincal/
