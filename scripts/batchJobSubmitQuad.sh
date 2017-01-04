@@ -23,7 +23,7 @@ EOF
 }
 
 # Parse command line options.
-while getopts l:c:r:h:v: OPT; do
+while getopts l:c:r:a:h:v: OPT; do
     case "$OPT" in
         h)
             echo $USAGE
@@ -35,6 +35,10 @@ while getopts l:c:r:h:v: OPT; do
             ;;
         l)
             EVENTS=$OPTARG
+            ;;
+        a)
+	    echo "Using LCIO format"
+	    USELCIO=1
             ;;
         c)
             CONVRUN=$OPTARG
@@ -95,11 +99,18 @@ else
     echo "Get conversion factors from run ${CONVRUN}"
 fi
 
+if [ -z ${USELCIO} ]; then
+    regex_lcio=""
+else
+    regex_lcio="-a"
+    echo "Set LCIO flag to quad"
+fi
+
 # Dispatch the jobs to the NAF batch system
 for RUN in "${RUNS[@]}"; do
 
 #    echo "Starting Run ${RUN}"
-    $QA -N quad-${RUN} -l $EVENTS $regex_convrun $RUN &
+    $QA -N quad-${RUN} -l $EVENTS $regex_lcio $regex_convrun $RUN &
 
 done
 

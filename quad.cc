@@ -26,9 +26,17 @@
 #include <TMath.h>
 #include "MilleBinary.h"
 
+#include "lcio.h"
+#include "IO/LCReader.h"
+#include "EVENT/LCRunHeader.h"
+#include "EVENT/LCCollection.h"
+#include "EVENT/LCEvent.h"
+#include "EVENT/TrackerData.h"
+
 using namespace std;
 using namespace gbl;
 using namespace eudaq;
+using namespace lcio;
 
 struct pixel {
   int col;
@@ -409,22 +417,7 @@ int main( int argc, char* argv[] )
   bool fitSupressed = false;
   double turnTable = 0;
   
-  if(searchRunlist(run, p, modName, CCSupressed, alignmentRun, turnTable) < 0){
-    exit(0);
-  }
-
-  cout << "run " << run << endl;
-  FileReader * reader;
-  if( run < 100 )
-    reader = new FileReader( runnum.c_str(), "data/run0000$2R$X" );
-  else if( run < 1000 )
-    reader = new FileReader( runnum.c_str(), "data/run000$3R$X" );
-  else if( run < 10000 )
-    reader = new FileReader( runnum.c_str(), "data/run00$4R$X" );
-  else if( run < 100000 )
-    reader = new FileReader( runnum.c_str(), "data/run0$5R$X" );
-  else
-    reader = new FileReader( runnum.c_str(), "data/run$6R$X" );
+  bool useLCIO = false;
 
   // further arguments:
 
@@ -453,7 +446,41 @@ int main( int argc, char* argv[] )
     if( !strcmp( argv[i], "-f" ) )
       fitSupressed = true;
 
+    if( !strcmp( argv[i], "-a" ) )
+      useLCIO = true;
+
+
   } // argc
+
+  if(searchRunlist(run, p, modName, CCSupressed, alignmentRun, turnTable) < 0){
+    exit(0);
+  }
+
+  cout << "run " << run << endl;
+  FileReader * reader;
+  LCReader* lcReader = LCFactory::getInstance()->createLCReader();
+
+  if(useLCIO){
+    char lciofilename[200];
+    sprintf(lciofilename, "lcio/run%06d-converter.slcio", run);
+    lcReader->open(lciofilename);
+
+    LCRunHeader *runHdr = lcReader->readNextRunHeader();
+
+    cout << "  Run : " << runHdr->getRunNumber() << " - "      << runHdr->getDetectorName() << ":  "      << runHdr->getDescription() << endl ;    
+
+  }else{
+    if( run < 100 )
+      reader = new FileReader( runnum.c_str(), "data/run0000$2R$X" );
+    else if( run < 1000 )
+      reader = new FileReader( runnum.c_str(), "data/run000$3R$X" );
+    else if( run < 10000 )
+      reader = new FileReader( runnum.c_str(), "data/run00$4R$X" );
+    else if( run < 100000 )
+      reader = new FileReader( runnum.c_str(), "data/run0$5R$X" );
+    else
+      reader = new FileReader( runnum.c_str(), "data/run$6R$X" );
+  }
 
   // alignments:
 
@@ -872,6 +899,8 @@ int main( int argc, char* argv[] )
  
   TH1D hcol[4];
   TH1D hrow[4];
+  TH1D hclx[4];
+  TH1D hcly[4];
   TH1D hpxdig[4];
   TH1D hpxq[4];
   TH2D * hmap[4];
@@ -909,6 +938,12 @@ int main( int argc, char* argv[] )
     hrow[mod] = TH1D( Form("row%c",modtos),
 		      Form("%c row;row;%c pixels",modtos,modtos),
 		      160, -0.5, 159.5 );
+    hclx[mod] = TH1D( Form("clx%c", modtos),
+		      Form("%c Cluster x;x;%c clusters", modtos, modtos), 
+		      416, -31.2, 31.2 );
+    hcly[mod] = TH1D( Form("cly%c", modtos),
+		      Form("%c Cluster y;y;%c clusters", modtos, modtos), 
+		      160, -8.0, 8.0 );
     hpxq[mod] = TH1D( Form("pxq%c",modtos),
 		      Form("%c pixel charge;pixel q [ke];%c pixels",modtos,modtos),
 		      100, 0, 25 );
@@ -1410,194 +1445,458 @@ int main( int argc, char* argv[] )
   int nmille = 0;
 
   do {
-    // Get next event:
-    DetectorEvent evt = reader->GetDetectorEvent();
 
-    if( evt.IsBORE() )
-      eudaq::PluginManager::Initialize(evt);
+  vector <cluster> cl[4];
+  int n4ev = 0;
 
-    int n4ev = 0;
-    bool ldb = 0;
-    if( event_nr == -1 )
-      ldb = 1;
+    if(useLCIO){
 
-    if( ldb || event_nr%10000 == 0 )
-      cout << "Quad processing event "<< event_nr << endl;
+      /*
+      LCEvent* evt = lcReader->getNextEvent();
 
-    StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
+      LCCollection* coll = evt->getCollection("CMSPixel4000");
 
-    int xm = 0;
-    int ym = 0;
-    int adc = 0;
-    double cal = 0;
+      TrackerData* tdata = coll->getElementAt(0);
+      */
 
-    vector <cluster> cl[4];
-
-    for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane) {
-
-      const eudaq::StandardPlane &plane = sevt.GetPlane(iplane);
-
-      vector<double> pxl = plane.GetPixels<double>();
-
-      if( ldb ) cout << "PLANE " << plane.ID() << ": ";
-
-      // /home/pitzl/eudaq/main/include/eudaq/CMSPixelHelper.hh
-
-      int mod = 0; // QUAD
-      if( plane.ID() == 6 ) mod = 1; // TRP
-      if( plane.ID() == 7 ) mod = 2; // DUT
-      if( plane.ID() == 8 ) mod = 3; // REF
-
-      int npx = 0;
-
-      for( size_t ipix = 0; ipix < pxl.size(); ++ipix) {
-
-	if( ldb ) 
-	  cout << plane.GetX(ipix)
-		    << " " << plane.GetY(ipix)
-		    << " " << plane.GetPixel(ipix) << " ";
-
-	xm = plane.GetX(ipix); // global column 0..415
-	ym = plane.GetY(ipix); // global row 0..159
-	adc = plane.GetPixel(ipix); // ADC 0..255
-
-	// Shift adc to known threshold
-
-	adc += shifts[mod];
-
-	hcol[mod].Fill( xm );
-	hrow[mod].Fill( ym );
-	hmap[mod]->Fill( xm, ym );
-
-	// leave space for big pixels:
-
-	int roc = xm / 52; // 0..7
-	int col = xm % 52; // 0..51
-	int row = ym;
-	int x = 1 + xm + 2*roc; // 1..52 per ROC with big pix
-	int y = ym;
-	if( ym > 79 ) y += 2;
-
-	// flip for upper ROCs into local addresses:
-
-	if( ym > 79 ) {
-	  roc = 15 - roc; // 15..8
-	  col = 51 - col; // 51..0
-	  row = 159 - ym; // 79..0
-	}
-
-	cal = adc;
-	if( xm < 0 || xm > 415 || ym < 0 || ym > 159 || adc < 0 || adc > 255 )
-	  cout << "invalid pixel at event " << event_nr << endl;
-	else if( haveGain[mod] ) {
-	  double a0 = p0[mod][roc][col][row];
-	  double a1 = p1[mod][roc][col][row];
-	  double a2 = p2[mod][roc][col][row];
-	  double a3 = p3[mod][roc][col][row];
-	  double a4 = p4[mod][roc][col][row];
-	  double a5 = p5[mod][roc][col][row];
-	  cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ) * ke[mod][roc]; // [ke]
-	}
-	
-	hpxdig[mod].Fill( adc );
-	hpxq[mod].Fill( cal );
-
-	// fill pixel block for clustering
-	pb[npx].col = x;
-	pb[npx].row = y;
-	pb[npx].roc = roc;
-	pb[npx].adc = adc;
-	pb[npx].cal = cal;
-	pb[npx].big = 0;
-	++npx;
-
-	// double big pixels:
-	// 0+1
-	// 2..51
-	// 52+53
-
-	col = xm % 52; // 0..51
-
-	if( col == 0 ) {
-	  pb[npx].col = x-1; // double
-	  pb[npx].row = y;
-	  pb[npx-1].adc *= 0.5;
-	  pb[npx-1].cal *= 0.5;
-	  pb[npx].adc = 0.5*adc;
-	  pb[npx].cal = 0.5*cal;
-	  pb[npx].big = 1;
-	  ++npx;
-	}
-
-	if( col == 51 ) {
-	  pb[npx].col = x+1; // double
-	  pb[npx].row = y;
-	  pb[npx-1].adc *= 0.5;
-	  pb[npx-1].cal *= 0.5;
-	  pb[npx].adc = 0.5*adc;
-	  pb[npx].cal = 0.5*cal;
-	  pb[npx].big = 1;
-	  ++npx;
-	}
-
-	if( ym == 79 ) {
-	  pb[npx].col = x; // double
-	  pb[npx].row = 80;
-	  pb[npx-1].adc *= 0.5;
-	  pb[npx-1].cal *= 0.5;
-	  pb[npx].adc = 0.5*adc;
-	  pb[npx].cal = 0.5*cal;
-	  pb[npx].big = 1;
-	  ++npx;
-	}
-
-	if( ym == 80 ) {
-	  pb[npx].col = x; // double
-	  pb[npx].row = 81;
-	  pb[npx-1].adc *= 0.5;
-	  pb[npx-1].cal *= 0.5;
-	  pb[npx].adc = 0.5*adc;
-	  pb[npx].cal = 0.5*cal;
-	  pb[npx].big = 1;
-	  ++npx;
-	}
-
-      } // pix
+      LCEvent* evt = lcReader->readNextEvent();
       
-      hnpx[mod].Fill(npx);
+      if(!evt) break;
+    
+    
+      if(event_nr%10000 == 0 )
+	cout << "Quad processing event (LCIO) "<< event_nr << endl;
 
-      if( ldb ) cout << endl;
+      int xm = 0;
+      int ym = 0;
+      int adc = 0;
+      double cal = 0;
 
-      // clustering:
+      for( size_t iplane = 0; iplane < 4; ++iplane) {
+	
+	char collName[100];
+	sprintf(collName, "CMSPixel%04d", modName[iplane]);
+	LCCollection* coll = evt->getCollection(collName);
+	TrackerData* tdata = dynamic_cast<TrackerData*>(coll->getElementAt(0));
 
-      fNHit = npx; // for cluster search
-
-      cl[mod] = getClus();
-
-      if( ldb ) cout << "A clusters " << cl[mod].size() << endl;
-
-      hncl[mod].Fill( cl[mod].size() );
-
-      for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
-
-	hsiz[mod].Fill( cA->size );
-	hclq[mod].Fill( cA->charge );
-	hclq0[mod].Fill( cA->charge*norm );
-	hncol[mod].Fill( cA->ncol );
-	hnrow[mod].Fill( cA->nrow );
-	ncolvsclq[mod].Fill( cA->charge*norm, cA->ncol );
-	if(cA->roc == -1){
-	  hclq0g[mod].Fill( cA->charge*norm );
-	}else{
-	  hclq0r[mod][cA->roc].Fill( cA->charge*norm );
+	// Data stream in our TrackerData: x, y, adc, 0, x, y, adc, 0, ...
+	vector<float> dataVec = tdata->getChargeValues();
+	
+	if(dataVec.size()%4){
+	  cout << "Data stream from LCIO is incorrect! Exit." << endl;
+	  exit(0);
 	}
-	if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
-	  hncolq[mod].Fill( cA->ncol );
+
+	vector<int> onePixel;
+	vector<vector<int>> allPixels;
+
+	for (size_t i=0; i<dataVec.size(); i++){
+	  onePixel.push_back(static_cast<int>(dataVec[i]));
+	  if(i%4 == 3){
+	    if(onePixel.at(3) != 0){
+	      cout << "Data stream from LCIO is incorrect! Exit." << endl;
+	      exit(0);
+	    }
+	    allPixels.push_back(onePixel);
+	    onePixel.clear();
+	  }
 	}
-      }
 
-    } // planes = mod
+	int mod = iplane;
 
+	int npx = 0;
+
+	for( size_t ipix = 0; ipix < allPixels.size(); ++ipix) {
+
+	  xm = allPixels.at(ipix).at(0);
+	  ym = allPixels.at(ipix).at(1);
+	  adc = allPixels.at(ipix).at(2);
+
+	  /*
+	  int evenOddCorrection = -20;
+	  if(xm%2){
+	    adc -= evenOddCorrection;
+	  }else{
+	    adc += evenOddCorrection;
+	  }
+	  */
+
+	  // Since this comes from a simulation not making use of the big pixels, double/quadruple their values here (not perfect, but probably good enough)
+	  if(!(xm%52) || !((xm+1)%52)){
+	    if(adc < 128){
+	      adc *= 2;
+	    }else{
+	      adc = 255;
+	    }
+	  }
+	  if(ym==79 || ym==80){
+	    if(adc < 128){
+	      adc *= 2;
+	    }else{
+	      adc = 255;
+	    }
+	  }
+
+	  // Shift adc to known threshold
+
+	  adc += shifts[mod];
+
+	  hcol[mod].Fill( xm );
+	  hrow[mod].Fill( ym );
+	  hmap[mod]->Fill( xm, ym );
+
+	  // leave space for big pixels:
+
+	  int roc = xm / 52; // 0..7
+	  int col = xm % 52; // 0..51
+	  int row = ym;
+	  int x = 1 + xm + 2*roc; // 1..52 per ROC with big pix
+	  int y = ym;
+	  if( ym > 79 ) y += 2;
+
+	  // flip for upper ROCs into local addresses:
+
+	  if( ym > 79 ) {
+	    roc = 15 - roc; // 15..8
+	    col = 51 - col; // 51..0
+	    row = 159 - ym; // 79..0
+	  }
+
+	  cal = adc;
+	  if( xm < 0 || xm > 415 || ym < 0 || ym > 159 || adc < 0 || adc > 255 ){
+	    cout << "invalid pixel at event " << event_nr << endl;
+	    cout << "\tmod: " << mod << " xm: " << xm << ", ym: " << ym << ", adc: " << adc << endl;
+	  }
+	  else if( haveGain[mod] ) {
+	    double a0 = p0[mod][roc][col][row];
+	    double a1 = p1[mod][roc][col][row];
+	    double a2 = p2[mod][roc][col][row];
+	    double a3 = p3[mod][roc][col][row];
+	    double a4 = p4[mod][roc][col][row];
+	    double a5 = p5[mod][roc][col][row];
+	    if(modName[mod]>=4000 && modName[mod]<4005){ // Even out the gain calibration for each pixel for the simulation
+	      a0 = 0.999738;
+	      a1 = 322248.1;
+	      a2 = 4894.3;
+	      a3 = 206.7;
+	      a4 = 184.2;
+	      a5 = 6.846;
+	    }
+	    cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ) * ke[mod][roc]; // [ke]
+	  }
+	
+	  hpxdig[mod].Fill( adc );
+	  hpxq[mod].Fill( cal );
+
+	  // fill pixel block for clustering
+	  pb[npx].col = x;
+	  pb[npx].row = y;
+	  pb[npx].roc = roc;
+	  pb[npx].adc = adc;
+	  pb[npx].cal = cal;
+	  pb[npx].big = 0;
+	  ++npx;
+
+	  // double big pixels:
+	  // 0+1
+	  // 2..51
+	  // 52+53
+
+	  col = xm % 52; // 0..51
+
+	  if( col == 0 ) {
+	    pb[npx].col = x-1; // double
+	    pb[npx].row = y;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( col == 51 ) {
+	    pb[npx].col = x+1; // double
+	    pb[npx].row = y;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 79 ) {
+	    pb[npx].col = x; // double
+	    pb[npx].row = 80;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 80 ) {
+	    pb[npx].col = x; // double
+	    pb[npx].row = 81;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	} // pix
+      
+	hnpx[mod].Fill(npx);
+
+	// clustering:
+
+	fNHit = npx; // for cluster search
+
+	cl[mod] = getClus();
+
+
+	hncl[mod].Fill( cl[mod].size() );
+
+	for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
+
+	  hsiz[mod].Fill( cA->size );
+	  hclq[mod].Fill( cA->charge );
+	  hclq0[mod].Fill( cA->charge*norm );
+	  hncol[mod].Fill( cA->ncol );
+	  hnrow[mod].Fill( cA->nrow );
+
+	  double xA1 = cA->col*0.15 - alignx[A] - 32.4;
+	  double yA1 = cA->row*0.10 - aligny[A] -  8.1;
+	  double xA2 = xA1 - yA1*fx[A] - tx[A]*xA1;
+	  double yA2 = yA1 + xA1*fy[A] - ty[A]*yA1;
+	  hclx[mod].Fill( xA2 );
+	  hcly[mod].Fill( yA2 );
+	  
+	  ncolvsclq[mod].Fill( cA->charge*norm, cA->ncol );
+	  if(cA->roc == -1){
+	    hclq0g[mod].Fill( cA->charge*norm );
+	  }else{
+	    hclq0r[mod][cA->roc].Fill( cA->charge*norm );
+	  }
+	  if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
+	    hncolq[mod].Fill( cA->ncol );
+	  }
+	}
+
+      } // planes = mod
+    
+      // This was the LCIO/AllPix case. Now .raw files:
+    }else{
+    
+      // Get next event:
+      DetectorEvent evt = reader->GetDetectorEvent();
+
+      if( evt.IsBORE() )
+	eudaq::PluginManager::Initialize(evt);
+
+      bool ldb = false;
+      if( event_nr == -1 )
+	ldb = 1;
+
+      if( ldb || event_nr%10000 == 0 )
+	cout << "Quad processing event (raw) "<< event_nr << endl;
+
+      StandardEvent sevt = eudaq::PluginManager::ConvertToStandard(evt);
+
+      int xm = 0;
+      int ym = 0;
+      int adc = 0;
+      double cal = 0;
+
+      for( size_t iplane = 0; iplane < sevt.NumPlanes(); ++iplane) {
+
+	const eudaq::StandardPlane &plane = sevt.GetPlane(iplane);
+
+	vector<double> pxl = plane.GetPixels<double>();
+
+	if( ldb ) cout << "PLANE " << plane.ID() << ": ";
+
+	// /home/pitzl/eudaq/main/include/eudaq/CMSPixelHelper.hh
+
+	int mod = 0; // QUAD
+	if( plane.ID() == 6 ) mod = 1; // TRP
+	if( plane.ID() == 7 ) mod = 2; // DUT
+	if( plane.ID() == 8 ) mod = 3; // REF
+
+	int npx = 0;
+
+	for( size_t ipix = 0; ipix < pxl.size(); ++ipix) {
+
+	  if( ldb ) 
+	    cout << plane.GetX(ipix)
+		 << " " << plane.GetY(ipix)
+		 << " " << plane.GetPixel(ipix) << " ";
+
+	  xm = plane.GetX(ipix); // global column 0..415
+	  ym = plane.GetY(ipix); // global row 0..159
+	  adc = plane.GetPixel(ipix); // ADC 0..255
+
+	  // Shift adc to known threshold
+
+	  adc += shifts[mod];
+
+	  hcol[mod].Fill( xm );
+	  hrow[mod].Fill( ym );
+	  hmap[mod]->Fill( xm, ym );
+
+	  // leave space for big pixels:
+
+	  int roc = xm / 52; // 0..7
+	  int col = xm % 52; // 0..51
+	  int row = ym;
+	  int x = 1 + xm + 2*roc; // 1..52 per ROC with big pix
+	  int y = ym;
+	  if( ym > 79 ) y += 2;
+
+	  // flip for upper ROCs into local addresses:
+
+	  if( ym > 79 ) {
+	    roc = 15 - roc; // 15..8
+	    col = 51 - col; // 51..0
+	    row = 159 - ym; // 79..0
+	  }
+
+	  cal = adc;
+	  if( xm < 0 || xm > 415 || ym < 0 || ym > 159 || adc < 0 || adc > 255 )
+	    cout << "invalid pixel at event " << event_nr << endl;
+	  else if( haveGain[mod] ) {
+	    double a0 = p0[mod][roc][col][row];
+	    double a1 = p1[mod][roc][col][row];
+	    double a2 = p2[mod][roc][col][row];
+	    double a3 = p3[mod][roc][col][row];
+	    double a4 = p4[mod][roc][col][row];
+	    double a5 = p5[mod][roc][col][row];
+	    if(modName[mod]>=4000 && modName[mod]<4005){ // Even out the gain calibration for each pixel for the simulation
+	      a0 = 0.999738;
+	      a1 = 322248.1;
+	      a2 = 4894.3;
+	      a3 = 206.7;
+	      a4 = 184.2;
+	      a5 = 6.846;
+	    }
+	    cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ) * ke[mod][roc]; // [ke]
+	  }
+	
+	  hpxdig[mod].Fill( adc );
+	  hpxq[mod].Fill( cal );
+
+	  // fill pixel block for clustering
+	  pb[npx].col = x;
+	  pb[npx].row = y;
+	  pb[npx].roc = roc;
+	  pb[npx].adc = adc;
+	  pb[npx].cal = cal;
+	  pb[npx].big = 0;
+	  ++npx;
+
+	  // double big pixels:
+	  // 0+1
+	  // 2..51
+	  // 52+53
+
+	  col = xm % 52; // 0..51
+
+	  if( col == 0 ) {
+	    pb[npx].col = x-1; // double
+	    pb[npx].row = y;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( col == 51 ) {
+	    pb[npx].col = x+1; // double
+	    pb[npx].row = y;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 79 ) {
+	    pb[npx].col = x; // double
+	    pb[npx].row = 80;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	  if( ym == 80 ) {
+	    pb[npx].col = x; // double
+	    pb[npx].row = 81;
+	    pb[npx-1].adc *= 0.5;
+	    pb[npx-1].cal *= 0.5;
+	    pb[npx].adc = 0.5*adc;
+	    pb[npx].cal = 0.5*cal;
+	    pb[npx].big = 1;
+	    ++npx;
+	  }
+
+	} // pix
+      
+	hnpx[mod].Fill(npx);
+
+	if( ldb ) cout << endl;
+
+	// clustering:
+
+	fNHit = npx; // for cluster search
+
+	cl[mod] = getClus();
+
+	if( ldb ) cout << "A clusters " << cl[mod].size() << endl;
+
+	hncl[mod].Fill( cl[mod].size() );
+
+	for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
+
+	  hsiz[mod].Fill( cA->size );
+	  hclq[mod].Fill( cA->charge );
+	  hclq0[mod].Fill( cA->charge*norm );
+	  hncol[mod].Fill( cA->ncol );
+	  hnrow[mod].Fill( cA->nrow );
+	  
+	  double xA1 = cA->col*0.15 - alignx[A] - 32.4;
+	  double yA1 = cA->row*0.10 - aligny[A] -  8.1;
+	  double xA2 = xA1 - yA1*fx[A] - tx[A]*xA1;
+	  double yA2 = yA1 + xA1*fy[A] - ty[A]*yA1;
+	  hclx[mod].Fill( xA2 );
+	  hcly[mod].Fill( yA2 );
+	  
+	  ncolvsclq[mod].Fill( cA->charge*norm, cA->ncol );
+	  if(cA->roc == -1){
+	    hclq0g[mod].Fill( cA->charge*norm );
+	  }else{
+	    hclq0r[mod][cA->roc].Fill( cA->charge*norm );
+	  }
+	  if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
+	    hncolq[mod].Fill( cA->ncol );
+	  }
+	}
+
+      } // planes = mod
+
+      if(!(reader->NextEvent())) break;
+    
+    }
+    
     ++event_nr;
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2589,7 +2888,7 @@ int main( int argc, char* argv[] )
     hnADB.Fill( nADB );
     hn4ev.Fill( n4ev );
 
-  } while( reader->NextEvent() && event_nr < lev );
+  } while( event_nr < lev );
 
   cout << endl << "events " << event_nr << endl;
 

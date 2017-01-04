@@ -13,7 +13,7 @@ ROOTGLIBS = $(shell $(ROOTSYS)/bin/root-config --glibs)
 # -pg for gprof
 # -std=c++11
 
-CXXFLAGS = -std=c++11 -O2 -Wall -Wextra $(ROOTCFLAGS) -I$(EUDAQ)/main/include
+CXXFLAGS = -std=c++11 -O2 -Wall -Wextra $(ROOTCFLAGS) -I$(EUDAQ)/main/include -I$(LCIO)/include
 
 scope: scope.cc
 	g++ $(CXXFLAGS) -o scope scope.cc \
@@ -27,7 +27,7 @@ tele: tele.cc
 
 quad: quad.cc
 	g++ $(CXXFLAGS) -I$(GBL)/include -o quad quad.cc \
-	-L$(GBL)/lib -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ
+	-L$(GBL)/lib -lGBL $(ROOTLIBS) -L$(EUDAQ)/lib -lEUDAQ -L$(LCIO)/lib -llcio
 	@echo 'done: quad'
 
 evd: evd.cc
