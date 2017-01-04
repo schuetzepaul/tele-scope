@@ -382,7 +382,7 @@ int getShifts(int runnr, int * shifts){
       }
 
     }
-    cout << "Run " << runnr << " not found." << endl;
+    cout << "Run " << runnr << " not found in shiftFile." << endl;
     shiftFile.close();
     return -2;
   }
@@ -487,6 +487,8 @@ int main( int argc, char* argv[] )
   double dz = 22.5; // [mm] projected z spacing
   if( run > 150 )
     dz = 40.0;
+  if( !(run > 42000 && run < 42700) )
+    dz = 32.0;
 
   int aligniteration = 0;
   double alignx[4];
@@ -1001,7 +1003,7 @@ int main( int argc, char* argv[] )
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
   TH2D hyyAB( "yyAB", "A vs B;row B;row A;clusters",
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
-  TH1D hdxAB( "dxAB", "Ax-Bx;x-x [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxAB( "dxAB", "Ax-Bx;x-x [mm];cluster pairs", 150, -10, 10 );
   TH1D hdyAB( "dyAB", "Ay-By;y-y [mm];cluster pairs", 200, -5, 5 );
   TH1D hdxcAB( "dxcAB", "Ax-Bx;x-x [mm];cluster pairs", 200, -2, 2 );
   TH1D hdycAB( "dycAB", "Ay-By;y-y [mm];cluster pairs", 200, -2, 2 );
@@ -1021,7 +1023,7 @@ int main( int argc, char* argv[] )
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
   TH2D hyyCB( "yyCB", "C vs B;row B;row C;clusters",
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
-  TH1D hdxCB( "dxCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxCB( "dxCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -10, 10 );
   TH1D hdyCB( "dyCB", "Cy-By;y-y [mm];cluster pairs", 200, -5, 5 );
   TH1D hdxcCB( "dxcCB", "Cx-Bx;x-x [mm];cluster pairs", 200, -2, 2 );
   TH1D hdycCB( "dycCB", "Cy-By;y-y [mm];cluster pairs", 200, -2, 2 );
@@ -1041,7 +1043,7 @@ int main( int argc, char* argv[] )
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
   TH2D hyyDB( "yyDB", "D vs B;row B;row D;clusters",
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
-  TH1D hdxDB( "dxDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -10, 10 );
+  TH1D hdxDB( "dxDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -20, 20 );
   TH1D hdyDB( "dyDB", "Dy-By;y-y [mm];cluster pairs", 200, -5, 5 );
   TH1D hdxcDB( "dxcDB", "Dx-Bx;x-x [mm];cluster pairs", 200, -4, 4 );
   TH1D hdycDB( "dycDB", "Dy-By;y-y [mm];cluster pairs", 200, -4, 4 );
@@ -1226,6 +1228,12 @@ int main( int argc, char* argv[] )
 	       100, 0, 100 );
   TH1D hncolA3( "ncolA3", "A cluster size;columns/cluster;A3 clusters",
 		21, -0.5, 20.5 );
+  TH1D hncolA3q1( "ncolA3q1", "A cluster size;columns/cluster;A3 clusters",
+		21, -0.5, 20.5 );
+  TH1D hncolA3q2( "ncolA3q2", "A cluster size;columns/cluster;A3 clusters",
+		21, -0.5, 20.5 );
+  TH1D hncolA3q3( "ncolA3q3", "A cluster size;columns/cluster;A3 clusters",
+		21, -0.5, 20.5 );
   TH1D hnrowA3( "nrowA3", "A cluster size;rows/cluster;A3 clusters",
 		21, -0.5, 20.5 );
 
@@ -1235,7 +1243,7 @@ int main( int argc, char* argv[] )
 	      432, -32.4, 32.4, 432, -32.4, 32.4 );
   TH2D hyyDA( "yyDA", "D vs A;row A;row D;clusters",
 	      162, -8.1, 8.1, 162, -8.1, 8.1 );
-  TH1D hdxDA( "dxDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxDA( "dxDA", "Dx-xA;x-x [mm];cluster pairs", 200, -5, 5 );
   TH1D hdyDA( "dyDA", "Dy-Ay;y-y [mm];cluster pairs", 200, -5, 5 );
   TH1D hdxDAwoa( "dxDAwoa", "Dx-Ax w/o alignment;x-x [mm];cluster pairs", 200, -20, 20 );
   TH1D hdxcDA( "dxcDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -1, 1 );
@@ -2301,6 +2309,16 @@ int main( int argc, char* argv[] )
 	      if(cA->charge*norm > chCutLow && cA->charge*norm < chCutHigh){
 		hncolqf4[0].Fill(cA->ncol);
 	      }
+	      if(cA->charge*norm > 18 && cA->charge*norm < 23){
+		hncolA3q1.Fill(cA->ncol);
+	      }
+	      if(cA->charge*norm > 16 && cA->charge*norm < 30 ){
+		hncolA3q2.Fill(cA->ncol);
+	      }
+	      if(cA->charge*norm > 30 && cA->charge*norm < 100){
+		hncolA3q3.Fill(cA->ncol);
+	      }
+
 
 	    }
 
@@ -3339,6 +3357,8 @@ Double_t fitLandauGauss( Double_t *x, Double_t *par ) {
 Double_t landau_gauss_peak(TH1* h) {
 
   double aa = h->GetEntries();//normalization
+
+  if(h->GetEntries() < 100) return 22.;
 
   // find peak:
   h->GetXaxis()->SetRange(7, 50);
